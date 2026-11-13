@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>중세기사 키우기 · 몬스터 시안</title>
+<style>
+  body { margin: 0; padding: 24px; background: #e4d9bf; font-family: "Malgun Gothic", "Noto Sans KR", sans-serif; color: #3b2a22; }
+  h1 { font-size: 22px; margin: 0 0 16px; }
+  #grid { display: grid; grid-template-columns: repeat(5, 300px); gap: 16px; }
+  .card { background: #efe6cf; border: 2px solid #3b2a22; border-radius: 10px; overflow: hidden; }
+  .card canvas { width: 300px; height: 300px; display: block; }
+  .card div { text-align: center; padding: 8px; font-size: 17px; font-weight: bold; border-top: 2px solid #3b2a22; }
+</style>
+</head>
+<body>
+<h1>몬스터 시안 10종 · 수채화 동화풍 (전부 코드로 그린 오리지널)</h1>
+<div id="grid"></div>
+<script>
+'use strict';
+const INK = '#3b2a22', TOOTH = '#f3edd5';
+let c, rnd;
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function E(cx, cy, rx, ry, rot = 0, n = 10) {
+  const k = 1 / Math.cos(Math.PI / n), out = [];
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, x = Math.cos(a) * rx * k, y = Math.sin(a) * ry * k;
+    out.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]); }
+  return out;
+}
+function path(pts, j, sharp, open) {
+  const p = pts.map(q => [q[0] + (rnd() - 0.5) * j, q[1] + (rnd() - 0.5) * j]), n = p.length, m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  c.beginPath();
+  if (sharp) { p.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); return; }
+  if (open) { c.moveTo(p[0][0], p[0][1]); for (let i = 1; i < n - 1; i++) { const e = i === n - 2 ? p[n - 1] : m(p[i], p[i + 1]); c.quadraticCurveTo(p[i][0], p[i][1], e[0], e[1]); }
+    if (n === 2) c.lineTo(p[1][0], p[1][1]); return; }
+  const s = m(p[n - 1], p[0]); c.moveTo(s[0], s[1]);
+  for (let i = 0; i < n; i++) { const e = m(p[i], p[(i + 1) % n]); c.quadraticCurveTo(p[i][0], p[i][1], e[0], e[1]); }
+  c.closePath();
+}
+// 수채화처럼: 색을 칠하고, 빛·그늘·얼룩을 얹고, 살짝 어긋난 손그림 선을 긋는다
+function sh(pts, color, o = {}) {
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = x1 - x0, h = y1 - y0;
+  path(pts, 2.5, o.sharp); c.fillStyle = color; c.fill();
+  c.save(); c.clip();
+  let g = c.createRadialGradient(x0 + w * 0.3, y0 + h * 0.22, 0, x0 + w * 0.3, y0 + h * 0.22, Math.max(w, h) * 0.75);
+  g.addColorStop(0, 'rgba(255,250,225,0.42)'); g.addColorStop(1, 'rgba(255,250,225,0)'); c.fillStyle = g; c.fillRect(x0 - 5, y0 - 5, w + 10, h + 10);
+  g = c.createLinearGradient(x0, y0, x0 + w * 0.35, y1);
+  g.addColorStop(0.45, 'rgba(60,35,55,0)'); g.addColorStop(1, 'rgba(60,35,55,0.36)'); c.fillStyle = g; c.fillRect(x0 - 5, y0 - 5, w + 10, h + 10);
+  for (let i = 0; i < 5; i++) { c.fillStyle = rnd() < 0.5 ? 'rgba(255,255,240,0.07)' : 'rgba(40,30,50,0.06)';
+    c.beginPath(); c.arc(x0 + rnd() * w, y0 + rnd() * h, 6 + rnd() * Math.max(w, h) * 0.3, 0, 7); c.fill(); }
+  c.restore();
+  if (o.line !== false) { c.strokeStyle = INK; c.lineJoin = c.lineCap = 'round';
+    c.lineWidth = o.w || 3; path(pts, 1.5, o.sharp); c.stroke();
+    c.globalAlpha = 0.3; c.lineWidth = 1.2; path(pts, 4, o.sharp); c.stroke(); c.globalAlpha = 1; }
+}
+function ln(pts, w = 2.6, color = INK) { c.strokeStyle = color; c.lineWidth = w; c.lineJoin = c.lineCap = 'round'; path(pts, 1.5, false, true); c.stroke(); }
+function eye(x, y, r, pr, dx = 0, dy = 0, col = '#f3edd5') {
+  sh(E(x, y, r, r * 1.05), col, { w: 2.2 });
+  c.fillStyle = '#1e1418'; c.beginPath(); c.arc(x + dx, y + dy, pr, 0, 7); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(x + dx - pr * 0.35, y + dy - pr * 0.4, Math.max(0.8, pr * 0.3), 0, 7); c.fill();
+}
+function dot(x, y, r, col) { c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
+function wash(col) {
+  c.fillStyle = '#efe6cf'; c.fillRect(0, 0, 360, 360);
+  c.globalAlpha = 0.55; for (let i = 0; i < 4; i++) { path(E(180 + (rnd() - 0.5) * 40, 180 + (rnd() - 0.5) * 30, 140 + rnd() * 25, 125 + rnd() * 25, rnd()), 20); c.fillStyle = col; c.globalAlpha = 0.22; c.fill(); }
+  c.globalAlpha = 0.22; c.fillStyle = '#3c2337'; c.beginPath(); c.ellipse(180, 332, 105, 11, 0, 0, 7); c.fill(); c.globalAlpha = 1;
+}
+function grain(cv) {
+  const im = c.getImageData(0, 0, cv.width, cv.height), d = im.data;
+  for (let i = 0; i < d.length; i += 4) { const n = (rnd() - 0.5) * 16; d[i] += n; d[i + 1] += n; d[i + 2] += n * 0.8; }
+  c.putImageData(im, 0, 0);
+}
+const mir = pts => pts.map(p => [360 - p[0], p[1]]);
+
+const LIST = [
+  ['고블린', () => { const G = '#93ab6c'; wash('#a9bf8c');
+    const ear = [[125, 150], [35, 92], [62, 152], [120, 186]]; sh(ear, G); sh(mir(ear), G);
+    sh(E(128, 262, 13, 46, 0.25), G); sh(E(232, 262, 13, 46, -0.25), G); sh(E(160, 316, 15, 20), G); sh(E(200, 316, 15, 20), G);
+    sh(E(180, 258, 48, 58), '#7d6044'); ln([[150, 240], [165, 300]], 1.6); ln([[205, 235], [198, 295]], 1.6);
+    sh(E(180, 160, 76, 58), G);
+    eye(148, 150, 23, 4.5, 4, 3, '#ecd96a'); eye(215, 157, 14, 3.5, -3, 1, '#ecd96a');
+    sh([[174, 166], [196, 160], [206, 202], [180, 198]], '#819c5c', { w: 2.2 });
+    ln([[132, 204], [158, 219], [202, 217], [230, 201]]);
+    sh([[148, 212], [154, 225], [161, 216]], TOOTH, { w: 1.6 }); sh([[204, 216], [210, 227], [216, 213]], TOOTH, { w: 1.6 });
+    dot(120, 170, 2.5, '#6f8a50'); dot(238, 180, 2, '#6f8a50'); dot(190, 122, 2, '#6f8a50'); }],
+  ['오우거', () => { const F = '#cba888', D = '#b8926f'; wash('#d9bd98');
+    sh(E(135, 317, 33, 22), F); sh(E(225, 317, 33, 22), F);
+    sh(E(60, 238, 32, 80, 0.15), F); sh(E(300, 238, 32, 80, -0.15), F);
+    sh(E(180, 226, 114, 98), F);
+    sh([[108, 284], [252, 284], [242, 332], [180, 316], [118, 332]], '#6b5a48');
+    sh(E(180, 112, 52, 45), F); sh(E(180, 142, 47, 26), D);
+    sh([[150, 140], [145, 110], [159, 135]], TOOTH, { w: 1.8 }); sh([[210, 140], [215, 110], [201, 135]], TOOTH, { w: 1.8 });
+    eye(161, 103, 6.5, 2.2, 1, 0); eye(199, 104, 9.5, 2.2, -2, 1);
+    ln([[146, 90], [171, 97]], 3.4); ln([[189, 97], [216, 88]], 3.4);
+    sh(E(180, 120, 11, 8), D, { w: 2.2 });
+    ln([[174, 252], [181, 259], [189, 252]], 2); ln([[120, 190], [150, 200], [176, 190]], 1.8); ln([[186, 190], [212, 200], [240, 190]], 1.8);
+    dot(150, 210, 2, D); dot(214, 208, 2, D); }],
+  ['좀비', () => { const Z = '#a6b8a3'; wash('#aab6c6');
+    sh(E(158, 300, 16, 40, 0.06), '#5c5a66'); sh(E(200, 298, 16, 40, -0.12), '#5c5a66');
+    sh([[138, 170], [217, 165], [230, 272], [133, 276]], '#7a8aa3'); ln([[150, 276], [158, 262], [166, 277], [176, 264], [186, 278]], 1.8);
+    sh([[205, 180], [300, 163], [305, 185], [210, 206]], Z); sh([[200, 208], [290, 205], [292, 226], [200, 230]], Z);
+    sh(E(310, 173, 15, 11, -0.2), Z); sh(E(300, 216, 14, 10), Z);
+    sh(E(172, 118, 45, 51, -0.2), Z);
+    ln([[150, 78], [143, 60]], 2); ln([[166, 71], [164, 50]], 2); ln([[184, 72], [190, 54]], 2);
+    eye(156, 112, 18, 2.8, 5, -1); eye(193, 121, 9, 2.4, 1, 1);
+    sh(E(176, 150, 14, 9, 0.1), '#4a3038', { w: 2.2 }); sh([[168, 144], [171, 151], [175, 144]], TOOTH, { w: 1.2 });
+    ln([[132, 98], [160, 86]], 2); ln([[138, 90], [142, 100]], 1.6); ln([[148, 86], [152, 96]], 1.6);
+    dot(205, 100, 4, '#8fa08c'); dot(148, 140, 3, '#8fa08c'); }],
+  ['해골 병사', () => { const B = '#ece5cb'; wash('#c8b4be');
+    sh([[120, 150], [240, 150], [278, 322], [180, 300], [82, 322]], '#7e3540');
+    sh(E(126, 238, 8, 46, 0.2), B); sh(E(234, 238, 8, 46, -0.2), B);
+    sh(E(180, 228, 38, 48), B); for (const y of [208, 222, 236, 250]) ln([[150, y], [180, y + 3], [210, y]], 2);
+    sh([[146, 160], [214, 160], [204, 197], [156, 197]], '#ddd5b8'); sh(E(180, 120, 63, 58), B);
+    sh(E(154, 122, 18, 22, 0.15), '#2e2230', { w: 2.2 }); sh(E(207, 122, 18, 22, -0.15), '#2e2230', { w: 2.2 });
+    dot(158, 126, 4.5, '#ff8a5c'); dot(204, 124, 3, '#ff8a5c');
+    sh([[180, 141], [172, 156], [188, 156]], '#2e2230', { w: 1.6 });
+    for (let x = 160; x <= 200; x += 10) ln([[x, 167], [x, 190]], 1.8); ln([[149, 177], [211, 177]], 1.8);
+    ln([[200, 78], [212, 96], [204, 108]], 1.6); }],
+  ['돌 골렘', () => { const S = '#a5a596', M = '#7f9a5c'; wash('#b0c0aa');
+    sh([[125, 270], [170, 270], [172, 332], [116, 332]], S, { sharp: 1 }); sh([[190, 270], [235, 270], [244, 332], [188, 332]], S, { sharp: 1 });
+    sh([[48, 152], [100, 138], [106, 292], [42, 302]], S, { sharp: 1 }); sh([[260, 138], [312, 152], [318, 302], [254, 292]], S, { sharp: 1 });
+    sh([[92, 110], [268, 110], [252, 286], [108, 286]], S, { sharp: 1 });
+    sh([[144, 64], [216, 64], [222, 126], [138, 126]], '#b3b3a2', { sharp: 1 });
+    sh([[154, 89], [206, 89], [206, 101], [154, 101]], '#2e2a30', { w: 2.2, sharp: 1 }); dot(192, 95, 4.5, '#8fe6c4'); dot(192, 95, 2, '#eafff5');
+    sh(E(122, 114, 36, 13, 0.1), M, { w: 2.2 }); sh(E(240, 109, 22, 9), M, { w: 2.2 }); sh(E(180, 62, 26, 8), M, { w: 2.2 }); sh(E(70, 146, 20, 8, -0.2), M, { w: 2.2 });
+    ln([[170, 150], [186, 182], [174, 206], [190, 234]], 2); ln([[230, 168], [219, 196]], 2); ln([[70, 220], [84, 246]], 2); ln([[135, 240], [150, 258]], 1.8); }],
+  ['떠도는 유령', () => { const W = '#e9f0f0', D = '#2e2a3a'; wash('#8fa0ba');
+    sh(E(86, 192, 14, 30, 0.6), W); sh(E(274, 192, 14, 30, -0.6), W);
+    sh([[180, 58], [250, 90], [262, 200], [272, 302], [240, 278], [215, 312], [185, 282], [155, 314], [125, 280], [90, 304], [100, 200], [110, 90]], W);
+    sh(E(151, 140, 16, 27, 0.22), D, { w: 2.2 }); sh(E(211, 142, 13, 24, -0.2), D, { w: 2.2 }); sh(E(181, 204, 9, 23), D, { w: 2.2 });
+    dot(154, 148, 2.5, '#cfe0ff'); ln([[140, 172], [137, 190], [141, 206]], 1.6, '#8fa0ba'); ln([[218, 170], [222, 186]], 1.6, '#8fa0ba'); }],
+  ['늪 트롤', () => { const T = '#88a5a1', N = '#7a9592'; wash('#c2c9a0');
+    sh(E(150, 320, 27, 17), T); sh(E(206, 320, 27, 17), T); sh(E(148, 126, 10, 19, -0.5), T);
+    sh(E(175, 222, 82, 86, 0.2), T);
+    sh(E(94, 266, 20, 70, 0.1), T); sh(E(256, 270, 20, 68, -0.15), T); sh(E(92, 332, 23, 12), T); sh(E(262, 333, 23, 12), T);
+    sh(E(200, 130, 53, 49, 0.1), T); sh(E(196, 86, 36, 13), '#6f8a50', { w: 2.2 });
+    ln([[176, 80], [170, 54]], 2.4); ln([[194, 76], [196, 48]], 2.4); ln([[212, 80], [222, 56]], 2.4);
+    sh([[204, 124], [233, 127], [264, 186], [241, 202], [211, 171]], N);
+    eye(181, 118, 8.5, 2.4, 2, 1, '#e6e0a8'); eye(229, 113, 6.5, 2.2, 1, 1, '#e6e0a8');
+    ln([[183, 166], [204, 174], [224, 169]]); sh([[194, 170], [199, 183], [205, 172]], TOOTH, { w: 1.6 });
+    dot(250, 180, 2.5, '#66807c'); dot(140, 200, 3, '#6f8a50'); dot(215, 250, 3, '#6f8a50'); ln([[150, 190], [176, 200], [200, 192]], 1.8); }],
+  ['거대 거미', () => { const P = '#66546f'; wash('#c8b8c6');
+    for (let i = 0; i < 4; i++) { const L = [[150, 205 + i * 6], [96 - i * 10, 128 + i * 34], [50 - i * 4, 232 + i * 28]];
+      for (const pts of [L, mir(L)]) { ln(pts, 10); ln(pts, 5.5, P); } }
+    sh(E(180, 158, 80, 71), P); sh(E(180, 134, 20, 29), '#c8a24a', { w: 2.2 }); sh(E(180, 134, 7, 12), '#7e3540', { line: false });
+    sh(E(180, 246, 50, 41), '#735f7c');
+    eye(161, 240, 13, 4.5, 2, 2, '#f0e6b8'); eye(199, 240, 13, 3, -3, 3, '#f0e6b8');
+    for (const e of [[140, 226, 5.5], [220, 226, 5.5], [170, 220, 4], [190, 220, 4], [150, 258, 4], [210, 258, 4]]) eye(e[0], e[1], e[2], 1.6, 0, 1, '#f0e6b8');
+    sh([[166, 272], [171, 296], [178, 275]], TOOTH, { w: 1.6 }); sh([[194, 272], [189, 296], [182, 275]], TOOTH, { w: 1.6 });
+    for (let i = 0; i < 9; i++) ln([[125 + i * 14, 98 + Math.abs(i - 4) * 7], [123 + i * 14, 88 + Math.abs(i - 4) * 7]], 1.5); }],
+  ['버섯 요괴', () => { const K = '#ece2c6'; wash('#d6bc9c');
+    sh(E(160, 324, 14, 10), K); sh(E(200, 324, 14, 10), K);
+    ln([[140, 250], [118, 268], [112, 286]], 6); ln([[140, 250], [118, 268], [112, 286]], 3, K); ln([[222, 250], [244, 262], [252, 280]], 6); ln([[222, 250], [244, 262], [252, 280]], 3, K);
+    sh([[140, 178], [220, 178], [234, 312], [126, 312]], K);
+    sh([[180, 52], [282, 94], [312, 172], [250, 198], [180, 186], [110, 198], [48, 172], [78, 94]], '#b85a44');
+    for (const s of [[130, 120, 20, 14, -0.3], [216, 104, 26, 17, 0.2], [252, 156, 13, 9, 0], [94, 160, 10, 8, 0], [176, 150, 12, 9, 0]]) sh(E(...s), '#f0e6cc', { w: 2 });
+    for (let x = 120; x <= 240; x += 15) ln([[x, 192 - Math.abs(x - 180) * 0.05], [x + (x - 180) * 0.05, 204]], 1.5);
+    eye(150, 236, 10, 2.6, 0, 3); eye(210, 234, 14, 2.6, 0, -3);
+    sh(E(180, 272, 8, 5.5), '#4a3038', { w: 2.2 }); dot(140, 258, 5, 'rgba(200,110,100,0.35)'); dot(222, 260, 5, 'rgba(200,110,100,0.35)'); }],
+  ['도깨비불', () => { const F = '#8fd6c6', D = '#24343e'; wash('#55657c');
+    const g = c.createRadialGradient(180, 200, 20, 180, 200, 170); g.addColorStop(0, 'rgba(170,245,225,0.6)'); g.addColorStop(1, 'rgba(170,245,225,0)');
+    c.fillStyle = g; c.fillRect(0, 0, 360, 360);
+    sh(E(94, 120, 8, 13, 0.2), F, { w: 2 }); sh(E(272, 108, 6, 10, -0.2), F, { w: 2 }); sh(E(288, 222, 5, 9), F, { w: 2 }); sh(E(70, 236, 5, 8), F, { w: 2 });
+    sh([[176, 44], [200, 96], [236, 130], [256, 196], [236, 268], [180, 294], [124, 268], [106, 196], [128, 150], [160, 120]], F);
+    sh([[180, 128], [216, 200], [206, 256], [180, 270], [154, 256], [144, 200]], '#dbf7ea', { line: false });
+    sh(E(161, 214, 10, 16, 0.2), D, { w: 2.2 }); sh(E(201, 216, 8, 13, -0.2), D, { w: 2.2 }); dot(163, 219, 2.2, '#ffe9a0');
+    ln([[166, 248], [174, 254], [182, 247], [190, 254], [198, 248]], 2.2, D); }],
+];
+
+LIST.forEach(([name, draw], i) => {
+  const card = document.createElement('div'); card.className = 'card';
+  const cv = document.createElement('canvas'); cv.width = cv.height = 720;
+  c = cv.getContext('2d'); c.scale(2, 2); rnd = rng(1234 + i * 77);
+  draw(); c.setTransform(1, 0, 0, 1, 0, 0); grain(cv);
+  const cap = document.createElement('div'); cap.textContent = name;
+  card.append(cv, cap); document.getElementById('grid').append(card);
+});
+</script>
+</body>
+</html>
