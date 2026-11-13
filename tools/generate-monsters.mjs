@@ -63,6 +63,8 @@ for (const [i, m] of todo.entries()) {
       const retry = attempt < 4 && (!e.status || e.status === 429 || e.status >= 500);
       console.error(`[${i + 1}/${todo.length}] ${m.ko} 실패(${attempt}회): ${e.message}`);
       if (e.status === 401 || e.status === 403) { console.error('키가 틀렸거나 권한이 없습니다. 중단합니다.'); process.exit(1); }
+      if (e.status === 429 && /free_tier|limit: 0/.test(e.message)) {
+        console.error('이 키는 무료 등급이라 그림 생성 한도가 0입니다. Google AI Studio에서 결제(유료 등급)를 켠 뒤 다시 실행하세요.'); process.exit(1); }
       if (!retry) { failed.push(m.id); break; }
       await sleep(WAIT_MS * attempt * 3);
     }
