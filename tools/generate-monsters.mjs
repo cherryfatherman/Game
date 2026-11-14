@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = path.join(ROOT, 'art', 'monsters');
+const STYLE = (process.argv.includes('--style') && process.argv[process.argv.indexOf('--style') + 1]) || 'ink'; // ink(흑백) · wash(옅은 채색) · vivid(선명한 채색)
+const OUT = path.join(ROOT, 'art', STYLE === 'ink' ? 'monsters' : 'monsters-' + STYLE);
 const MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-nano-banana-2.1';
 const KEY = process.env.GEMINI_API_KEY;
 const WAIT_MS = Number(process.env.GEMINI_WAIT_MS || 4000); // 주문 사이 쉬는 시간
@@ -26,12 +27,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 if (!KEY) { console.error('GEMINI_API_KEY 환경변수가 없습니다. Google AI Studio에서 API 키를 만들어 넣어 주세요.'); process.exit(1); }
 
 const spec = JSON.parse(await readFile(path.join(ROOT, 'concepts', 'prompts.json'), 'utf8'));
+const styleText = spec.styles?.[STYLE] || spec.style;
+if (!spec.styles?.[STYLE] && STYLE !== 'ink') { console.error('모르는 그림체: ' + STYLE); process.exit(1); }
 await mkdir(OUT, { recursive: true });
 const have = new Set((await readdir(OUT)).map(f => f.replace(/\.[^.]+$/, '')));
 
 async function generate(m) {
   const body = {
-    contents: [{ parts: [{ text: `${spec.style}. Subject: ${m.en}.` }] }],
+    contents: [{ parts: [{ text: `${styleText}. Subject: ${m.en}.` }] }],
     generationConfig: { responseModalities: ['Image'], imageConfig: { aspectRatio: '1:1' } },
   };
   const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent`, {

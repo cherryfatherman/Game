@@ -1,108 +1,575 @@
 {
-  "style": "Black and white pen and ink illustration, dense cross-hatching and stippling, old monster manual bestiary plate, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border, no color",
-  "size": "square",
-  "monsters": [
-    { "id": "goblin", "ko": "고블린", "group": "소형 인간형", "en": "a scrawny goblin with long pointed ears, mismatched bulging eyes, crooked teeth, ragged tunic, holding a rusty dagger" },
-    { "id": "hobgoblin", "ko": "홉고블린", "group": "소형 인간형", "en": "a stocky hobgoblin soldier with a flat nose, underbite, patched leather armor and a notched cleaver" },
-    { "id": "kobold", "ko": "코볼트", "group": "소형 인간형", "en": "a small hunched kobold from mine folklore, dog-like snout, miner's lantern, pickaxe, oversized hands" },
-    { "id": "imp", "ko": "임프", "group": "소형 인간형", "en": "a tiny imp with bat wings, thin tail, needle teeth and a mischievous wide grin, crouching" },
-    { "id": "gremlin", "ko": "그렘린", "group": "소형 인간형", "en": "a wiry gremlin with huge ragged ears, long fingers, clutching stolen gears and bolts" },
-    { "id": "pixie", "ko": "픽시", "group": "소형 인간형", "en": "a feral pixie with torn insect wings, sharp little teeth, wild hair and hollow black eyes" },
-    { "id": "gnome", "ko": "노움", "group": "소형 인간형", "en": "an old gnarled gnome with a root-like beard, mossy pointed hat, tiny shovel, suspicious squint" },
-    { "id": "leprechaun", "ko": "레프러콘", "group": "소형 인간형", "en": "a wizened leprechaun with a crooked grin, buckled shoes, battered hat, hiding a pot behind his back" },
-    { "id": "dokkaebi", "ko": "도깨비", "group": "소형 인간형", "en": "a Korean dokkaebi goblin with a single horn, wild hair, big grin, tiger-skin wrap and a spiked wooden club" },
-
-    { "id": "orc", "ko": "오크", "group": "대형 인간형", "en": "a brutish orc warrior with jutting tusks, scarred skin, crude iron armor and a heavy axe" },
-    { "id": "ogre", "ko": "오우거", "group": "대형 인간형", "en": "a huge hunched ogre with a small head, tusked underbite, sagging belly, loincloth, dragging a wooden club" },
-    { "id": "troll", "ko": "트롤", "group": "대형 인간형", "en": "a lanky swamp troll with a long drooping nose, moss on its shoulders, arms hanging to the ground" },
-    { "id": "giant", "ko": "거인", "group": "대형 인간형", "en": "a towering hill giant in stitched hides carrying an uprooted tree, dull heavy-lidded eyes" },
-    { "id": "cyclops", "ko": "사이클롭스", "group": "대형 인간형", "en": "a cyclops with one enormous staring eye, bald scarred head, shepherd's fleece and a boulder in hand" },
-    { "id": "minotaur", "ko": "미노타우로스", "group": "대형 인간형", "en": "a minotaur with a bull's head, broken horn, nose ring, muscular body and a double-headed axe" },
-    { "id": "ettin", "ko": "에틴", "group": "대형 인간형", "en": "a two-headed giant whose heads glare at each other, each arm holding a different crude weapon" },
-    { "id": "titan", "ko": "타이탄", "group": "대형 인간형", "en": "an ancient titan with cracked marble-like skin, broken chains on its wrists and a solemn blank gaze" },
-
-    { "id": "zombie", "ko": "좀비", "group": "언데드", "en": "a shambling zombie with a slack jaw, one eye missing, torn peasant clothes, arms reaching forward" },
-    { "id": "skeleton", "ko": "해골", "group": "언데드", "en": "a skeleton soldier with a dented helmet, tattered cloak, rusted sword and broken shield" },
-    { "id": "ghoul", "ko": "구울", "group": "언데드", "en": "a gaunt ghoul crouched on all fours, elongated claws, lipless mouth, ribs showing" },
-    { "id": "mummy", "ko": "미라", "group": "언데드", "en": "a mummy with unravelling bandages, sunken eye sockets and one outstretched withered hand" },
-    { "id": "ghost", "ko": "유령", "group": "언데드", "en": "a ghost in a trailing burial shroud, hollow eyes, long open mouth, fading into mist at the bottom" },
-    { "id": "wraith", "ko": "레이스", "group": "언데드", "en": "a wraith in a hooded tattered robe with no visible face, only two pale points of light, skeletal hands" },
-    { "id": "banshee", "ko": "밴시", "group": "언데드", "en": "a banshee with streaming hair, wailing mouth stretched too wide, ragged gown, clawed hands at her face" },
-    { "id": "vampire", "ko": "뱀파이어", "group": "언데드", "en": "a gaunt aristocratic vampire with a high collar cloak, long nails, sunken cheeks and thin fangs" },
-    { "id": "lich", "ko": "리치", "group": "언데드", "en": "a lich sorcerer, crowned skull, ornate decayed robes, holding a staff and a glowing reliquary" },
-    { "id": "dullahan", "ko": "듀라한", "group": "언데드", "en": "a headless knight in dark plate armor holding his own grinning head under one arm, sword in the other" },
-    { "id": "jiangshi", "ko": "강시", "group": "언데드", "en": "a hopping jiangshi corpse in old official robes, arms stretched straight out, paper talisman on its forehead" },
-    { "id": "wight", "ko": "와이트", "group": "언데드", "en": "a barrow wight, withered ancient king in corroded mail and crown, pale staring eyes, long sword" },
-
-    { "id": "werewolf", "ko": "늑대인간", "group": "짐승·변신", "en": "a werewolf mid-howl, hunched, torn shirt remnants, long claws, matted fur" },
-    { "id": "dire_wolf", "ko": "다이어울프", "group": "짐승·변신", "en": "an enormous dire wolf with bristling hackles, scarred muzzle and bared teeth" },
-    { "id": "hellhound", "ko": "헬하운드", "group": "짐승·변신", "en": "a hellhound with smoke rising from its jaws, cracked ember-like skin, spiked collar and broken chain" },
-    { "id": "cerberus", "ko": "케르베로스", "group": "짐승·변신", "en": "Cerberus, a three-headed guard dog, each head with a different snarling expression, serpent tail" },
-    { "id": "werebear", "ko": "웨어베어", "group": "짐승·변신", "en": "a werebear standing upright, massive shoulders, half-human face, torn woodsman's clothing" },
-    { "id": "wererat", "ko": "웨어랫", "group": "짐승·변신", "en": "a wererat thief with a twitching snout, bald tail, patched hood and a curved knife" },
-    { "id": "giant_spider", "ko": "거대 거미", "group": "짐승·변신", "en": "a giant spider with a hairy bloated abdomen, eight glossy eyes of different sizes and dripping fangs" },
-    { "id": "giant_rat", "ko": "거대 쥐", "group": "짐승·변신", "en": "a giant sewer rat with mangy fur, overgrown incisors and a long scaly tail" },
-    { "id": "giant_bat", "ko": "거대 박쥐", "group": "짐승·변신", "en": "a giant bat with wings spread wide, leaf-shaped nose, huge ears and tiny sharp teeth" },
-    { "id": "boar", "ko": "멧돼지", "group": "짐승·변신", "en": "a monstrous wild boar with long curved tusks, bristled spine and broken arrows stuck in its hide" },
-
-    { "id": "griffin", "ko": "그리핀", "group": "합성 괴수", "en": "a griffin with an eagle's head and wings and a lion's body, one talon raised" },
-    { "id": "hippogriff", "ko": "히포그리프", "group": "합성 괴수", "en": "a hippogriff with an eagle's front half and a horse's hindquarters, rearing" },
-    { "id": "chimera", "ko": "키메라", "group": "합성 괴수", "en": "a chimera with a lion's head, a goat's head rising from its back and a serpent for a tail" },
-    { "id": "manticore", "ko": "만티코어", "group": "합성 괴수", "en": "a manticore with a lion's body, an eerie human-like face with three rows of teeth and a spiked scorpion tail" },
-    { "id": "sphinx", "ko": "스핑크스", "group": "합성 괴수", "en": "a sphinx with a lion's body, folded wings and a calm unreadable human face, seated" },
-    { "id": "pegasus", "ko": "페가수스", "group": "합성 괴수", "en": "a gaunt wild pegasus with ragged feathered wings and a tangled mane" },
-    { "id": "unicorn", "ko": "유니콘", "group": "합성 괴수", "en": "a medieval bestiary unicorn with a goat's beard, cloven hooves, lion's tail and a long spiral horn" },
-    { "id": "centaur", "ko": "켄타우로스", "group": "합성 괴수", "en": "a weathered centaur archer drawing a longbow, wild beard, scarred horse body" },
-    { "id": "satyr", "ko": "사티로스", "group": "합성 괴수", "en": "a satyr with goat legs, curled horns, a sly grin and pan pipes" },
-    { "id": "harpy", "ko": "하피", "group": "합성 괴수", "en": "a harpy with a haggard woman's face, vulture wings and talons, perched and shrieking" },
-    { "id": "siren", "ko": "세이렌", "group": "합성 괴수", "en": "a siren of Greek myth, bird-bodied with a woman's head, singing on a rock strewn with bones" },
-    { "id": "lamia", "ko": "라미아", "group": "합성 괴수", "en": "a lamia with a woman's upper body and a long coiled serpent tail, unblinking eyes" },
-    { "id": "medusa", "ko": "메두사", "group": "합성 괴수", "en": "Medusa the gorgon with writhing snakes for hair, a cold stare, scaled skin and a draped robe" },
-
-    { "id": "dragon", "ko": "드래곤", "group": "용·파충류", "en": "a great western dragon with spread wings, horned head, long neck and thick armored scales" },
-    { "id": "wyvern", "ko": "와이번", "group": "용·파충류", "en": "a wyvern with two legs, wings for arms and a barbed venomous tail, screeching" },
-    { "id": "drake", "ko": "드레이크", "group": "용·파충류", "en": "a wingless four-legged drake, heavy and low to the ground like a monstrous lizard, smoke at its nostrils" },
-    { "id": "hydra", "ko": "히드라", "group": "용·파충류", "en": "a hydra with seven serpent heads on long necks, one neck freshly severed and splitting in two" },
-    { "id": "basilisk", "ko": "바실리스크", "group": "용·파충류", "en": "a basilisk, crowned serpent king with eight stubby legs and a deadly fixed stare" },
-    { "id": "cockatrice", "ko": "코카트리스", "group": "용·파충류", "en": "a cockatrice, a rooster-headed creature with bat wings and a serpent's tail" },
-    { "id": "wyrm", "ko": "웜", "group": "용·파충류", "en": "a limbless wingless wyrm coiled like a giant serpent, with a dragon's head and ridged back" },
-    { "id": "lizardman", "ko": "리자드맨", "group": "용·파충류", "en": "a lizardfolk warrior with a crested head, bone necklace, wooden shield and stone-tipped spear" },
-    { "id": "imugi", "ko": "이무기", "group": "용·파충류", "en": "a Korean imugi, a giant hornless proto-dragon serpent rising from water, whiskered, clutching nothing" },
-    { "id": "naga", "ko": "나가", "group": "용·파충류", "en": "a naga with a hooded cobra body and a serene human face, coiled upright, wearing temple jewelry" },
-
-    { "id": "golem_stone", "ko": "돌 골렘", "group": "만들어진 것·정령", "en": "a stone golem built of cracked mossy boulders, a single carved rune on its chest, tiny glowing eyes" },
-    { "id": "golem_iron", "ko": "철 골렘", "group": "만들어진 것·정령", "en": "an iron golem of riveted plates like a walking furnace, steam leaking from its joints" },
-    { "id": "golem_clay", "ko": "진흙 골렘", "group": "만들어진 것·정령", "en": "a clay golem with a roughly thumbed face, a word scratched on its forehead, sagging dripping limbs" },
-    { "id": "golem_flesh", "ko": "살점 골렘", "group": "만들어진 것·정령", "en": "a flesh golem stitched together from mismatched body parts, heavy sutures, uneven arms" },
-    { "id": "gargoyle", "ko": "가고일", "group": "만들어진 것·정령", "en": "a gargoyle crouched like a cathedral waterspout, stone wings, horned grimacing face" },
-    { "id": "homunculus", "ko": "호문쿨루스", "group": "만들어진 것·정령", "en": "a homunculus, a tiny malformed artificial man with an oversized head, sitting beside a cracked alchemist's flask" },
-    { "id": "scarecrow", "ko": "허수아비", "group": "만들어진 것·정령", "en": "a living scarecrow with a stitched burlap face, straw spilling from its sleeves, crows on its arms, a sickle" },
-    { "id": "living_armor", "ko": "살아 있는 갑옷", "group": "만들어진 것·정령", "en": "an empty suit of plate armor walking by itself, darkness inside the open visor, greatsword in hand" },
-    { "id": "elemental_fire", "ko": "불의 정령", "group": "만들어진 것·정령", "en": "a fire elemental, a roughly human figure made of twisting flames with hollow eyes" },
-    { "id": "elemental_water", "ko": "물의 정령", "group": "만들어진 것·정령", "en": "a water elemental, a rising wave shaped like a figure with a swirling whirlpool face" },
-    { "id": "elemental_air", "ko": "바람의 정령", "group": "만들어진 것·정령", "en": "an air elemental, a whirlwind with a faint face and arms, carrying leaves and debris" },
-    { "id": "elemental_earth", "ko": "땅의 정령", "group": "만들어진 것·정령", "en": "an earth elemental, a hulking figure of soil, roots and stones with a cave-like mouth" },
-    { "id": "wisp", "ko": "도깨비불", "group": "만들어진 것·정령", "en": "a will-o'-the-wisp, a floating flame with a faint sorrowful face hovering over marsh reeds" },
-    { "id": "slime", "ko": "슬라임", "group": "만들어진 것·정령", "en": "a gelatinous slime with bones and a rusty helmet suspended inside it, two uneven eyes" },
-
-    { "id": "demon", "ko": "데몬", "group": "악마·어둠", "en": "a hulking demon with ram horns, bat wings, cloven hooves and a flaming whip" },
-    { "id": "devil", "ko": "데빌", "group": "악마·어둠", "en": "a lean smiling devil with small horns, pointed tail, elegant clothing and a contract scroll" },
-    { "id": "succubus", "ko": "서큐버스", "group": "악마·어둠", "en": "a succubus in a long dark gown with bat wings, small horns and an unsettling fixed smile" },
-    { "id": "incubus", "ko": "인큐버스", "group": "악마·어둠", "en": "an incubus in a dark coat with folded bat wings, curled horns and hollow shadowed eyes" },
-    { "id": "nightmare", "ko": "나이트메어", "group": "악마·어둠", "en": "a nightmare, a gaunt black horse with a mane and hooves of fire and blank white eyes" },
-    { "id": "grim_reaper", "ko": "그림 리퍼", "group": "악마·어둠", "en": "the grim reaper, a skeletal figure in a hooded robe holding a long scythe and an hourglass" },
-    { "id": "witch", "ko": "마녀", "group": "악마·어둠", "en": "an old hedge witch with a hooked nose, pointed hat, gnarled staff and a raven on her shoulder" },
-    { "id": "warlock", "ko": "흑마법사", "group": "악마·어둠", "en": "a dark sorcerer in a heavy hooded robe, face in shadow, one hand raised with smoke curling from his fingers" },
-    { "id": "shadow", "ko": "섀도", "group": "악마·어둠", "en": "a living shadow, a tall thin silhouette with too-long arms and two empty white eyes" },
-
-    { "id": "kraken", "ko": "크라켄", "group": "물·숲", "en": "a kraken, a colossal squid with one huge eye, tentacles wrapped around a broken ship's mast" },
-    { "id": "mermaid", "ko": "인어", "group": "물·숲", "en": "a deep-sea mermaid with fish-like eyes, gill slits, webbed hands and a long scaled tail" },
-    { "id": "merman", "ko": "머맨", "group": "물·숲", "en": "a merman warrior with a barnacled trident, seaweed beard and finned forearms" },
-    { "id": "kelpie", "ko": "켈피", "group": "물·숲", "en": "a kelpie, a dripping water horse with a mane of river weed emerging from a dark loch" },
-    { "id": "sea_serpent", "ko": "시 서펀트", "group": "물·숲", "en": "a sea serpent with humped coils rising from waves, frilled head and needle teeth" },
-    { "id": "treant", "ko": "트리언트", "group": "물·숲", "en": "a treant, an ancient walking tree with a face in the bark, branch arms and root feet" },
-    { "id": "dryad", "ko": "드라이어드", "group": "물·숲", "en": "a dryad, a tree spirit with bark skin, leaf hair and blank knot-hole eyes, half merged with an oak" },
-    { "id": "mandrake", "ko": "맨드레이크", "group": "물·숲", "en": "a mandrake root creature shaped like a screaming wrinkled infant with leaves sprouting from its head" },
-    { "id": "myconid", "ko": "버섯 괴물", "group": "물·숲", "en": "a mushroom creature with a wide spotted cap, vacant far-apart eyes, stubby legs and drifting spores" }
-  ]
+ "style": "Black and white pen and ink illustration, dense cross-hatching and stippling, old monster manual bestiary plate, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border, no color",
+ "styles": {
+  "ink": "Black and white pen and ink illustration, dense cross-hatching and stippling, old monster manual bestiary plate, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border, no color",
+  "wash": "Pen and ink illustration with dense cross-hatching, tinted with a light muted watercolor wash over the ink lines, hand-colored old bestiary plate, soft earthy palette, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border",
+  "vivid": "Vivid 2D fantasy game creature illustration, bold confident ink outlines, rich saturated colors, strong cel-shaded lighting with bright highlights and deep shadows, hand-painted detail, lively expressive pose that feels alive and breathing, crisp and sharp, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border"
+ },
+ "size": "square",
+ "monsters": [
+  {
+   "id": "goblin",
+   "ko": "고블린",
+   "group": "소형 인간형",
+   "en": "a scrawny goblin with long pointed ears, mismatched bulging eyes, crooked teeth, ragged tunic, holding a rusty dagger"
+  },
+  {
+   "id": "hobgoblin",
+   "ko": "홉고블린",
+   "group": "소형 인간형",
+   "en": "a stocky hobgoblin soldier with a flat nose, underbite, patched leather armor and a notched cleaver"
+  },
+  {
+   "id": "kobold",
+   "ko": "코볼트",
+   "group": "소형 인간형",
+   "en": "a small hunched kobold from mine folklore, dog-like snout, miner's lantern, pickaxe, oversized hands"
+  },
+  {
+   "id": "imp",
+   "ko": "임프",
+   "group": "소형 인간형",
+   "en": "a tiny imp with bat wings, thin tail, needle teeth and a mischievous wide grin, crouching"
+  },
+  {
+   "id": "gremlin",
+   "ko": "그렘린",
+   "group": "소형 인간형",
+   "en": "a wiry gremlin with huge ragged ears, long fingers, clutching stolen gears and bolts"
+  },
+  {
+   "id": "pixie",
+   "ko": "픽시",
+   "group": "소형 인간형",
+   "en": "a feral pixie with torn insect wings, sharp little teeth, wild hair and hollow black eyes"
+  },
+  {
+   "id": "gnome",
+   "ko": "노움",
+   "group": "소형 인간형",
+   "en": "an old gnarled gnome with a root-like beard, mossy pointed hat, tiny shovel, suspicious squint"
+  },
+  {
+   "id": "leprechaun",
+   "ko": "레프러콘",
+   "group": "소형 인간형",
+   "en": "a wizened leprechaun with a crooked grin, buckled shoes, battered hat, hiding a pot behind his back"
+  },
+  {
+   "id": "dokkaebi",
+   "ko": "도깨비",
+   "group": "소형 인간형",
+   "en": "a Korean dokkaebi goblin with a single horn, wild hair, big grin, tiger-skin wrap and a spiked wooden club"
+  },
+  {
+   "id": "orc",
+   "ko": "오크",
+   "group": "대형 인간형",
+   "en": "a brutish orc warrior with jutting tusks, scarred skin, crude iron armor and a heavy axe"
+  },
+  {
+   "id": "ogre",
+   "ko": "오우거",
+   "group": "대형 인간형",
+   "en": "a huge hunched ogre with a small head, tusked underbite, sagging belly, loincloth, dragging a wooden club"
+  },
+  {
+   "id": "troll",
+   "ko": "트롤",
+   "group": "대형 인간형",
+   "en": "a lanky swamp troll with a long drooping nose, moss on its shoulders, arms hanging to the ground"
+  },
+  {
+   "id": "giant",
+   "ko": "거인",
+   "group": "대형 인간형",
+   "en": "a towering hill giant in stitched hides carrying an uprooted tree, dull heavy-lidded eyes"
+  },
+  {
+   "id": "cyclops",
+   "ko": "사이클롭스",
+   "group": "대형 인간형",
+   "en": "a cyclops with one enormous staring eye, bald scarred head, shepherd's fleece and a boulder in hand"
+  },
+  {
+   "id": "minotaur",
+   "ko": "미노타우로스",
+   "group": "대형 인간형",
+   "en": "a minotaur with a bull's head, broken horn, nose ring, muscular body and a double-headed axe"
+  },
+  {
+   "id": "ettin",
+   "ko": "에틴",
+   "group": "대형 인간형",
+   "en": "a two-headed giant whose heads glare at each other, each arm holding a different crude weapon"
+  },
+  {
+   "id": "titan",
+   "ko": "타이탄",
+   "group": "대형 인간형",
+   "en": "an ancient titan with cracked marble-like skin, broken chains on its wrists and a solemn blank gaze"
+  },
+  {
+   "id": "zombie",
+   "ko": "좀비",
+   "group": "언데드",
+   "en": "a shambling zombie with a slack jaw, one eye missing, torn peasant clothes, arms reaching forward"
+  },
+  {
+   "id": "skeleton",
+   "ko": "해골",
+   "group": "언데드",
+   "en": "a skeleton soldier with a dented helmet, tattered cloak, rusted sword and broken shield"
+  },
+  {
+   "id": "ghoul",
+   "ko": "구울",
+   "group": "언데드",
+   "en": "a gaunt ghoul crouched on all fours, elongated claws, lipless mouth, ribs showing"
+  },
+  {
+   "id": "mummy",
+   "ko": "미라",
+   "group": "언데드",
+   "en": "a mummy with unravelling bandages, sunken eye sockets and one outstretched withered hand"
+  },
+  {
+   "id": "ghost",
+   "ko": "유령",
+   "group": "언데드",
+   "en": "a ghost in a trailing burial shroud, hollow eyes, long open mouth, fading into mist at the bottom"
+  },
+  {
+   "id": "wraith",
+   "ko": "레이스",
+   "group": "언데드",
+   "en": "a wraith in a hooded tattered robe with no visible face, only two pale points of light, skeletal hands"
+  },
+  {
+   "id": "banshee",
+   "ko": "밴시",
+   "group": "언데드",
+   "en": "a banshee with streaming hair, wailing mouth stretched too wide, ragged gown, clawed hands at her face"
+  },
+  {
+   "id": "vampire",
+   "ko": "뱀파이어",
+   "group": "언데드",
+   "en": "a gaunt aristocratic vampire with a high collar cloak, long nails, sunken cheeks and thin fangs"
+  },
+  {
+   "id": "lich",
+   "ko": "리치",
+   "group": "언데드",
+   "en": "a lich sorcerer, crowned skull, ornate decayed robes, holding a staff and a glowing reliquary"
+  },
+  {
+   "id": "dullahan",
+   "ko": "듀라한",
+   "group": "언데드",
+   "en": "a headless knight in dark plate armor holding his own grinning head under one arm, sword in the other"
+  },
+  {
+   "id": "jiangshi",
+   "ko": "강시",
+   "group": "언데드",
+   "en": "a hopping jiangshi corpse in old official robes, arms stretched straight out, paper talisman on its forehead"
+  },
+  {
+   "id": "wight",
+   "ko": "와이트",
+   "group": "언데드",
+   "en": "a barrow wight, withered ancient king in corroded mail and crown, pale staring eyes, long sword"
+  },
+  {
+   "id": "werewolf",
+   "ko": "늑대인간",
+   "group": "짐승·변신",
+   "en": "a werewolf mid-howl, hunched, torn shirt remnants, long claws, matted fur"
+  },
+  {
+   "id": "dire_wolf",
+   "ko": "다이어울프",
+   "group": "짐승·변신",
+   "en": "an enormous dire wolf with bristling hackles, scarred muzzle and bared teeth"
+  },
+  {
+   "id": "hellhound",
+   "ko": "헬하운드",
+   "group": "짐승·변신",
+   "en": "a hellhound with smoke rising from its jaws, cracked ember-like skin, spiked collar and broken chain"
+  },
+  {
+   "id": "cerberus",
+   "ko": "케르베로스",
+   "group": "짐승·변신",
+   "en": "Cerberus, a three-headed guard dog, each head with a different snarling expression, serpent tail"
+  },
+  {
+   "id": "werebear",
+   "ko": "웨어베어",
+   "group": "짐승·변신",
+   "en": "a werebear standing upright, massive shoulders, half-human face, torn woodsman's clothing"
+  },
+  {
+   "id": "wererat",
+   "ko": "웨어랫",
+   "group": "짐승·변신",
+   "en": "a wererat thief with a twitching snout, bald tail, patched hood and a curved knife"
+  },
+  {
+   "id": "giant_spider",
+   "ko": "거대 거미",
+   "group": "짐승·변신",
+   "en": "a giant spider with a hairy bloated abdomen, eight glossy eyes of different sizes and dripping fangs"
+  },
+  {
+   "id": "giant_rat",
+   "ko": "거대 쥐",
+   "group": "짐승·변신",
+   "en": "a giant sewer rat with mangy fur, overgrown incisors and a long scaly tail"
+  },
+  {
+   "id": "giant_bat",
+   "ko": "거대 박쥐",
+   "group": "짐승·변신",
+   "en": "a giant bat with wings spread wide, leaf-shaped nose, huge ears and tiny sharp teeth"
+  },
+  {
+   "id": "boar",
+   "ko": "멧돼지",
+   "group": "짐승·변신",
+   "en": "a monstrous wild boar with long curved tusks, bristled spine and broken arrows stuck in its hide"
+  },
+  {
+   "id": "griffin",
+   "ko": "그리핀",
+   "group": "합성 괴수",
+   "en": "a griffin with an eagle's head and wings and a lion's body, one talon raised"
+  },
+  {
+   "id": "hippogriff",
+   "ko": "히포그리프",
+   "group": "합성 괴수",
+   "en": "a hippogriff with an eagle's front half and a horse's hindquarters, rearing"
+  },
+  {
+   "id": "chimera",
+   "ko": "키메라",
+   "group": "합성 괴수",
+   "en": "a chimera with a lion's head, a goat's head rising from its back and a serpent for a tail"
+  },
+  {
+   "id": "manticore",
+   "ko": "만티코어",
+   "group": "합성 괴수",
+   "en": "a manticore with a lion's body, an eerie human-like face with three rows of teeth and a spiked scorpion tail"
+  },
+  {
+   "id": "sphinx",
+   "ko": "스핑크스",
+   "group": "합성 괴수",
+   "en": "a sphinx with a lion's body, folded wings and a calm unreadable human face, seated"
+  },
+  {
+   "id": "pegasus",
+   "ko": "페가수스",
+   "group": "합성 괴수",
+   "en": "a gaunt wild pegasus with ragged feathered wings and a tangled mane"
+  },
+  {
+   "id": "unicorn",
+   "ko": "유니콘",
+   "group": "합성 괴수",
+   "en": "a medieval bestiary unicorn with a goat's beard, cloven hooves, lion's tail and a long spiral horn"
+  },
+  {
+   "id": "centaur",
+   "ko": "켄타우로스",
+   "group": "합성 괴수",
+   "en": "a weathered centaur archer drawing a longbow, wild beard, scarred horse body"
+  },
+  {
+   "id": "satyr",
+   "ko": "사티로스",
+   "group": "합성 괴수",
+   "en": "a satyr with goat legs, curled horns, a sly grin and pan pipes"
+  },
+  {
+   "id": "harpy",
+   "ko": "하피",
+   "group": "합성 괴수",
+   "en": "a harpy with a haggard woman's face, vulture wings and talons, perched and shrieking"
+  },
+  {
+   "id": "siren",
+   "ko": "세이렌",
+   "group": "합성 괴수",
+   "en": "a siren of Greek myth, bird-bodied with a woman's head, singing on a rock strewn with bones"
+  },
+  {
+   "id": "lamia",
+   "ko": "라미아",
+   "group": "합성 괴수",
+   "en": "a lamia with a woman's upper body and a long coiled serpent tail, unblinking eyes"
+  },
+  {
+   "id": "medusa",
+   "ko": "메두사",
+   "group": "합성 괴수",
+   "en": "Medusa the gorgon with writhing snakes for hair, a cold stare, scaled skin and a draped robe"
+  },
+  {
+   "id": "dragon",
+   "ko": "드래곤",
+   "group": "용·파충류",
+   "en": "a great western dragon with spread wings, horned head, long neck and thick armored scales"
+  },
+  {
+   "id": "wyvern",
+   "ko": "와이번",
+   "group": "용·파충류",
+   "en": "a wyvern with two legs, wings for arms and a barbed venomous tail, screeching"
+  },
+  {
+   "id": "drake",
+   "ko": "드레이크",
+   "group": "용·파충류",
+   "en": "a wingless four-legged drake, heavy and low to the ground like a monstrous lizard, smoke at its nostrils"
+  },
+  {
+   "id": "hydra",
+   "ko": "히드라",
+   "group": "용·파충류",
+   "en": "a hydra with seven serpent heads on long necks, one neck freshly severed and splitting in two"
+  },
+  {
+   "id": "basilisk",
+   "ko": "바실리스크",
+   "group": "용·파충류",
+   "en": "a basilisk, crowned serpent king with eight stubby legs and a deadly fixed stare"
+  },
+  {
+   "id": "cockatrice",
+   "ko": "코카트리스",
+   "group": "용·파충류",
+   "en": "a cockatrice, a rooster-headed creature with bat wings and a serpent's tail"
+  },
+  {
+   "id": "wyrm",
+   "ko": "웜",
+   "group": "용·파충류",
+   "en": "a limbless wingless wyrm coiled like a giant serpent, with a dragon's head and ridged back"
+  },
+  {
+   "id": "lizardman",
+   "ko": "리자드맨",
+   "group": "용·파충류",
+   "en": "a lizardfolk warrior with a crested head, bone necklace, wooden shield and stone-tipped spear"
+  },
+  {
+   "id": "imugi",
+   "ko": "이무기",
+   "group": "용·파충류",
+   "en": "a Korean imugi, a giant hornless proto-dragon serpent rising from water, whiskered, clutching nothing"
+  },
+  {
+   "id": "naga",
+   "ko": "나가",
+   "group": "용·파충류",
+   "en": "a naga with a hooded cobra body and a serene human face, coiled upright, wearing temple jewelry"
+  },
+  {
+   "id": "golem_stone",
+   "ko": "돌 골렘",
+   "group": "만들어진 것·정령",
+   "en": "a stone golem built of cracked mossy boulders, a single carved rune on its chest, tiny glowing eyes"
+  },
+  {
+   "id": "golem_iron",
+   "ko": "철 골렘",
+   "group": "만들어진 것·정령",
+   "en": "an iron golem of riveted plates like a walking furnace, steam leaking from its joints"
+  },
+  {
+   "id": "golem_clay",
+   "ko": "진흙 골렘",
+   "group": "만들어진 것·정령",
+   "en": "a clay golem with a roughly thumbed face, a word scratched on its forehead, sagging dripping limbs"
+  },
+  {
+   "id": "golem_flesh",
+   "ko": "살점 골렘",
+   "group": "만들어진 것·정령",
+   "en": "a flesh golem stitched together from mismatched body parts, heavy sutures, uneven arms"
+  },
+  {
+   "id": "gargoyle",
+   "ko": "가고일",
+   "group": "만들어진 것·정령",
+   "en": "a gargoyle crouched like a cathedral waterspout, stone wings, horned grimacing face"
+  },
+  {
+   "id": "homunculus",
+   "ko": "호문쿨루스",
+   "group": "만들어진 것·정령",
+   "en": "a homunculus, a tiny malformed artificial man with an oversized head, sitting beside a cracked alchemist's flask"
+  },
+  {
+   "id": "scarecrow",
+   "ko": "허수아비",
+   "group": "만들어진 것·정령",
+   "en": "a living scarecrow with a stitched burlap face, straw spilling from its sleeves, crows on its arms, a sickle"
+  },
+  {
+   "id": "living_armor",
+   "ko": "살아 있는 갑옷",
+   "group": "만들어진 것·정령",
+   "en": "an empty suit of plate armor walking by itself, darkness inside the open visor, greatsword in hand"
+  },
+  {
+   "id": "elemental_fire",
+   "ko": "불의 정령",
+   "group": "만들어진 것·정령",
+   "en": "a fire elemental, a roughly human figure made of twisting flames with hollow eyes"
+  },
+  {
+   "id": "elemental_water",
+   "ko": "물의 정령",
+   "group": "만들어진 것·정령",
+   "en": "a water elemental, a rising wave shaped like a figure with a swirling whirlpool face"
+  },
+  {
+   "id": "elemental_air",
+   "ko": "바람의 정령",
+   "group": "만들어진 것·정령",
+   "en": "an air elemental, a whirlwind with a faint face and arms, carrying leaves and debris"
+  },
+  {
+   "id": "elemental_earth",
+   "ko": "땅의 정령",
+   "group": "만들어진 것·정령",
+   "en": "an earth elemental, a hulking figure of soil, roots and stones with a cave-like mouth"
+  },
+  {
+   "id": "wisp",
+   "ko": "도깨비불",
+   "group": "만들어진 것·정령",
+   "en": "a will-o'-the-wisp, a floating flame with a faint sorrowful face hovering over marsh reeds"
+  },
+  {
+   "id": "slime",
+   "ko": "슬라임",
+   "group": "만들어진 것·정령",
+   "en": "a gelatinous slime with bones and a rusty helmet suspended inside it, two uneven eyes"
+  },
+  {
+   "id": "demon",
+   "ko": "데몬",
+   "group": "악마·어둠",
+   "en": "a hulking demon with ram horns, bat wings, cloven hooves and a flaming whip"
+  },
+  {
+   "id": "devil",
+   "ko": "데빌",
+   "group": "악마·어둠",
+   "en": "a lean smiling devil with small horns, pointed tail, elegant clothing and a contract scroll"
+  },
+  {
+   "id": "succubus",
+   "ko": "서큐버스",
+   "group": "악마·어둠",
+   "en": "a succubus in a long dark gown with bat wings, small horns and an unsettling fixed smile"
+  },
+  {
+   "id": "incubus",
+   "ko": "인큐버스",
+   "group": "악마·어둠",
+   "en": "an incubus in a dark coat with folded bat wings, curled horns and hollow shadowed eyes"
+  },
+  {
+   "id": "nightmare",
+   "ko": "나이트메어",
+   "group": "악마·어둠",
+   "en": "a nightmare, a gaunt black horse with a mane and hooves of fire and blank white eyes"
+  },
+  {
+   "id": "grim_reaper",
+   "ko": "그림 리퍼",
+   "group": "악마·어둠",
+   "en": "the grim reaper, a skeletal figure in a hooded robe holding a long scythe and an hourglass"
+  },
+  {
+   "id": "witch",
+   "ko": "마녀",
+   "group": "악마·어둠",
+   "en": "an old hedge witch with a hooked nose, pointed hat, gnarled staff and a raven on her shoulder"
+  },
+  {
+   "id": "warlock",
+   "ko": "흑마법사",
+   "group": "악마·어둠",
+   "en": "a dark sorcerer in a heavy hooded robe, face in shadow, one hand raised with smoke curling from his fingers"
+  },
+  {
+   "id": "shadow",
+   "ko": "섀도",
+   "group": "악마·어둠",
+   "en": "a living shadow, a tall thin silhouette with too-long arms and two empty white eyes"
+  },
+  {
+   "id": "kraken",
+   "ko": "크라켄",
+   "group": "물·숲",
+   "en": "a kraken, a colossal squid with one huge eye, tentacles wrapped around a broken ship's mast"
+  },
+  {
+   "id": "mermaid",
+   "ko": "인어",
+   "group": "물·숲",
+   "en": "a deep-sea mermaid with fish-like eyes, gill slits, webbed hands and a long scaled tail"
+  },
+  {
+   "id": "merman",
+   "ko": "머맨",
+   "group": "물·숲",
+   "en": "a merman warrior with a barnacled trident, seaweed beard and finned forearms"
+  },
+  {
+   "id": "kelpie",
+   "ko": "켈피",
+   "group": "물·숲",
+   "en": "a kelpie, a dripping water horse with a mane of river weed emerging from a dark loch"
+  },
+  {
+   "id": "sea_serpent",
+   "ko": "시 서펀트",
+   "group": "물·숲",
+   "en": "a sea serpent with humped coils rising from waves, frilled head and needle teeth"
+  },
+  {
+   "id": "treant",
+   "ko": "트리언트",
+   "group": "물·숲",
+   "en": "a treant, an ancient walking tree with a face in the bark, branch arms and root feet"
+  },
+  {
+   "id": "dryad",
+   "ko": "드라이어드",
+   "group": "물·숲",
+   "en": "a dryad, a tree spirit with bark skin, leaf hair and blank knot-hole eyes, half merged with an oak"
+  },
+  {
+   "id": "mandrake",
+   "ko": "맨드레이크",
+   "group": "물·숲",
+   "en": "a mandrake root creature shaped like a screaming wrinkled infant with leaves sprouting from its head"
+  },
+  {
+   "id": "myconid",
+   "ko": "버섯 괴물",
+   "group": "물·숲",
+   "en": "a mushroom creature with a wide spotted cap, vacant far-apart eyes, stubby legs and drifting spores"
+  }
+ ]
 }
