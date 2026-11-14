@@ -288,7 +288,7 @@ const HEADS = [
 //   lanternPx: 허리 등불의 한가운데.  footPx: 두 발 사이의 x.  figurePx: 발끝에서 머리끝까지의 높이(화면 키 190에 맞춘다)
 const ARMORS = [
   { id:'basic', name:'기본', how:'처음부터', img:{ m:'art/knight/기본-남.png', f:'art/knight/기본-여.png' },
-    lanternPx:[638, 741], footPx:578, figurePx:822, ok:() => true },
+    at:{ m:{ lanternPx:[454, 705], footPx:583, figurePx:836 }, f:{ lanternPx:[638, 741], footPx:578, figurePx:822 } }, ok:() => true },
   { id:'armor2', name:'준비 중인 갑옷', how:'1구역 보스 처치', img:null, ok:() => false },
   { id:'armor3', name:'준비 중인 갑옷', how:'업적 · 이벤트', img:null, ok:() => false },
 ];
@@ -344,7 +344,7 @@ const ICONS = {
 const icon = n => '<svg class="ic" viewBox="0 0 24 24">' + ICONS[n] + '</svg>';
 
 /* ===================================================================== 기본 도구 */
-const FW = 900, FH = 1600, KNIGHT_H = 190, SPR_Q = 2;
+const FW = 900, FH = 1600, KNIGHT_H = 225, SPR_Q = 2;
 const FONT = 'system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","WenQuanYi Zen Hei",sans-serif';
 const $ = id => document.getElementById(id);
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -496,6 +496,7 @@ function knightArt(gender, look) {
     else if (slot === 'armor') break;                 // 바탕 그림이 없으면 임시 기사를 쓴다
   }
   if (layers.length) {
+    if (base && base.at && base.at[gender]) base = Object.assign({}, base, base.at[gender]);   // 자리 정보는 남녀 그림마다 다르다
     // 모든 겹은 같은 캔버스를 쓴다. 겹친 전체에서 빈 곳만 한 번에 잘라 낸다.
     const b = [1e9, 1e9, -1, -1];
     for (const l of layers) { b[0] = Math.min(b[0], l.bb[0]); b[1] = Math.min(b[1], l.bb[1]); b[2] = Math.max(b[2], l.bb[2]); b[3] = Math.max(b[3], l.bb[3]); }
