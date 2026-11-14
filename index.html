@@ -116,8 +116,19 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 .opt.sel{border-color:var(--acc);background:#2c3a28} .opt.lock{opacity:.5}
 .opt svg{font-size:36px;color:var(--dim)}
 .dot{width:40px;height:40px;border-radius:50%;flex:none;border:3px solid #0008}
-#cosTop{display:flex;gap:20px;align-items:stretch}
-#cosPrev{width:340px;height:400px;border-radius:20px;border:3px solid var(--line);flex:none}
+#cosPrev{width:100%;height:540px;border-radius:20px;border:3px solid var(--line);display:block}
+#cosTabs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:14px 0}
+.cTab{height:84px;font-size:27px;font-weight:700;border-radius:14px;background:var(--panel);border:3px solid var(--line)}
+.cTab:active{background:#33432f} .cTab.sel{border-color:var(--acc);color:var(--acc);background:#2c3a28}
+#cosGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cCard{position:relative;height:300px;border-radius:18px;background:var(--panel);border:3px solid var(--line);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 10px}
+.cCard:active{background:#33432f}
+.cCard canvas,.cCard .big{position:absolute;left:0;top:0;width:100%;height:214px}
+.cCard .big{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:var(--acc);padding:0 12px;text-align:center}
+.cCard .big .dot{width:92px;height:92px}
+.cCard .cn{font-size:26px;font-weight:700;white-space:nowrap} .cCard .ch{font-size:21px;color:var(--dim);margin-top:2px;white-space:nowrap}
+.cCard.sel{border-color:var(--acc);box-shadow:inset 0 0 0 3px var(--acc);background:#2c3a28} .cCard.sel .ch{color:var(--acc)}
+.cCard.lock{opacity:.45}
 #cosNote{flex:1;font-size:28px;line-height:1.5;color:var(--dim);background:var(--panel);border:3px solid var(--line);border-radius:20px;padding:22px}
 #cosNote b{color:var(--cream);font-size:32px}
 .dex{display:flex;gap:20px;align-items:center;background:var(--panel);border:3px solid var(--line);border-radius:18px;padding:14px 18px;margin-bottom:12px}
@@ -293,29 +304,37 @@ const MONSTERS = [
 
 /* 꾸미기 — 모습만 바꾼다. 능력치는 건드리지 않는다. ok(S)가 참이면 열린다 */
 const dexFull = s => MONSTERS.every((_, i) => (s.kills[i + 1] || 0) > 0);
-// 그림 꾸미기는 세 칸이다: 머리, 갑옷, 무기. 세 그림은 크기와 자리가 같은 캔버스에 그려서 그대로 겹친다.
-// 그리는 차례: 갑옷(몸 전체, 바탕) -> 무기 -> 머리. 그림이 없는 칸은 건너뛴다.
-// img가 null이면 그림이 아직 없다는 뜻. 그림이 생기면 img를 채우고 ok를 조건으로 바꾼다.
+// 그림 꾸미기는 두 겹이다: 머리와 옷. 두 그림은 크기와 자리가 같은 1024 캔버스라서 그대로 겹친다.
+// 그리는 차례: 옷(목깃 아래 전부, 무기와 등불 포함) -> 머리 -> 깃(옷 가운데 머리 앞에 오는 조각, 있을 때만).
+// 겹 그림은 tools/꾸밈나누기.py 가 한 장짜리 그림에서 나눠 만든다. 무기는 지금은 옷에 딸려 있다.
+// img에 그 성별 그림이 없으면 '준비 중'으로 보인다. ok(S)는 열리는 조건 (지금은 입어 볼 수 있게 모두 열어 둔다).
+// 자리 정보(at)는 1024 그림의 픽셀 값이다.
+//   머리: eyesPx = 두 눈의 한가운데 [그림에서 왼쪽 눈(얼음빛), 오른쪽 눈(등불빛)]
+//   옷:   lanternPx = 허리 등불의 한가운데, footPx = 두 발 사이의 x, groundPx = 발바닥이 닿는 y (맨발·운동화·쇠신 모두 같은 땅에 서게),
+//         figurePx = 발끝에서 머리끝까지의 높이 (화면 키 KNIGHT_H에 맞춘다)
+const EYES_M = [[477, 323], [601, 323]];
 const HEADS = [
-  { id:'basic', name:'기본', how:'처음부터', img:null, ok:() => true },   // 지금은 바탕 그림에 머리가 들어 있다
-  { id:'head2', name:'준비 중인 투구', how:'1구역 보스 처치', img:null, ok:() => false },
-  { id:'head3', name:'준비 중인 모자', how:'도감 10종 채우기', img:null, ok:() => false },
+  { id:'basic',    name:'검은 머리',   how:'처음부터', img:{ m:'art/knight/머리/기본-남.png' }, at:{ m:{ eyesPx:EYES_M } }, ok:() => true },
+  { id:'platinum', name:'백금 올백',   how:'처음부터', img:{ m:'art/knight/머리/중세-남.png' }, at:{ m:{ eyesPx:EYES_M } }, ok:() => true },
+  { id:'ash',      name:'잿빛 투블럭', how:'처음부터', img:{ m:'art/knight/머리/현대-남.png' }, at:{ m:{ eyesPx:EYES_M } }, ok:() => true },
 ];
-// 갑옷 그림(바탕)에는 자리 정보가 붙는다 (1024 그림의 픽셀 값).
-//   eyesPx: 두 눈의 한가운데 [그림에서 왼쪽 눈(얼음빛), 오른쪽 눈(등불빛)].
-//   lanternPx: 허리 등불의 한가운데.  footPx: 두 발 사이의 x.  figurePx: 발끝에서 머리끝까지의 높이(화면 키 190에 맞춘다)
 const ARMORS = [
-  { id:'basic', name:'기본', how:'처음부터', img:{ m:'art/knight/기본-남.png', f:'art/knight/기본-여.png' },
-    at:{ m:{ lanternPx:[458, 707], footPx:576, figurePx:878, eyesPx:[[477, 323], [601, 323]] }, f:{ lanternPx:[452, 715], footPx:576, figurePx:886, eyesPx:[[482, 332], [603, 329]] } }, ok:() => true },
-  { id:'armor2', name:'준비 중인 갑옷', how:'1구역 보스 처치', img:null, ok:() => false },
-  { id:'armor3', name:'준비 중인 갑옷', how:'업적 · 이벤트', img:null, ok:() => false },
+  { id:'basic', name:'검은 갑옷', how:'처음부터', img:{ m:'art/knight/옷/기본-남.png', f:'art/knight/기본-여.png' }, front:{ m:'art/knight/옷/기본-남-깃.png' },
+    at:{ m:{ lanternPx:[458, 707], footPx:576, groundPx:926, figurePx:878 }, f:{ lanternPx:[452, 715], footPx:576, figurePx:886, eyesPx:[[482, 332], [603, 329]] } }, ok:() => true },
+  { id:'train',  name:'훈련복',         how:'처음부터', img:{ m:'art/knight/옷/속옷-남.png' },
+    at:{ m:{ lanternPx:[457, 703], footPx:576, groundPx:927, figurePx:878 } }, ok:() => true },
+  { id:'silver', name:'은빛 기사 갑옷', how:'처음부터', img:{ m:'art/knight/옷/중세-남.png' }, front:{ m:'art/knight/옷/중세-남-깃.png' },
+    at:{ m:{ lanternPx:[454, 705], footPx:576, groundPx:927, figurePx:878 } }, ok:() => true },
+  { id:'city',   name:'도시 점퍼',      how:'처음부터', img:{ m:'art/knight/옷/현대-남.png' },
+    at:{ m:{ lanternPx:[455, 720], footPx:576, groundPx:949, figurePx:878 } }, ok:() => true },
 ];
 const WEAPONS = [
-  { id:'basic', name:'기본', how:'처음부터', img:null, ok:() => true },   // 지금은 바탕 그림에 칼이 들어 있다
-  { id:'weapon2', name:'준비 중인 무기', how:'1구역 보스 처치', img:null, ok:() => false },
-  { id:'weapon3', name:'준비 중인 무기', how:'고블린 100마리 잡기', img:null, ok:() => false },
+  { id:'basic', name:'옷에 딸린 무기', how:'옷과 함께 바뀝니다', img:null, ok:() => true },
 ];
-const KNIGHT_LAYERS = [['armor', ARMORS], ['weapon', WEAPONS], ['head', HEADS]];   // 겹치는 차례
+// 겹 그림을 잘라 쓰는 틀 (x0, y0, x1, y1). 어떤 머리와 옷을 섞어도 크기와 자리가 변하지 않게 고정한다. 틀이 없는 성별은 그림에서 빈 곳만 잘라 쓴다
+const KNIGHT_FRAME = { m:[150, 40, 840, 956] };
+const hasArt = (it, g) => !!(it.img && it.img[g]);
+const pickArt = (list, id, g) => { const it = list.find(c => c.id === id); return it && hasArt(it, g) ? it : list[0]; };
 const LANTERN_COLORS = [
   { id:'orange', name:'주황',   color:'#f0983c', how:'처음부터', ok:() => true },
   { id:'amber',  name:'호박빛', color:'#e8c26c', how:'1-5 깨기', ok:s => s.maxStage >= 6 },
@@ -335,10 +354,10 @@ const TITLES = [
 ];
 const COS_GROUPS = [
   { key:'head',    title:'머리', list:HEADS },
-  { key:'armor',   title:'갑옷', list:ARMORS },
+  { key:'armor',   title:'옷', list:ARMORS },
   { key:'weapon',  title:'무기', list:WEAPONS },
-  { key:'lantern', title:'등불 빛깔', list:LANTERN_COLORS },
-  { key:'foot',    title:'발밑 효과', list:FOOT_EFFECTS },
+  { key:'lantern', title:'등불', list:LANTERN_COLORS },
+  { key:'foot',    title:'발밑', list:FOOT_EFFECTS },
   { key:'title',   title:'칭호', list:TITLES },
 ];
 
@@ -466,14 +485,17 @@ function loadMonster(st) {
 }
 
 /* 기사 그림: 파일을 쓴다. 파일을 못 읽으면 코드로 그린 임시 기사를 쓴다 */
-const knightImgs = {};     // 'armor-basic-m' -> {c(canvas), bb} | 'none'
+const knightImgs = {};     // 'armor-basic-m', 'head-basic-m', 'front-basic-m' -> {c(canvas), bb} | 'none'
 function loadKnightImages() {
-  for (const [slot, list] of KNIGHT_LAYERS) for (const it of list) if (it.img) for (const g of ['m', 'f']) {
-    if (!it.img[g]) continue;
-    const key = slot + '-' + it.id + '-' + g, img = new Image();
-    img.onload = () => { const c = removeWhite(img); knightImgs[key] = { c, bb:bboxOf(c) }; knightSprite = null; redrawStatic(); };
+  const one = (key, path) => {
+    const img = new Image();
+    img.onload = () => { const c = removeWhite(img); knightImgs[key] = { c, bb:bboxOf(c) }; knightSprite = null; redrawStatic(); if (R.sheet === 'cos') buildCosGrid(); };
     img.onerror = () => { knightImgs[key] = 'none'; knightSprite = null; redrawStatic(); };
-    img.src = it.img[g].split('/').map(encodeURIComponent).join('/');
+    img.src = path.split('/').map(encodeURIComponent).join('/');
+  };
+  for (const [slot, list] of [['armor', ARMORS], ['head', HEADS]]) for (const it of list) for (const g of ['m', 'f']) {
+    if (it.img && it.img[g]) one(slot + '-' + it.id + '-' + g, it.img[g]);
+    if (it.front && it.front[g]) one('front-' + it.id + '-' + g, it.front[g]);
   }
 }
 /* 임시 기사(그림을 못 읽었을 때만). 왼쪽을 보고 서서 칼을 든 자세. 120 x 200 칸 안에 그린다 */
@@ -507,30 +529,26 @@ function paintPlaceholder(g, W, H, gender) {
 }
 const BASIC_LOOK = { head:'basic', armor:'basic', weapon:'basic' };
 function knightArt(gender, look) {
-  const layers = []; let base = null;
-  for (const [slot, list] of KNIGHT_LAYERS) {
-    const it = list.find(c => c.id === look[slot]) || list[0], im = knightImgs[slot + '-' + it.id + '-' + gender];
-    if (im && im !== 'none') { layers.push(im); if (slot === 'armor') base = it; }
-    else if (slot === 'armor') break;                 // 바탕 그림이 없으면 임시 기사를 쓴다
-  }
-  if (layers.length) {
-    if (base && base.at && base.at[gender]) base = Object.assign({}, base, base.at[gender]);   // 자리 정보는 남녀 그림마다 다르다
-    // 모든 겹은 같은 캔버스를 쓴다. 겹친 전체에서 빈 곳만 한 번에 잘라 낸다.
-    const b = [1e9, 1e9, -1, -1];
-    for (const l of layers) { b[0] = Math.min(b[0], l.bb[0]); b[1] = Math.min(b[1], l.bb[1]); b[2] = Math.max(b[2], l.bb[2]); b[3] = Math.max(b[3], l.bb[3]); }
-    const bw = b[2] - b[0], bh = b[3] - b[1], lp = base.lanternPx || [b[0] + bw * 0.5, b[1] + bh * 0.6];
-    return { aspect:bw / bh, hMul:bh / (base.figurePx || bh), ax:((base.footPx || b[0] + bw / 2) - b[0]) / bw,
-      lantern:[(lp[0] - b[0]) / bw, (lp[1] - b[1]) / bh], eyes:(base.eyesPx || []).map(e => [(e[0] - b[0]) / bw, (e[1] - b[1]) / bh]),
-      paint:(g, W, H) => { for (const l of layers) g.drawImage(l.c, b[0], b[1], bw, bh, 0, 0, W, H); } };
-  }
-  return { aspect:0.6, hMul:1, ax:0.5, lantern:[72 / 120, 128.5 / 200], paint:(g, W, H) => paintPlaceholder(g, W, H, gender) };
+  const outfit = pickArt(ARMORS, look.armor, gender), head = pickArt(HEADS, look.head, gender);
+  const got = k => { const im = knightImgs[k]; return im && im !== 'none' ? im : null; };
+  const oi = got('armor-' + outfit.id + '-' + gender);
+  if (!oi) return { aspect:0.6, hMul:1, ax:0.5, gy:0.97, lantern:[72 / 120, 128.5 / 200], eyes:[], paint:(g, W, H) => paintPlaceholder(g, W, H, gender) };   // 그림이 없으면 임시 기사
+  const layers = [oi, hasArt(head, gender) && got('head-' + head.id + '-' + gender), got('front-' + outfit.id + '-' + gender)].filter(Boolean);   // 옷 -> 머리 -> 깃
+  const at = Object.assign({}, outfit.at && outfit.at[gender], hasArt(head, gender) && head.at && head.at[gender]);
+  let b = KNIGHT_FRAME[gender];
+  if (!b) { b = [1e9, 1e9, -1, -1]; for (const l of layers) { b[0] = Math.min(b[0], l.bb[0]); b[1] = Math.min(b[1], l.bb[1]); b[2] = Math.max(b[2], l.bb[2]); b[3] = Math.max(b[3], l.bb[3]); } }
+  const bw = b[2] - b[0], bh = b[3] - b[1], lp = at.lanternPx || [b[0] + bw * 0.5, b[1] + bh * 0.6];
+  return { aspect:bw / bh, hMul:bh / (at.figurePx || bh), ax:((at.footPx || b[0] + bw / 2) - b[0]) / bw,
+    gy:at.groundPx ? (at.groundPx - 22 - b[1]) / bh : 0.97,       // 발바닥이 놓이는 높이 (0~1)
+    lantern:[(lp[0] - b[0]) / bw, (lp[1] - b[1]) / bh], eyes:(at.eyesPx || []).map(e => [(e[0] - b[0]) / bw, (e[1] - b[1]) / bh]),
+    paint:(g, W, H) => { for (const l of layers) g.drawImage(l.c, b[0], b[1], bw, bh, 0, 0, W, H); } };
 }
 let knightSprite = null;
 function getKnightSprite() {
   if (!knightSprite) {
     const a = knightArt(S.gender, S.cos);
     knightSprite = makeSprite(KNIGHT_H * a.hMul, a.aspect, a.paint, a.ax);
-    knightSprite.lantern = a.lantern; knightSprite.eyes = a.eyes || []; knightSprite.bw = KNIGHT_H * 0.5;      // bw: 몸통 너비 (칼은 뺀다)
+    knightSprite.lantern = a.lantern; knightSprite.eyes = a.eyes || []; knightSprite.gy = a.gy; knightSprite.bw = KNIGHT_H * 0.5;      // bw: 몸통 너비 (칼은 뺀다)
   }
   return knightSprite;
 }
@@ -621,7 +639,7 @@ const MB = { x0:70, x1:830, y0:330, y1:1500 };       // 몬스터가 다니는 �
 const KB = { x0:170, x1:730, y0:700, y1:1260, bossY0:960 };   // 보스전은 위쪽 보스 체력 줄을 가리지 않게 더 아래에서 싸운다      // 기사가 다니는 곳 (머리 위 이름표가 화면 안에 남게)
 const R = {                          // 저장하지 않는 것
   t:0, mons:[], floats:[], parts:[], fx:[], progress:0, spawnT:0.5, advanceT:-1, bossT:TUNE.BOSS_TIME, bossWait:0,
-  banner:null, saveT:0, uiT:0, paused:true, cd:{}, skillGap:0, log:[], logDirty:true, sheet:null, low:false, frameN:0,
+  banner:null, saveT:0, uiT:0, paused:true, cosTab:'head', cd:{}, skillGap:0, log:[], logDirty:true, sheet:null, low:false, frameN:0,
   stop:0, shake:0, floatN:0, flies:[], perfSum:0, perfN:0, atkN:0, eyeT:0, cut:null, pend:null,
   k:{ x:FW / 2, y:900, hp:100, dead:false, reviveT:0, atkT:0.5, lunge:0, flash:0, face:-1, moving:false, target:null, stepT:0 },
 };
@@ -911,7 +929,7 @@ function drawShadow(g, x, y, rx, ry, a) {   // 부드럽고 살짝 비껴 난 �
 function drawSprite(g, sp, x, y, o) {     // o: flip, sx, sy, rot, alpha, flash, dx
   g.save(); g.translate(x + (o.dx || 0), y); if (o.rot) g.rotate(o.rot);
   g.scale((o.flip ? -1 : 1) * (o.sx || 1), o.sy || 1);
-  const a = o.alpha == null ? 1 : o.alpha, ox = -sp.w * sp.ax, oy = -sp.h * 0.97;
+  const a = o.alpha == null ? 1 : o.alpha, ox = -sp.w * sp.ax, oy = -sp.h * (sp.gy || 0.97);
   g.globalAlpha = a;
   g.drawImage(sp.c, ox, oy, sp.w, sp.h);
   if (o.flash > 0) { g.globalAlpha = a * Math.min(1, o.flash); g.drawImage(sp.f, ox, oy, sp.w, sp.h); }
@@ -932,13 +950,13 @@ function drawKnight(g, sp, x, y, face, t, opt) {   // 들판과 꾸미기 미리
   g.save(); g.translate(x, y); g.scale(sc, sc);
   drawSprite(g, sp, 0, 0, { flip, sy:breath, sx:1 / Math.sqrt(breath), rot:opt.rot, alpha:opt.alpha, flash:opt.flash, dx:opt.dx });
   if (!opt.rot && !opt.noGlow) {                     // 허리의 등불 빛 (그림 속 등불 자리에 맞춘다)
-    const lx = (sp.lantern[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ly = (sp.lantern[1] - 0.97) * sp.h * breath;
+    const lx = (sp.lantern[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ly = (sp.lantern[1] - (sp.gy || 0.97)) * sp.h * breath;
     const fl = 0.85 + Math.sin(t * 7.3) * 0.08 + Math.sin(t * 13.1) * 0.05, col = lanternColor();
     glow(g, lx, ly, 46, col, 0.5 * fl * al); glow(g, lx, ly, 9, '#fff3d6', 0.8 * fl * al);
     // 두 눈의 작은 빛: 하나는 얼음빛, 하나는 등불빛. 스킬을 쓰는 동안만 짧은 꼬리가 남는다
     const pulse = 0.5 + Math.sin(t * 3.1) * 0.08, tr = opt.trail || 0;
     (sp.eyes || []).forEach((e, i) => {
-      const ex = (e[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ey = (e[1] - 0.97) * sp.h * breath, c = i === 0 ? '#7fd6ff' : '#ffab3d';
+      const ex = (e[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ey = (e[1] - (sp.gy || 0.97)) * sp.h * breath, c = i === 0 ? '#7fd6ff' : '#ffab3d';
       glow(g, ex, ey, 6.5 + tr * 3, c, (pulse + tr * 0.4) * al);
       if (tr > 0.02) {
         const back = (flip ? -1 : 1) * (22 + i * 8) * tr, gr = g.createLinearGradient(ex, ey, ex + back, ey - 5 * tr);
@@ -1215,40 +1233,68 @@ function refreshUp() {
     b.classList.toggle('no', maxed || S.gold < upPrice(key));
   });
 }
+/* 꾸미기 판: 위에는 살아 움직이는 큰 미리보기, 아래에는 갈래(탭)와 네모 카드. 누르면 바로 입는다. 모습만 바뀌고 능력치는 그대로다 */
 function buildCos(box) {
-  box.innerHTML = '<div id="cosTop"><canvas id="cosPrev" width="680" height="800"></canvas>' +
-    '<div id="cosNote"><b>모습만 바뀝니다.</b><br>꾸미기는 능력치를 바꾸지 않습니다.<br><br>잠긴 것은 적힌 일을 하면 열립니다.</div></div><div id="cosLists"></div>';
-  buildCosLists();
-}
-function buildCosLists() {
-  const box = $('cosLists'); box.innerHTML = '';
+  box.innerHTML = '<canvas id="cosPrev" width="1704" height="1080"></canvas><div id="cosTabs"></div><div id="cosGrid"></div>' +
+    '<div class="note">모습만 바뀝니다. 꾸미기는 능력치를 바꾸지 않습니다.</div>';
   for (const grp of COS_GROUPS) {
-    const h = document.createElement('div'); h.className = 'sec'; h.textContent = grp.title; box.appendChild(h);
-    const grid = document.createElement('div'); grid.className = 'grid'; box.appendChild(grid);
-    for (const it of grp.list) {
-      const open = it.ok(S), b = document.createElement('button');
-      b.className = 'opt' + (S.cos[grp.key] === it.id ? ' sel' : '') + (open ? '' : ' lock');
-      b.innerHTML = (it.color ? '<span class="dot" style="background:' + it.color + '"></span>' : open ? '' : icon('lock')) +
-        '<span><div class="on">' + it.name + '</div><div class="oh">' + (open ? (S.cos[grp.key] === it.id ? '쓰는 중' : '고를 수 있음') : it.how) + '</div></span>';
-      b.onclick = () => { if (!it.ok(S)) { toast('잠김 · ' + it.how); return; } S.cos[grp.key] = it.id; knightSprite = null; buildCosLists(); refreshHud(); save(); };
-      grid.appendChild(b);
+    const b = document.createElement('button'); b.className = 'cTab'; b.dataset.k = grp.key; b.textContent = grp.title;
+    b.onclick = () => { R.cosTab = grp.key; buildCosGrid(); };
+    $('cosTabs').appendChild(b);
+  }
+  buildCosGrid();
+}
+function drawThumb(c, layers, crop) {      // 겹 그림에서 잘라 낸 작은 그림
+  const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); g.imageSmoothingQuality = 'high';
+  const k = Math.min(c.width / crop[2], c.height / crop[3]), w = crop[2] * k, h = crop[3] * k;
+  for (const l of layers) if (l) g.drawImage(l.c, crop[0], crop[1], crop[2], crop[3], (c.width - w) / 2, c.height - h, w, h);
+}
+function buildCosGrid() {
+  const box = $('cosGrid'); if (!box) return; box.innerHTML = '';
+  const grp = COS_GROUPS.find(x => x.key === R.cosTab) || COS_GROUPS[0], g = S.gender;
+  document.querySelectorAll('.cTab').forEach(t => t.classList.toggle('sel', t.dataset.k === grp.key));
+  const art = grp.key === 'head' || grp.key === 'armor', got = k => { const im = knightImgs[k]; return im && im !== 'none' ? im : null; };
+  const cur = art ? pickArt(grp.list, S.cos[grp.key], g).id : grp.key === 'weapon' ? 'basic' : S.cos[grp.key];
+  for (const it of grp.list) {
+    const ready = !art || hasArt(it, g) || it.id === 'basic', open = ready && it.ok(S) && grp.key !== 'weapon', b = document.createElement('button');
+    b.className = 'cCard' + (cur === it.id ? ' sel' : '') + (open || grp.key === 'weapon' ? '' : ' lock');
+    const state = grp.key === 'weapon' ? it.how : !ready ? '준비 중' : !it.ok(S) ? it.how : cur === it.id ? '쓰는 중' : it.how;
+    b.innerHTML = (art || grp.key === 'weapon' ? '<canvas width="520" height="428"></canvas>' :
+      '<div class="big">' + (it.color ? '<span class="dot" style="background:' + it.color + '"></span>' : grp.key === 'title' ? (it.text || '칭호 없음') : it.name) + '</div>') +
+      '<div class="cn">' + (art && it.id === 'basic' && !KNIGHT_FRAME[g] ? '기본' : it.name) + '</div><div class="ch">' + state + '</div>';   // 겹으로 나누지 않은 성별은 그냥 '기본'
+    const cv2 = b.querySelector('canvas');
+    if (cv2) {
+      const fr = KNIGHT_FRAME[g];
+      if (grp.key === 'head' && hasArt(it, g)) drawThumb(cv2, [got('head-' + it.id + '-' + g)], [330, 24, 450, 450]);
+      else if (grp.key === 'head') { const im = got('armor-basic-' + g); if (im && it.id === 'basic') { const bw = im.bb[2] - im.bb[0]; drawThumb(cv2, [im], [im.bb[0], im.bb[1], bw, bw * 0.82]); } }   // 머리가 옷 그림에 들어 있는 경우
+      else if (grp.key === 'armor' && fr && hasArt(it, g)) drawThumb(cv2, [got('armor-' + it.id + '-' + g), got('front-' + it.id + '-' + g)], [fr[0], 330, fr[2] - fr[0], fr[3] - 330]);
+      else if (grp.key === 'armor' && hasArt(it, g)) { const im = got('armor-' + it.id + '-' + g); if (im) drawThumb(cv2, [im], [im.bb[0], im.bb[1], im.bb[2] - im.bb[0], im.bb[3] - im.bb[1]]); }
+      else if (grp.key === 'weapon') { const o = pickArt(ARMORS, S.cos.armor, g), im = got('armor-' + o.id + '-' + g); if (im) drawThumb(cv2, [im], fr ? [150, 560, 500, 412] : [im.bb[0], im.bb[1], im.bb[2] - im.bb[0], im.bb[3] - im.bb[1]]); }
     }
+    b.onclick = () => {
+      if (grp.key === 'weapon') { toast('무기는 옷과 함께 바뀝니다'); return; }
+      if (!ready) { toast('준비 중입니다'); return; }
+      if (!it.ok(S)) { toast('잠김 · ' + it.how); return; }
+      S.cos[grp.key] = it.id; knightSprite = null; buildCosGrid(); refreshHud(); save();
+    };
+    box.appendChild(b);
   }
 }
 function drawCosPreview(t) {
   const c = $('cosPrev'); if (!c) return;
-  const g = c.getContext('2d'), sp = getKnightSprite(), sc = 1.2;
+  const g = c.getContext('2d'), sp = getKnightSprite(), sc = 1.75, W = 852, H = 540;
   g.setTransform(2, 0, 0, 2, 0, 0);
-  g.drawImage(bg, 280, 700, 340, 400, 0, 0, 340, 400);
-  const cx = 170 + (sp.ax - 0.5) * sp.w * sc, fy = 362;
-  drawShadow(g, cx, fy, sp.bw * sc * 0.62, 22, 0.6);
+  g.drawImage(bg, 24, 640, W, H, 0, 0, W, H);
+  const cx = W / 2 + (sp.ax - 0.5) * sp.w * sc * 0.5, fy = 492;
+  g.save(); g.translate(cx + (sp.lantern[0] - sp.ax) * sp.w * sc, fy - 20); g.scale(1, 0.6); glow(g, 0, 0, 330, lanternColor(), 0.34); g.restore();
+  drawShadow(g, cx, fy, sp.bw * sc * 0.62, 26, 0.6);
   if (S.cos.foot !== 'none') for (let i = 0; i < 7; i++) {
     const q = (t * 0.8 + i / 7) % 1;
-    drawPart(g, { kind:S.cos.foot, x:cx + Math.sin(i * 2.4) * 70, y:fy + 4 - q * (S.cos.foot === 'leaf' ? 40 : 90), t:q, life:1, r:i });
+    drawPart(g, { kind:S.cos.foot, x:cx + Math.sin(i * 2.4) * 90, y:fy + 4 - q * (S.cos.foot === 'leaf' ? 50 : 110), t:q, life:1, r:i });
   }
   drawKnight(g, sp, cx, fy, -1, t, { scale:sc });
   const tt = titleText();
-  outlined(g, S.name, 170, 50, 30, '#ece2c6'); if (tt) outlined(g, tt, 170, 20, 24, '#e8b25a');
+  outlined(g, S.name, 28, 40, 30, '#ece2c6', 'left'); if (tt) outlined(g, tt, 28, 78, 24, '#e8b25a', 'left');
 }
 function buildDex(box) {
   MONSTERS.forEach((m, i) => {
