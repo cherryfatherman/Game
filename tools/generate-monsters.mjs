@@ -26,7 +26,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 if (!KEY) { console.error('GEMINI_API_KEY 환경변수가 없습니다. Google AI Studio에서 API 키를 만들어 넣어 주세요.'); process.exit(1); }
 
-const spec = JSON.parse(await readFile(path.join(ROOT, 'concepts', 'prompts.json'), 'utf8'));
+const spec = JSON.parse(await readFile(path.join(ROOT, '잊혀진 기사 키우기 세계관', 'prompts.json'), 'utf8'));
 const styleText = spec.styles?.[STYLE] || spec.style;
 if (!spec.styles?.[STYLE] && STYLE !== 'ink') { console.error('모르는 그림체: ' + STYLE); process.exit(1); }
 await mkdir(OUT, { recursive: true });
