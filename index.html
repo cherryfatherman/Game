@@ -898,7 +898,7 @@ function draw() {
       const lunge = k.lunge > 0 ? Math.sin((1 - k.lunge / 0.24) * Math.PI) * 26 * k.face : 0;
       const walk = k.moving ? Math.abs(Math.sin(R.t * 11)) * -5 : 0;
       if (k.dead) drawKnight(g, ks, k.x, k.y, k.face, 0, { rot:-k.face * 1.35 * Math.min(1, (TUNE.REVIVE - k.reviveT) / 0.35), alpha:0.75 });
-      else drawKnight(g, ks, k.x, k.y + walk, k.face, R.t, { dx:lunge, flash:k.flash / 0.16 * 0.8, outline:true });
+      else drawKnight(g, ks, k.x, k.y + walk, k.face, R.t, { dx:lunge, flash:k.flash / 0.16 * 0.8 });
       continue;
     }
     const m = e.m, sp = monSprites[m.st]; if (!sp || !sp.ready) continue;
