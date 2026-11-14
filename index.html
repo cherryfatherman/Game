@@ -484,7 +484,7 @@ function makeBackground() {
 }
 
 /* ===================================================================== 게임 상태 */
-const BOUND = { x0:55, x1:845, y0:235, y1:955 };
+const BOUND = { x0:55, x1:845, y0:290, y1:955 };
 const R = {                          // 저장하지 않는 것
   t:0, mons:[], floats:[], parts:[], progress:0, spawnT:0.5, advanceT:-1, bossT:TUNE.BOSS_TIME, bossWait:0,
   banner:null, saveT:0, uiT:0, paused:true,
@@ -509,7 +509,7 @@ function spawnMonster() {
   let x, y;
   for (let i = 0; i < 8; i++) {
     const side = def.boss ? 0 : Math.floor(Math.random() * 4);
-    if (side === 0) { x = rand(110, FW - 110); y = def.boss ? 540 : BOUND.y0; }
+    if (side === 0) { x = rand(110, FW - 110); y = def.boss ? 540 : Math.max(BOUND.y0, def.h + 40 + (def.fly || 0)); }
     else if (side === 1) { x = rand(110, FW - 110); y = BOUND.y1; }
     else if (side === 2) { x = BOUND.x0; y = rand(BOUND.y0 + 40, BOUND.y1 - 30); }
     else { x = BOUND.x1; y = rand(BOUND.y0 + 40, BOUND.y1 - 30); }
