@@ -67,6 +67,12 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 
 /* 아래: 기사 체력, 잡은 수, 기록 */
 #log{position:absolute;left:16px;bottom:12px;width:550px;z-index:5;display:flex;flex-direction:column;pointer-events:none}
+#logTop{display:flex;align-items:center;gap:16px}
+#logBars{flex:1}
+#face{width:120px;height:120px;flex:none;border-radius:50%;overflow:hidden;background:#10160f;box-shadow:0 0 0 3px var(--acc),0 5px 14px rgba(0,0,0,.75);transition:box-shadow .3s,filter .3s}
+#face img{width:100%;height:100%;display:block;object-fit:cover;transform:scale(1.1)}
+#face.hit{box-shadow:0 0 0 5px #ff4a3a,0 0 24px rgba(255,74,58,.85),0 5px 14px rgba(0,0,0,.75);transition:none}
+#face.down{filter:grayscale(1) brightness(.55)}
 #hpBar{height:32px;border-radius:16px;background:rgba(8,12,8,.62);position:relative;overflow:hidden;box-shadow:0 0 0 2px rgba(236,226,198,.3),0 3px 8px rgba(0,0,0,.6)}
 #hpFill{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:16px;background:linear-gradient(#a3c072,#6f8c4b)}
 #hpFill.low{background:linear-gradient(#d98a6c,#a8563f)}
@@ -135,20 +141,21 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 #lowOv{position:absolute;inset:0;background:rgba(0,0,0,.74);z-index:30;display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--dim);text-align:center;line-height:1.6}
 
 /* 시작 화면 */
-#start{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;background:radial-gradient(ellipse at 50% 30%,#2a3a27,#0e140e 75%)}
-#start h1{margin:190px 0 14px;font-size:78px;letter-spacing:2px}
-#start .sub{font-size:32px;color:var(--dim);margin-bottom:60px}
+#start{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;
+  background:linear-gradient(rgba(8,12,9,.5) 0,rgba(8,12,9,.05) 200px,rgba(8,12,9,.05) 430px,#0e140e 620px),url('art/ui/영웅-얼굴.png') center top/900px 900px no-repeat,#0e140e}
+#start h1{margin:56px 0 8px;font-size:78px;letter-spacing:2px;text-shadow:0 4px 6px #000,0 0 26px #000,0 0 50px rgba(0,0,0,.8)}
+#start .sub{font-size:32px;color:var(--cream);margin-bottom:412px;text-shadow:0 2px 4px #000,0 0 16px #000}
 #gPick{display:flex;gap:36px}
 .gBtn{width:300px;height:430px;background:var(--panel);border:4px solid var(--line);border-radius:22px;font-size:36px;font-weight:700;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:22px}
 .gBtn canvas{width:260px;height:330px}
 .gBtn.sel{border-color:var(--acc);background:#2c3a28}
 .gBtn:active{filter:brightness(1.2)}
-#start label{font-size:32px;color:var(--dim);margin:56px 0 14px}
+#start label{font-size:32px;color:var(--dim);margin:40px 0 14px}
 #nameIn{width:460px;height:92px;font:inherit;font-size:44px;text-align:center;color:var(--cream);background:#10160f;
   border:4px solid var(--line);border-radius:16px;outline:none;user-select:text;-webkit-user-select:text}
 #nameIn:focus{border-color:var(--acc)}
-#goBtn{margin-top:60px;width:460px;height:110px;font-size:46px}
+#goBtn{margin-top:44px;width:460px;height:110px;font-size:46px}
 </style>
 </head>
 <body>
@@ -181,8 +188,10 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
   <div id="skills"></div>
 
   <div id="log">
-    <div id="hpBar"><div id="hpFill"></div><div id="hpTxt"></div></div>
-    <div id="progLine"><div id="progFill"></div></div>
+    <div id="logTop">
+      <div id="face"><img src="art/ui/영웅-얼굴-256.png" alt=""></div>
+      <div id="logBars"><div id="hpBar"><div id="hpFill"></div><div id="hpTxt"></div></div><div id="progLine"><div id="progFill"></div></div></div>
+    </div>
     <div id="logIn"><div id="logLines"></div><button id="logBtn"><span data-ic="upArrow"></span></button></div>
   </div>
   <div id="toast" style="opacity:0"></div>
@@ -293,10 +302,11 @@ const HEADS = [
   { id:'head3', name:'준비 중인 모자', how:'도감 10종 채우기', img:null, ok:() => false },
 ];
 // 갑옷 그림(바탕)에는 자리 정보가 붙는다 (1024 그림의 픽셀 값).
+//   eyesPx: 두 눈의 한가운데 [그림에서 왼쪽 눈(얼음빛), 오른쪽 눈(등불빛)].
 //   lanternPx: 허리 등불의 한가운데.  footPx: 두 발 사이의 x.  figurePx: 발끝에서 머리끝까지의 높이(화면 키 190에 맞춘다)
 const ARMORS = [
   { id:'basic', name:'기본', how:'처음부터', img:{ m:'art/knight/기본-남.png', f:'art/knight/기본-여.png' },
-    at:{ m:{ lanternPx:[459, 711], footPx:576, figurePx:819 }, f:{ lanternPx:[459, 711], footPx:576, figurePx:845 } }, ok:() => true },
+    at:{ m:{ lanternPx:[459, 711], footPx:576, figurePx:819, eyesPx:[[482, 328], [583, 328]] }, f:{ lanternPx:[459, 711], footPx:576, figurePx:845, eyesPx:[[482, 330], [584, 330]] } }, ok:() => true },
   { id:'armor2', name:'준비 중인 갑옷', how:'1구역 보스 처치', img:null, ok:() => false },
   { id:'armor3', name:'준비 중인 갑옷', how:'업적 · 이벤트', img:null, ok:() => false },
 ];
@@ -382,7 +392,7 @@ const lootTotal = () => Object.values(S.loot).reduce((a, b) => a + b, 0);
 const SAVE_KEY = 'forgotten-knight-save-v1';
 function freshSave() {
   return { v:1, started:false, gender:'m', name:'루', gold:0, up:{ atk:0, hp:0, crit:0 }, stage:1, maxStage:1, auto:true, autoSkill:true,
-    kills:{}, loot:{}, bossDone:false, storySeen:false, shake:true, hintOff:false,
+    kills:{}, loot:{}, bossDone:false, storySeen:false, shake:true, hintOff:false, cutin:true,
     cos:{ head:'basic', armor:'basic', weapon:'basic', lantern:'orange', foot:'none', title:'none' }, last:Date.now() };
 }
 let S = freshSave();
@@ -510,7 +520,7 @@ function knightArt(gender, look) {
     for (const l of layers) { b[0] = Math.min(b[0], l.bb[0]); b[1] = Math.min(b[1], l.bb[1]); b[2] = Math.max(b[2], l.bb[2]); b[3] = Math.max(b[3], l.bb[3]); }
     const bw = b[2] - b[0], bh = b[3] - b[1], lp = base.lanternPx || [b[0] + bw * 0.5, b[1] + bh * 0.6];
     return { aspect:bw / bh, hMul:bh / (base.figurePx || bh), ax:((base.footPx || b[0] + bw / 2) - b[0]) / bw,
-      lantern:[(lp[0] - b[0]) / bw, (lp[1] - b[1]) / bh],
+      lantern:[(lp[0] - b[0]) / bw, (lp[1] - b[1]) / bh], eyes:(base.eyesPx || []).map(e => [(e[0] - b[0]) / bw, (e[1] - b[1]) / bh]),
       paint:(g, W, H) => { for (const l of layers) g.drawImage(l.c, b[0], b[1], bw, bh, 0, 0, W, H); } };
   }
   return { aspect:0.6, hMul:1, ax:0.5, lantern:[72 / 120, 128.5 / 200], paint:(g, W, H) => paintPlaceholder(g, W, H, gender) };
@@ -520,7 +530,7 @@ function getKnightSprite() {
   if (!knightSprite) {
     const a = knightArt(S.gender, S.cos);
     knightSprite = makeSprite(KNIGHT_H * a.hMul, a.aspect, a.paint, a.ax);
-    knightSprite.lantern = a.lantern; knightSprite.bw = KNIGHT_H * 0.5;      // bw: 몸통 너비 (칼은 뺀다)
+    knightSprite.lantern = a.lantern; knightSprite.eyes = a.eyes || []; knightSprite.bw = KNIGHT_H * 0.5;      // bw: 몸통 너비 (칼은 뺀다)
   }
   return knightSprite;
 }
@@ -612,11 +622,12 @@ const KB = { x0:170, x1:730, y0:700, y1:1260, bossY0:960 };   // 보스전은 �
 const R = {                          // 저장하지 않는 것
   t:0, mons:[], floats:[], parts:[], fx:[], progress:0, spawnT:0.5, advanceT:-1, bossT:TUNE.BOSS_TIME, bossWait:0,
   banner:null, saveT:0, uiT:0, paused:true, cd:{}, skillGap:0, log:[], logDirty:true, sheet:null, low:false, frameN:0,
-  stop:0, shake:0, floatN:0, flies:[], perfSum:0, perfN:0,
+  stop:0, shake:0, floatN:0, flies:[], perfSum:0, perfN:0, atkN:0, eyeT:0, cut:null, pend:null,
   k:{ x:FW / 2, y:900, hp:100, dead:false, reviveT:0, atkT:0.5, lunge:0, flash:0, face:-1, moving:false, target:null, stepT:0 },
 };
 for (const sk of SKILLS) R.cd[sk.id] = 0;
 let bg = null, fg = null, cv, ctx, viewQ = 1;
+const heroImg = new Image();      // 대표 그림의 얼굴 (스킬 연출에 눈매를 쓴다)
 for (let i = 0; i < 16; i++) R.flies.push({ x:rand(70, 830), y:rand(240, 1480), ph:rand(0, 6.28), sp:rand(0.12, 0.34), r:rand(30, 90) });
 
 function showBanner(text, sub) { R.banner = { text, sub:sub || '', t:0 }; }
@@ -645,7 +656,7 @@ function setMaxStage(n) {             // 새 길이 열릴 때: 기록을 남기
   buildSkills(); save();
 }
 function gotoStage(st, quiet) {
-  S.stage = st; R.progress = 0; R.advanceT = -1; R.spawnT = 0.5; R.bossT = TUNE.BOSS_TIME; R.bossWait = 0;
+  S.stage = st; R.pend = null; R.progress = 0; R.advanceT = -1; R.spawnT = 0.5; R.bossT = TUNE.BOSS_TIME; R.bossWait = 0;
   for (const m of R.mons) if (!m.dead) { m.dead = true; m.deadT = 0; m.gone = true; }
   R.k.target = null; R.k.hp = kMax();
   loadMonster(st); if (st < 10) loadMonster(st + 1);
@@ -749,7 +760,7 @@ function hitMonster(m, mult, big) {
   const dmg = Math.min(TUNE.DMG_CAP, Math.round(kAtk() * mult * (crit ? TUNE.CRIT_MULT : 1)));
   m.hp -= dmg; m.flash = 0.16; m.kbx = (m.x >= k.x ? 1 : -1) * (m.def.boss ? 40 : 190);
   // 보통은 흰 숫자, 치명타는 등불 주황에 더 크게, 작은 불꽃 표시를 붙인다
-  addFloat(m.x, m.y - m.h * 0.78 - (m.def.fly || 0) - (big ? 20 : 0), fmt(dmg), crit ? '#ffab3d' : '#ffffff',
+  addFloat(m.x, m.y - m.h * 0.78 - (m.def.fly || 0) - (big ? 20 : 0), fmt(dmg), crit ? (Math.random() < 0.2 ? '#8fdcff' : '#ffab3d') : '#ffffff',   // 치명타는 주황. 가끔 얼음빛(모양만 다르다)
     (big ? 52 : 38) * (crit ? 1.35 : 1), crit || big ? 1.05 : 0.8, { num:true, spark:crit });
   if (crit) jolt(0.055, 7); else if (m.def.boss) jolt(0.04, 3.5);
   if (m.hp <= 0) killMonster(m);
@@ -764,12 +775,18 @@ function castSkill(sk, manual) {
   else if (sk.kind === 'reach') targets = live.filter(m => inRange(m, 90));
   else targets = live;
   if (!targets.length) { if (manual) toast('닿는 몬스터가 없습니다'); return false; }
-  R.cd[sk.id] = sk.cd; R.skillGap = TUNE.SKILL_GAP; k.lunge = 0.24;
-  const t = targets[0];
-  R.fx.push({ kind:sk.fx, x:sk.kind === 'one' ? t.x : k.x, y:sk.kind === 'one' ? t.y : k.y, h:t.h, r:reachOf(t) + 90, dir:t.x >= k.x ? 1 : -1, t:0, life:sk.fx === 'flash' ? 0.6 : 0.42 });
+  R.cd[sk.id] = sk.cd; R.skillGap = TUNE.SKILL_GAP; k.lunge = 0.24; R.eyeT = 0.5;
   addFloat(k.x, k.y - getKnightSprite().h - 118, sk.name, '#ffd590', 30, 0.9);
-  for (const m of targets) hitMonster(m, sk.mult, true);
+  if (sk.id === 'shard' && S.cutin !== false) {      // 가장 센 스킬: 눈매 연출이 먼저 지나가고, 그다음에 맞는다. 게임은 멈추지 않는다
+    R.cut = { t:0, life:0.55, name:sk.name }; R.pend = { sk, m:targets[0], t:0.45 }; R.skillGap = 0.65; return true;
+  }
+  landSkill(sk, targets);
   return true;
+}
+function landSkill(sk, targets) {
+  const k = R.k, t = targets[0];
+  R.fx.push({ kind:sk.fx, x:sk.kind === 'one' ? t.x : k.x, y:sk.kind === 'one' ? t.y : k.y, h:t.h, r:reachOf(t) + 90, dir:t.x >= k.x ? 1 : -1, t:0, life:sk.fx === 'flash' ? 0.6 : 0.42 });
+  for (const m of targets) hitMonster(m, sk.mult, true);
 }
 
 function update(dt) {
@@ -789,7 +806,16 @@ function update(dt) {
   }
   assignPlaces();
   for (const sk of SKILLS) R.cd[sk.id] = Math.max(0, R.cd[sk.id] - dt);
-  R.skillGap = Math.max(0, R.skillGap - dt);
+  R.skillGap = Math.max(0, R.skillGap - dt); R.eyeT = Math.max(0, R.eyeT - dt);
+  if (R.cut) { R.cut.t += dt; if (R.cut.t >= R.cut.life) R.cut = null; }
+  if (R.pend) {                         // 연출 뒤에 떨어지는 한 방
+    R.pend.t -= dt;
+    if (R.pend.t <= 0) {
+      const pd = R.pend; R.pend = null; let m = pd.m;
+      if (m.dead) m = k.target && !k.target.dead ? k.target : R.mons.find(x => !x.dead && x.born > 0.25);
+      if (m && !k.dead) { k.lunge = 0.24; R.eyeT = 0.5; landSkill(pd.sk, [m]); } else R.cd[pd.sk.id] = Math.min(R.cd[pd.sk.id], 3);
+    }
+  }
   // 기사
   k.atkT = Math.max(0, k.atkT - dt); k.lunge = Math.max(0, k.lunge - dt); k.flash = Math.max(0, k.flash - dt);
   k.moving = false;
@@ -813,7 +839,11 @@ function update(dt) {
         if (inside) k.moving = moveTo(k, clamp(m.x + side * reachOf(m), KB.x0, KB.x1), clamp(m.y + 40, stDef.boss ? KB.bossY0 : KB.y0, KB.y1), TUNE.KNIGHT_SPEED, dt);
         else if (Math.hypot(k.x - 450, k.y - 980) > 160) k.moving = moveTo(k, 450, 980, TUNE.KNIGHT_SPEED * 0.5, dt);
       }
-      else if (k.atkT <= 0) { k.atkT = TUNE.ATK_INTERVAL; k.lunge = 0.24; hitMonster(m, 1, false); }
+      else if (k.atkT <= 0) {            // 기본 공격: 벤 자국이 등불빛과 얼음빛으로 번갈아 난다
+        k.atkT = TUNE.ATK_INTERVAL; k.lunge = 0.24;
+        R.fx.push({ kind:'slash', small:true, ice:R.atkN++ % 2 === 1, x:m.x, y:m.y, h:m.h, dir:m.x >= k.x ? 1 : -1, t:0, life:0.24 });
+        hitMonster(m, 1, false);
+      }
     }
     if (S.autoSkill && R.skillGap <= 0) for (let i = SKILLS.length - 1; i >= 0; i--) if (castSkill(SKILLS[i], false)) break;
   }
@@ -900,6 +930,18 @@ function drawKnight(g, sp, x, y, face, t, opt) {   // 들판과 꾸미기 미리
     const lx = (sp.lantern[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ly = (sp.lantern[1] - 0.97) * sp.h * breath;
     const fl = 0.85 + Math.sin(t * 7.3) * 0.08 + Math.sin(t * 13.1) * 0.05, col = lanternColor();
     glow(g, lx, ly, 46, col, 0.5 * fl * al); glow(g, lx, ly, 9, '#fff3d6', 0.8 * fl * al);
+    // 두 눈의 작은 빛: 하나는 얼음빛, 하나는 등불빛. 스킬을 쓰는 동안만 짧은 꼬리가 남는다
+    const pulse = 0.5 + Math.sin(t * 3.1) * 0.08, tr = opt.trail || 0;
+    (sp.eyes || []).forEach((e, i) => {
+      const ex = (e[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ey = (e[1] - 0.97) * sp.h * breath, c = i === 0 ? '#7fd6ff' : '#ffab3d';
+      glow(g, ex, ey, 6.5 + tr * 3, c, (pulse + tr * 0.4) * al);
+      if (tr > 0.02) {
+        const back = (flip ? -1 : 1) * (22 + i * 8) * tr, gr = g.createLinearGradient(ex, ey, ex + back, ey - 5 * tr);
+        gr.addColorStop(0, c); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = tr * 0.8 * al; g.strokeStyle = gr; g.lineWidth = 3; g.lineCap = 'round';
+        g.beginPath(); g.moveTo(ex, ey); g.quadraticCurveTo(ex + back * 0.5, ey - 1, ex + back, ey - 5 * tr); g.stroke(); g.restore();
+      }
+    });
   }
   g.restore();
 }
@@ -910,36 +952,57 @@ function drawPart(g, p) {
   else { g.globalAlpha = a; g.fillStyle = lanternColor(); g.beginPath(); g.arc(0, 0, 3.4, 0, 7); g.fill(); glow(g, 0, 0, 12, lanternColor(), a * 0.5); }
   g.restore();
 }
-/* 스킬 효과: 전부 코드로 그린다. 따뜻한 금빛을 더해지는 빛으로 겹쳐서 밝게 */
-const FX_GOLD = [[34, '#c9781e', 0.5], [16, '#ffb84a', 0.85], [6, '#fff4d2', 1]];   // 바깥 번짐, 몸통, 심
+/* 효과: 전부 코드로 그린다. 불(등불빛)과 얼음(옅은 푸른빛) 두 가지 빛을 더해지는 빛으로 겹친다 */
+const FX_FIRE = [[34, '#c9781e', 0.5], [16, '#ffb84a', 0.85], [6, '#fff4d2', 1]];   // 바깥 번짐, 몸통, 심
+const FX_ICE  = [[34, '#1f6ea6', 0.55], [16, '#7fd6ff', 0.85], [6, '#ecfbff', 1]];
 function drawFx(g, f) {
   const q = f.t / f.life, a = 1 - q * q;
   g.save(); g.lineCap = 'round'; g.globalCompositeOperation = 'lighter';
-  if (f.kind === 'slash') {           // 내려치기: 위에서 아래로 긋는 호
+  if (f.kind === 'slash') {           // 벤 자국: 위에서 아래로 긋는 호 (기본 공격은 작게, 내려치기는 크게)
+    const cols = f.ice ? FX_ICE : FX_FIRE, k = f.small ? 0.62 : 1, r = f.h * 0.66 * (f.small ? 0.8 : 1);
     g.translate(f.x, f.y - f.h * 0.5); g.scale(f.dir, 1);
     const end = -2.3 + Math.min(1, q * 2.4) * 2.9, start = -2.3 + Math.max(0, q * 2.4 - 1) * 2.2;
-    for (const [w, c, al] of FX_GOLD) { g.globalAlpha = a * al; g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.arc(-30, 0, f.h * 0.66, start, end); g.stroke(); }
-    glow(g, -30 + Math.cos(end) * f.h * 0.66, Math.sin(end) * f.h * 0.66, 70, '#ffb84a', a * 0.8);
-  } else if (f.kind === 'ring') {     // 휘두르기: 기사 둘레로 퍼지는 고리
+    for (const [w, c, al] of cols) { g.globalAlpha = a * al; g.strokeStyle = c; g.lineWidth = w * k; g.beginPath(); g.arc(-30, 0, r, start, end); g.stroke(); }
+    if (!f.small) glow(g, -30 + Math.cos(end) * r, Math.sin(end) * r, 70, cols[1][1], a * 0.8);
+  } else if (f.kind === 'ring') {     // 휘두르기: 기사 둘레로 퍼지는 얼음빛 고리
     g.translate(f.x, f.y - 60); const r = f.r * (0.3 + (1 - (1 - q) * (1 - q)) * 0.85);
-    for (const [w, c, al] of FX_GOLD) { g.globalAlpha = a * al; g.strokeStyle = c; g.lineWidth = w * 1.1; g.beginPath(); g.ellipse(0, 0, r, r * 0.5, 0, 0, 7); g.stroke(); }
-    g.globalAlpha = a * 0.25; g.fillStyle = '#ffb84a'; g.beginPath(); g.ellipse(0, 0, r, r * 0.5, 0, 0, 7); g.fill();
-  } else if (f.kind === 'flash') {    // 등불 섬광: 등불에서 화면 전체로 번지는 빛
+    for (const [w, c, al] of FX_ICE) { g.globalAlpha = a * al; g.strokeStyle = c; g.lineWidth = w * 1.1; g.beginPath(); g.ellipse(0, 0, r, r * 0.5, 0, 0, 7); g.stroke(); }
+    g.globalAlpha = a * 0.22; g.fillStyle = '#7fd6ff'; g.beginPath(); g.ellipse(0, 0, r, r * 0.5, 0, 0, 7); g.fill();
+  } else if (f.kind === 'flash') {    // 등불 섬광: 등불에서 화면 전체로 번지는 빛, 가장자리에 가는 푸른 테
     g.globalAlpha = a * 0.34; g.fillStyle = '#ffc56a'; g.fillRect(-20, -20, FW + 40, FH + 40);
     glow(g, f.x, f.y - 70, 240 + q * 1100, '#ffb84a', a * 0.9); glow(g, f.x, f.y - 70, 120 + q * 260, '#fff4d2', a);
     g.translate(f.x, f.y - 70); g.strokeStyle = '#fff4d2'; g.lineWidth = 7; g.globalAlpha = a * 0.9;
     for (let i = 0; i < 14; i++) { const an = i / 14 * 6.283 + 0.2, r0 = 70 + q * 330, r1 = r0 + 130; g.beginPath(); g.moveTo(Math.cos(an) * r0, Math.sin(an) * r0); g.lineTo(Math.cos(an) * r1, Math.sin(an) * r1); g.stroke(); }
-  } else if (f.kind === 'strike') {   // 기억의 일격: 위에서 내리꽂는 빛줄기와 흩어지는 조각
-    g.translate(f.x, f.y); const w = 54 * a + 8;
-    for (const [m, c] of [[1.9, 'rgba(201,120,30,'], [1, 'rgba(255,214,140,'], [0.4, 'rgba(255,244,210,']]) {
-      const gr = g.createLinearGradient(0, -f.h - 460, 0, 0);
-      gr.addColorStop(0, c + '0)'); gr.addColorStop(1, c + a + ')');
-      g.fillStyle = gr; g.beginPath(); g.moveTo(-w * m * 0.3, -f.h - 460); g.lineTo(w * m * 0.3, -f.h - 460); g.lineTo(w * m, -24); g.lineTo(0, 0); g.lineTo(-w * m, -24); g.closePath(); g.fill();
-    }
-    glow(g, 0, -f.h * 0.4, 220, '#ffb84a', a); glow(g, 0, -10, 150, '#fff4d2', a * 0.8);
-    g.globalAlpha = a; g.fillStyle = '#fff4d2';
-    for (let i = 0; i < 7; i++) { const an = -Math.PI * (0.06 + i * 0.147), r = 40 + q * 190; g.save(); g.translate(Math.cos(an) * r, -f.h * 0.35 + Math.sin(an) * r * 0.8); g.rotate(i + q * 3); g.beginPath(); g.moveTo(0, -14); g.lineTo(7, 0); g.lineTo(0, 14); g.lineTo(-7, 0); g.closePath(); g.fill(); g.restore(); }
+    const rr = 160 + (1 - (1 - q) * (1 - q)) * 760; g.strokeStyle = '#7fd6ff'; g.lineWidth = 5; g.globalAlpha = a * 0.85; g.beginPath(); g.ellipse(0, 0, rr, rr * 0.7, 0, 0, 7); g.stroke();
+  } else if (f.kind === 'strike') {   // 기억의 일격: 등불빛과 얼음빛이 엇갈려 긋는 큰 벤 자국, 흩어지는 조각
+    g.translate(f.x, f.y - f.h * 0.5); const L = f.h * 0.7 + 60, pr = Math.min(1, q * 3.2);
+    [[FX_FIRE, -1], [FX_ICE, 1]].forEach(([cols, sx], n) => {
+      const p2 = Math.max(0, Math.min(1, pr * 1.3 - n * 0.3)), x0 = sx * L, y0 = -L * 0.85, x1 = -sx * L, y1 = L * 0.85;
+      for (const [w, c, al] of cols) { g.globalAlpha = a * al; g.strokeStyle = c; g.lineWidth = w * 1.25; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + (x1 - x0) * p2, y0 + (y1 - y0) * p2); g.stroke(); }
+    });
+    glow(g, -40, 0, 200, '#ffb84a', a * 0.8); glow(g, 40, 0, 200, '#7fd6ff', a * 0.7); glow(g, 0, 0, 110, '#ffffff', a * 0.7);
+    g.globalAlpha = a;
+    for (let i = 0; i < 8; i++) { const an = i / 8 * 6.283 + 0.4, r = 50 + q * 210; g.fillStyle = i % 2 ? '#ecfbff' : '#fff4d2'; g.save(); g.translate(Math.cos(an) * r, Math.sin(an) * r * 0.8); g.rotate(i + q * 3); g.beginPath(); g.moveTo(0, -14); g.lineTo(7, 0); g.lineTo(0, 14); g.lineTo(-7, 0); g.closePath(); g.fill(); g.restore(); }
   }
+  g.restore();
+}
+/* 가장 센 스킬의 눈매 연출: 비스듬한 띠가 화면 위쪽 가운데를 스쳐 지나간다 */
+function drawCutIn(g) {
+  const c = R.cut; if (!c) return;
+  const q = c.t / c.life, ein = Math.min(1, q / 0.2), eout = Math.max(0, (q - 0.8) / 0.2);
+  const slide = (1 - ein) * (1 - ein) * 900 - eout * eout * 900, a = Math.min(1, ein * 1.6) * (1 - eout * eout);
+  g.save(); g.translate(450, 590); g.rotate(-0.13); g.globalAlpha = a;
+  g.beginPath(); g.rect(-620, -100, 1240, 200); g.clip();
+  g.fillStyle = '#05080a'; g.fillRect(-620, -100, 1240, 200);
+  if (heroImg.ok) g.drawImage(heroImg, 0, 338, 1024, 174, -590 + slide + (0.5 - q) * 50, -100, 1180, 200);   // 그림의 눈 높이만 잘라 쓴다
+  for (const [y0, y1] of [[-100, -40], [100, 40]]) { const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(4,6,8,0.92)'); gr.addColorStop(1, 'rgba(4,6,8,0)'); g.fillStyle = gr; g.fillRect(-620, Math.min(y0, y1), 1240, 60); }
+  g.lineCap = 'round';
+  for (let i = 0; i < 18; i++) {      // 빠르게 스치는 선
+    const y = -92 + (i * 47) % 184, len = 110 + (i % 4) * 70, x = 760 - ((i * 271 + c.t * (2600 + (i % 3) * 900)) % 1700);
+    g.strokeStyle = 'rgba(255,255,255,' + (0.16 + (i % 3) * 0.1) + ')'; g.lineWidth = 2 + i % 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + len, y); g.stroke();
+  }
+  g.fillStyle = '#ffab3d'; g.fillRect(-620, -100, 1240, 5); g.fillStyle = '#7fd6ff'; g.fillRect(-620, 95, 1240, 5);
+  outlined(g, c.name, 425 + slide * 0.55, -50, 52, '#fff4d2', 'right', 'italic 800 ');   // 이름은 눈을 가리지 않게 위쪽에
   g.restore();
 }
 function bar(g, x, y, w, h, ratio, fill) {    // 둥근 얇은 막대
@@ -985,7 +1048,7 @@ function draw() {
   for (const e of ents) {             // y 순서대로
     if (e.k) {
       if (k.dead) drawKnight(g, ks, k.x, k.y, k.face, 0, { rot:-k.face * 1.35 * Math.min(1, (TUNE.REVIVE - k.reviveT) / 0.35), alpha:0.75 });
-      else drawKnight(g, ks, k.x, k.y + walk, k.face, t, { dx:lunge, flash:k.flash / 0.16 * 0.8 });
+      else drawKnight(g, ks, k.x, k.y + walk, k.face, t, { dx:lunge, flash:k.flash / 0.16 * 0.8, trail:Math.min(1, R.eyeT / 0.35) });
       continue;
     }
     const m = e.m, sp = monSprites[m.st]; if (!sp || !sp.ready) continue;
@@ -1031,6 +1094,7 @@ function draw() {
     outlined(g, b.text, 450, 485, 46, '#f3ead0'); if (b.sub) outlined(g, b.sub, 450, 538, 30, '#f0b860');
     g.globalAlpha = 1;
   }
+  drawCutIn(g);
   if (DEBUG) outlined(g, 'debug x' + SPEED + '  N:넘기기 G:골드', 450, 1586, 18, '#a79e83');
 }
 function drawMini() {                 // 둥근 작은 지도: 기사는 주황 점, 몬스터는 붉은 점, 보스는 크게
@@ -1217,6 +1281,11 @@ function buildSet(box) {
   tg.onclick = () => { S.shake = !S.shake; save(); openSheet('set'); };
   box.appendChild(tg);
   const n2 = document.createElement('div'); n2.className = 'note'; n2.textContent = '치명타와 우두머리 싸움에서 화면이 살짝 흔들리고 잠깐 멈춥니다.'; box.appendChild(n2);
+  const tg2 = document.createElement('button'); tg2.className = 'toggle' + (S.cutin !== false ? ' on' : ''); tg2.style.marginTop = '16px';
+  tg2.innerHTML = '<span>스킬 연출</span><b>' + (S.cutin !== false ? '켬' : '끔') + '</b>';
+  tg2.onclick = () => { S.cutin = S.cutin === false; save(); openSheet('set'); };
+  box.appendChild(tg2);
+  const n3 = document.createElement('div'); n3.className = 'note'; n3.textContent = '기억의 일격을 쓸 때 눈매가 화면을 스쳐 지나갑니다.'; box.appendChild(n3);
   const gap = document.createElement('div'); gap.style.height = '26px'; box.appendChild(gap);
   const b = document.createElement('button'); b.className = 'btn'; b.textContent = '처음부터'; b.style.width = '100%';
   b.onclick = () => showCard('<h3>처음부터</h3><p>모은 것이 모두 사라집니다.</p><p>정말 처음부터 할까요?</p>', [{ text:'아니요', acc:true }, { text:'네, 지웁니다', fn:resetAll }]);
@@ -1241,7 +1310,7 @@ function showStory() {
 }
 function resetAll() {
   try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
-  S = freshSave(); knightSprite = null; R.mons = []; R.floats = []; R.parts = []; R.fx = []; R.banner = null; R.progress = 0; R.log = []; R.logDirty = true;
+  S = freshSave(); knightSprite = null; R.mons = []; R.floats = []; R.parts = []; R.fx = []; R.banner = null; R.cut = null; R.pend = null; R.progress = 0; R.log = []; R.logDirty = true;
   for (const sk of SKILLS) R.cd[sk.id] = 0;
   R.k.x = FW / 2; R.k.y = 900; R.k.dead = false; R.k.target = null;
   closeSheet(); buildSkills(); openStart();
@@ -1299,6 +1368,7 @@ function frame(t) {
     R.saveT += dt; if (R.saveT > TUNE.SAVE_EVERY) { R.saveT = 0; save(); }
     R.uiT += dt; if (R.uiT > 0.12) { R.uiT = 0; refreshHud(); if (!R.low) drawMini(); }
   }
+  $('face').classList.toggle('hit', R.k.flash > 0 && !R.k.dead); $('face').classList.toggle('down', R.k.dead);   // 맞으면 테가 붉게, 쓰러지면 잿빛
   if (R.low && R.frameN % 10) return;                                         // 절전: 그림은 드물게만 그린다
   if (!R.paused) refreshSkills();
   draw();
@@ -1309,6 +1379,7 @@ function init() {
   cv = $('cv'); ctx = cv.getContext('2d');
   document.querySelectorAll('[data-ic]').forEach(e => { e.outerHTML = icon(e.dataset.ic); });
   load(); bg = makeBackground(); fg = makeCanopy(); fit(); addEventListener('resize', fit);
+  heroImg.onload = () => { heroImg.ok = true; }; heroImg.src = 'art/ui/' + encodeURIComponent('영웅-얼굴') + '.png';
   loadKnightImages(); for (let i = 1; i <= 10; i++) loadMonster(i);
   buildSkills();
 
