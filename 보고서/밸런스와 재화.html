@@ -1,0 +1,349 @@
+<title>밸런스와 재화 보고서</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* 구성: 한 권의 설정집. 위에서 아래로 한 줄 요약 → 세계에 있는 것 → 역사 → 사람 → 이야기 → 괴물 도감 순서. 밤 분위기 한 가지로 고정. */
+:root {
+  color-scheme: dark;
+  --night: #10131f;        /* 바탕 */
+  --slate: #1a2033;        /* 면 */
+  --slate-hi: #262e47;     /* 테두리·구분선 */
+  --mist: #8d97b5;         /* 흐린 글자 */
+  --moon: #e4e8f4;         /* 본문 글자 */
+  --beacon: #f2a93b;       /* 불빛: 핵심에만 쓴다 */
+  --beacon-soft: #3a2a14;  /* 불빛이 닿은 면 */
+  --blood: #c8504a;        /* 보스·대가 표시 */
+  --display: "Gowun Batang", "Nanum Myeongjo", "Batang", serif;
+  --body: "Gowun Dodum", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--night); color: var(--moon); font-family: var(--body); font-size: 15px; line-height: 1.7; }
+.wrap { max-width: 720px; margin: 0 auto; padding-block: 28px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 44px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; }
+h1 { font-size: 28px; line-height: 1.35; }
+h2 { font-size: 22px; padding-top: 20px; border-top: 1px solid var(--slate-hi); scroll-margin-top: 12px; }
+h3 { font-size: 17px; margin-top: 8px; }
+p { margin: 0; max-width: 34em; }
+section { display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.14em; color: var(--mist); }
+.lead { font-family: var(--display); font-size: 17px; }
+.dim { color: var(--mist); }
+.quote { font-family: var(--display); font-size: 17px; border-left: 2px solid var(--beacon); padding-left: 14px; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px; }
+.toc a { color: var(--moon); text-decoration: none; background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 5px; padding: 5px 10px; font-size: 13px; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--beacon); outline: none; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.card { background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 6px; padding: 12px 14px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.card b { font-family: var(--display); font-size: 17px; }
+.card span { font-size: 14px; color: var(--mist); }
+.card em { font-style: normal; font-size: 11px; color: var(--beacon); letter-spacing: 0.1em; }
+.card.pick { border-color: var(--beacon); background: var(--beacon-soft); }
+ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 36em; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--slate-hi); }
+th { color: var(--mist); font-weight: 400; font-size: 12px; letter-spacing: 0.08em; white-space: nowrap; }
+td:first-child { white-space: nowrap; font-family: var(--display); font-variant-numeric: tabular-nums; }
+tr.boss td { color: var(--moon); background: var(--beacon-soft); }
+tr.boss td:first-child { color: var(--blood); }
+.who { display: grid; grid-template-columns: 5.5em 1fr; gap: 4px 12px; font-size: 14px; }
+.who dt { color: var(--mist); }
+.who dd { margin: 0; }
+dl { margin: 0; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; }
+.chain span { background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 5px; padding: 4px 10px; }
+.chain i { font-style: normal; color: var(--mist); }
+.cliff { border-left: 2px solid var(--blood); padding-left: 12px; font-family: var(--display); }
+.ep { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px dashed var(--slate-hi); }
+.ep h3 { margin: 0; }
+.ep h3 small { font-family: var(--body); font-weight: 400; font-size: 12px; color: var(--mist); letter-spacing: 0.08em; margin-right: 8px; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tag { display: inline-block; font-size: 11px; letter-spacing: 0.08em; color: var(--beacon); border: 1px solid var(--beacon); border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 2px; }
+.formula { font-family: var(--display); background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 6px; padding: 10px 14px; }
+tr.hot td { background: var(--beacon-soft); }
+a { color: var(--beacon); }
+</style>
+
+
+<div class="wrap">
+  <section>
+    <div class="eyebrow">잊혀진 기사 키우기 · 2026년 11월 14일 · 게임에 들어 있는 숫자로 셈함</div>
+    <h1>밸런스와 재화 보고서</h1>
+    <p class="lead">1구역은 숫자가 맞다. 다만 지금 강화 방식은 3구역에서 완전히 막히고, 가장 화려한 스킬이 가장 약하며, 전리품과 다이아는 아직 쓸 곳이 없다.</p>
+    <nav class="toc" aria-label="차례">
+      <a href="#sum">한눈에</a><a href="#z1">1구역 숫자</a><a href="#boss">보스</a><a href="#up">강화</a><a href="#skill">스킬 계수</a><a href="#wall">10구역까지</a><a href="#money">재화</a><a href="#dia">다이아</a><a href="#ask">정해 주실 것</a>
+    </nav>
+    <p class="dim">표의 숫자는 게임 파일의 값으로 셈한 것이다. <span class="tag">제안</span>이 붙은 것은 아직 게임에 넣지 않았다.</p>
+  </section>
+
+  <section>
+    <h2 id="sum">한눈에</h2>
+    <div class="cards">
+      <div class="card"><em>좋음</em><b>1구역은 10~13분</b><span>자동으로 강화를 사는 시험에서 1-1부터 보스까지 걸린 시간이다. 처음 10분으로 알맞다.</span></div>
+      <div class="card pick"><em>고칠 것</em><b>보스의 30초는 쓰이지 않는다</b><span>기사가 먼저 쓰러진다. 보스전은 시간 싸움이 아니라 "쓰러지기 전에 잡기"가 되어 있다.</span></div>
+      <div class="card pick"><em>고칠 것</em><b>기억의 일격이 가장 약하다</b><span>눈 연출까지 나오는 스킬인데 초당 힘은 내려치기의 4분의 1이다.</span></div>
+      <div class="card pick"><em>가장 큰 문제</em><b>3구역에서 막힌다</b><span>몬스터는 구역마다 5배 세지는데 강화는 한 번에 +1이다. 2구역은 느리게 되고, 3구역은 살 수 없다.</span></div>
+      <div class="card"><em>비어 있음</em><b>전리품과 다이아</b><span>전리품은 모이기만 하고 쓸 곳이 없다. 다이아는 아직 없다. 둘의 자리를 제안한다.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="z1">1구역 숫자</h2>
+    <p class="formula">몬스터 체력 = 20 × 1.2<sup>(스테이지 − 1)</sup> &nbsp;·&nbsp; 몬스터 한 대 = 체력의 10분의 1 &nbsp;·&nbsp; 골드 = 체력의 4분의 1</p>
+    <div class="scroll"><table>
+      <tr><th>스테이지</th><th>몬스터</th><th class="n">체력</th><th class="n">몬스터 한 대</th><th class="n">골드</th><th class="n">공격력 10으로</th><th class="n">처음 깰 때 골드</th><th>성질</th></tr>
+      <tr><td>1-1</td><td>냄비 쓴 다람쥐</td><td class="n">20</td><td class="n">2.0</td><td class="n">5</td><td class="n">2번</td><td class="n">50</td><td></td></tr>
+      <tr><td>1-2</td><td>박쥐</td><td class="n">24</td><td class="n">2.4</td><td class="n">6</td><td class="n">3번</td><td class="n">60</td><td>빠름(날아다님)</td></tr>
+      <tr><td>1-3</td><td>여우</td><td class="n">29</td><td class="n">2.9</td><td class="n">7</td><td class="n">3번</td><td class="n">70</td><td>빠름</td></tr>
+      <tr><td>1-4</td><td>거대 사마귀</td><td class="n">35</td><td class="n">4.5</td><td class="n">9</td><td class="n">4번</td><td class="n">90</td><td>한 방이 셈</td></tr>
+      <tr><td>1-5</td><td>독버섯</td><td class="n">54</td><td class="n">4.1</td><td class="n">10</td><td class="n">6번</td><td class="n">100</td><td>체력 많고 느림</td></tr>
+      <tr><td>1-6</td><td>멧돼지</td><td class="n">50</td><td class="n">7.0</td><td class="n">12</td><td class="n">5번</td><td class="n">120</td><td>한 방이 셈</td></tr>
+      <tr><td>1-7</td><td>늑대</td><td class="n">60</td><td class="n">6.0</td><td class="n">15</td><td class="n">6번</td><td class="n">150</td><td>가장 빠름</td></tr>
+      <tr><td>1-8</td><td>고블린</td><td class="n">72</td><td class="n">7.2</td><td class="n">18</td><td class="n">8번</td><td class="n">180</td><td></td></tr>
+      <tr><td>1-9</td><td>홉고블린</td><td class="n">107</td><td class="n">8.6</td><td class="n">21</td><td class="n">11번</td><td class="n">210</td><td>체력 많음</td></tr>
+      <tr class="hot"><td>1-10</td><td>고블린 왕</td><td class="n">860</td><td class="n">86</td><td class="n">215</td><td class="n">86번</td><td class="n">215</td><td>30초 안에 잡아야 함</td></tr>
+    </table></div>
+    <ul>
+      <li>처음 깨면서 받는 골드를 모두 더하면 <b>1,245골드</b>다.</li>
+      <li>시험에서 보스를 잡았을 때의 강화는 공격력 34, 체력 400, 치명타 20%였다. 여기까지 드는 골드는 <b>약 4,271골드</b>다.</li>
+      <li>그러니 <b>골드의 열에 일곱은 같은 스테이지를 되풀이해서</b> 모아야 한다. 주로 1-9에서 140마리쯤이다. 키우기 게임에서는 흔한 일이지만, 처음 10분 안에 이 구간이 길면 지루하다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 id="boss">보스: 30초가 아니라 체력 싸움</h2>
+    <p>고블린 왕은 2.4초마다 86을 때린다. 기사는 1초에 체력의 1%를 되찾는다. 그래서 체력에 따라 버티는 시간이 정해지고, 그 시간 안에 체력 860을 깎아야 한다.</p>
+    <div class="scroll"><table>
+      <tr><th class="n">기사 체력</th><th class="n">체력 강화</th><th class="n">버티는 시간</th><th class="n">필요한 공격력 (치명타 5%)</th><th class="n">필요한 공격력 (치명타 20%)</th></tr>
+      <tr><td class="n">100</td><td class="n">0번</td><td class="n">3초</td><td class="n">81</td><td class="n">80</td></tr>
+      <tr><td class="n">250</td><td class="n">10번</td><td class="n">7초</td><td class="n">51</td><td class="n">50</td></tr>
+      <tr class="hot"><td class="n">400</td><td class="n">20번</td><td class="n">13초</td><td class="n">33</td><td class="n">32</td></tr>
+      <tr><td class="n">550</td><td class="n">30번</td><td class="n">18초</td><td class="n">25</td><td class="n">24</td></tr>
+      <tr><td class="n">700</td><td class="n">40번</td><td class="n">24초</td><td class="n">19</td><td class="n">18</td></tr>
+      <tr><td class="n">850</td><td class="n">50번</td><td class="n">30초 (끝까지)</td><td class="n">15</td><td class="n">15</td></tr>
+    </table></div>
+    <ul>
+      <li>체력 400이면 13초쯤 버틴다. 그 안에 잡으려면 공격력이 30을 넘어야 한다. 시험 결과(공격력 34, 체력 400)와 맞는다.</li>
+      <li>체력이 850이 되어야 30초를 다 쓴다. 거기까지 가는 사람은 거의 없으니 <b>30초 제한은 사실상 없는 규칙</b>이다.</li>
+      <li>공격력만 올린 사람은 보스에게 두세 대 맞고 쓰러진다. 왜 졌는지 알기 어렵다.</li>
+    </ul>
+    <p><span class="tag">제안</span>보스가 때리는 힘을 절반(43)으로 낮춘다. 그러면 체력 250으로 16초쯤, 체력 400이면 거의 30초를 버틴다. 30초 제한이 진짜 규칙이 된다. 졌을 때는 "체력이 모자랐다"거나 "시간이 모자랐다"를 화면에 알려 준다.</p>
+  </section>
+
+  <section>
+    <h2 id="up">강화: 치명타는 손해다</h2>
+    <p>같은 골드로 데미지가 얼마나 오르는지 견주었다. 숫자가 작을수록 싸게 세지는 것이다.</p>
+    <div class="scroll"><table>
+      <tr><th>언제</th><th>공격력 한 번</th><th class="n">데미지 1%에 드는 골드</th><th>치명타 한 번</th><th class="n">데미지 1%에 드는 골드</th></tr>
+      <tr><td>처음</td><td>32골드에 +10.0%</td><td class="n">3</td><td>60골드에 +0.49%</td><td class="n">122</td></tr>
+      <tr><td>1-5쯤 (공격력 20)</td><td>62골드에 +5.0%</td><td class="n">12</td><td>60골드에 +0.49%</td><td class="n">122</td></tr>
+      <tr><td>보스 잡을 때 (공격력 34)</td><td>162골드에 +2.9%</td><td class="n">55</td><td>165골드에 +0.45%</td><td class="n">364</td></tr>
+    </table></div>
+    <ul>
+      <li>처음에는 공격력이 치명타보다 <b>40배쯤</b> 이득이고, 보스를 잡을 무렵에도 <b>6배쯤</b> 이득이다. 1구역에서는 치명타를 사면 늘 손해다.</li>
+      <li>고를 것이 셋인데 답이 하나뿐이면 고르는 재미가 없다.</li>
+    </ul>
+    <p><span class="tag">제안</span>치명타는 한 번에 +2%, 첫 값은 40골드로 한다. 그리고 치명타가 터지면 눈에 빛이 번지는 연출이 이미 있으니, "치명타를 올리면 화면이 달라진다"는 맛으로 판다. 체력은 지금 값이 알맞다.</p>
+  </section>
+
+  <section>
+    <h2 id="skill">스킬 계수</h2>
+    <p class="formula">한 대의 데미지 = 공격력 × 스킬 계수 × 치명타(1.5배) &nbsp;·&nbsp; 9999만을 넘지 않는다</p>
+    <p>"초당 더하는 힘"은 기본 공격(1초에 100%)에 그 스킬이 얼마를 보태는지다. 계수를 다시 쓰는 시간으로 나눈 값이다.</p>
+    <div class="scroll"><table>
+      <tr><th>스킬</th><th class="n">계수</th><th class="n">다시 쓰기</th><th>맞는 대상</th><th class="n">초당 더하는 힘 (한 마리)</th><th class="n">초당 더하는 힘 (무리)</th><th class="n">30초에</th></tr>
+      <tr><td>내려치기</td><td class="n">150%</td><td class="n">4초</td><td>한 마리</td><td class="n">+37.5%</td><td class="n">+37.5%</td><td class="n">8번</td></tr>
+      <tr><td>휘두르기</td><td class="n">120%</td><td class="n">8초</td><td>둘레의 몬스터</td><td class="n">+15.0%</td><td class="n">+30.0%</td><td class="n">4번</td></tr>
+      <tr><td>등불 섬광</td><td class="n">200%</td><td class="n">20초</td><td>화면의 모든 몬스터</td><td class="n">+10.0%</td><td class="n">+50.0%</td><td class="n">2번</td></tr>
+      <tr class="hot"><td>기억의 일격</td><td class="n">300%</td><td class="n">30초</td><td>한 마리</td><td class="n">+10.0%</td><td class="n">+10.0%</td><td class="n">2번</td></tr>
+    </table></div>
+    <ul>
+      <li>네 스킬을 모두 쓰면 한 마리에게는 기본 공격의 <b>1.73배</b>, 무리에게는 <b>2.28배</b>가 된다. 스킬이 힘의 절반 가까이를 맡는다. 알맞은 크기다.</li>
+      <li><b>기억의 일격</b>은 30초에 한 번 300%다. 초당 10%로 넷 가운데 가장 낮다. 1-8에서 열리는 마지막 스킬이고 눈 연출까지 있는데, 써도 달라지는 것이 없다.</li>
+      <li>등불 섬광은 한 마리에게는 약하지만 화면 전체를 치니 무리에게는 가장 세다. 쓰임이 뚜렷해서 좋다.</li>
+    </ul>
+    <h3><span class="tag">제안</span>고친 계수</h3>
+    <div class="scroll"><table>
+      <tr><th>스킬</th><th>지금</th><th>제안</th><th>까닭</th></tr>
+      <tr><td>내려치기</td><td>150% · 4초</td><td>150% · 4초</td><td>그대로. 기본 스킬로 알맞다</td></tr>
+      <tr><td>휘두르기</td><td>120% · 8초</td><td>140% · 8초</td><td>무리를 치는 맛을 조금 올린다</td></tr>
+      <tr><td>등불 섬광</td><td>200% · 20초</td><td>200% · 20초</td><td>그대로. 무리 정리에 이미 좋다</td></tr>
+      <tr class="hot"><td>기억의 일격</td><td>300% · 30초</td><td>800% · 30초</td><td>가장 화려한 스킬이 가장 약했다. 기본 공격 여덟 번 값으로 올린다</td></tr>
+    </table></div>
+    <p>기억의 일격을 800%로 올리면 가이드라인의 "스킬 배율 120~300%"를 넘는다. 그래서 가이드라인을 "보통 스킬은 120~300%, 마지막 스킬 하나만 800%까지"로 고쳐야 한다. 고치고 싶지 않으면 300%를 그대로 두고 10초마다 쓰게 하는 길도 있다. 힘은 같지만 한 방의 맛은 덜하다.</p>
+    <h3><span class="tag">제안</span>전리품으로 스킬을 키운다</h3>
+    <p>지금 전리품은 숫자만 올라가고 쓸 곳이 없다. 스킬을 키우는 재료로 쓰면, 이미 깬 스테이지에 다시 갈 까닭이 생긴다.</p>
+    <div class="scroll"><table>
+      <tr><th>스킬</th><th>강화에 쓰는 전리품 (1구역)</th></tr>
+      <tr><td>내려치기</td><td>굽은 엄니 · 사마귀 낫발</td></tr>
+      <tr><td>휘두르기</td><td>여우 꼬리 · 박쥐 날개</td></tr>
+      <tr><td>등불 섬광</td><td>독버섯 갓 · 찌그러진 냄비</td></tr>
+      <tr><td>기억의 일격</td><td>늑대 송곳니 · 녹슨 단검</td></tr>
+    </table></div>
+    <ul>
+      <li>스킬 한 단계마다 계수가 처음 값의 10%씩 오른다. 열 단계까지. 내려치기라면 150% → 165% → … → 300%.</li>
+      <li>n단계로 올릴 때 두 가지 전리품이 n × 2개씩 든다. 첫 단계는 2개씩이고, 몬스터 서른 마리쯤이면 모인다.</li>
+      <li>전리품이 나올 확률은 지금 12%다. 재료가 되면 20%쯤으로 올리는 편이 알맞다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 id="wall">10구역까지: 지금 방식은 3구역에서 막힌다</h2>
+    <p>몬스터는 구역마다 5배 세진다. 강화는 한 번에 공격력 +1이고 값은 7%씩 오른다. 9번 몬스터를 다섯 번에 잡을 공격력을 기준으로 셈했다.</p>
+    <div class="scroll"><table>
+      <tr><th>구역</th><th class="n">9번 몬스터 체력</th><th class="n">보스 체력</th><th class="n">필요한 공격력</th><th class="n">한 마리 골드</th><th class="n">그 공격력까지 드는 골드</th><th class="n">잡아야 하는 수</th></tr>
+      <tr><td>1구역</td><td class="n">86</td><td class="n">860</td><td class="n">17</td><td class="n">21</td><td class="n">744</td><td class="n">35마리</td></tr>
+      <tr><td>2구역</td><td class="n">430</td><td class="n">4,300</td><td class="n">86</td><td class="n">107</td><td class="n">8만</td><td class="n">727마리</td></tr>
+      <tr class="hot"><td>3구역</td><td class="n">2,150</td><td class="n">2만</td><td class="n">430</td><td class="n">537</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>4구역</td><td class="n">1만</td><td class="n">11만</td><td class="n">2,150</td><td class="n">2,687</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>5구역</td><td class="n">5만</td><td class="n">54만</td><td class="n">1만</td><td class="n">1만</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>6구역</td><td class="n">27만</td><td class="n">269만</td><td class="n">5만</td><td class="n">7만</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>7구역</td><td class="n">134만</td><td class="n">1,344만</td><td class="n">27만</td><td class="n">34만</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>8구역</td><td class="n">672만</td><td class="n">6,718만</td><td class="n">134만</td><td class="n">168만</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>9구역</td><td class="n">3,359만</td><td class="n">3.4억</td><td class="n">672만</td><td class="n">840만</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+      <tr><td>10구역</td><td class="n">1.7억</td><td class="n">16.8억</td><td class="n">3,359만</td><td class="n">4,199만</td><td class="n">살 수 없음</td><td class="n">불가능</td></tr>
+    </table></div>
+    <ul>
+      <li>1구역은 가볍다. 2구역은 되기는 하지만 강화 단추를 76번 눌러야 한다.</li>
+      <li><b>3구역부터는 살 수 없다.</b> 공격력이 430이 되려면 강화를 420번 해야 하는데, 값이 7%씩 420번 오르면 0이 열다섯 개 붙는 숫자가 된다.</li>
+    </ul>
+    <h3><span class="tag">제안</span>구역마다 강화 단계가 열린다</h3>
+    <p>구역이 열릴 때 그 구역의 강화도 함께 열린다. 1구역 강화는 한 번에 +1, 2구역 강화는 한 번에 +4, 3구역 강화는 +16. 값도 구역마다 오른다. 몬스터가 세지는 만큼 강화도 커지니 어느 구역에서나 "단추 스물몇 번이면 보스"가 된다.</p>
+    <div class="scroll"><table>
+      <tr><th>구역</th><th>공격력 강화</th><th>값</th><th class="n">9번 몬스터 체력</th><th class="n">보스 체력</th><th class="n">필요한 공격력</th><th class="n">구역을 깨는 데</th></tr>
+      <tr><td>1구역</td><td>한 번에 +1</td><td>32골드부터</td><td class="n">86</td><td class="n">860</td><td class="n">17</td><td class="n">10분</td></tr>
+      <tr><td>2구역</td><td>한 번에 +4</td><td>256골드부터</td><td class="n">344</td><td class="n">3,440</td><td class="n">69</td><td class="n">20분</td></tr>
+      <tr><td>3구역</td><td>한 번에 +16</td><td>2,048골드부터</td><td class="n">1,376</td><td class="n">1만</td><td class="n">275</td><td class="n">40분</td></tr>
+      <tr><td>4구역</td><td>한 번에 +64</td><td>2만골드부터</td><td class="n">5,504</td><td class="n">6만</td><td class="n">1,101</td><td class="n">80분</td></tr>
+      <tr><td>5구역</td><td>한 번에 +256</td><td>13만골드부터</td><td class="n">2만</td><td class="n">22만</td><td class="n">4,403</td><td class="n">2.7시간</td></tr>
+      <tr><td>6구역</td><td>한 번에 +1,024</td><td>105만골드부터</td><td class="n">9만</td><td class="n">88만</td><td class="n">2만</td><td class="n">5.3시간</td></tr>
+      <tr><td>7구역</td><td>한 번에 +4,096</td><td>839만골드부터</td><td class="n">35만</td><td class="n">352만</td><td class="n">7만</td><td class="n">10.7시간</td></tr>
+      <tr><td>8구역</td><td>한 번에 +2만</td><td>6,711만골드부터</td><td class="n">141만</td><td class="n">1,409만</td><td class="n">28만</td><td class="n">21.3시간</td></tr>
+      <tr><td>9구역</td><td>한 번에 +7만</td><td>5.4억골드부터</td><td class="n">564만</td><td class="n">5,636만</td><td class="n">113만</td><td class="n">42.7시간</td></tr>
+      <tr><td>10구역</td><td>한 번에 +26만</td><td>42.9억골드부터</td><td class="n">2,254만</td><td class="n">2.3억</td><td class="n">451만</td><td class="n">85.3시간</td></tr>
+    </table></div>
+    <ul>
+      <li>구역마다 걸리는 시간이 두 배씩 늘도록 값을 잡았다. 5구역까지는 모두 합쳐 5시간쯤, 10구역까지는 170시간쯤이다. 쉬는 동안 받는 보상을 넣으면 실제로는 몇 주에 걸쳐 하게 된다.</li>
+      <li>골드는 뒤 구역에서 억 단위까지 간다. 조는 넘지 않는다. 데미지는 9999만 안에 머문다.</li>
+      <li>"새로운 것은 하나씩 연다"는 원칙과도 맞는다. 구역을 깰 때마다 새 강화가 열리는 것이 곧 보상이다.</li>
+      <li>이 시간은 셈으로 낸 어림이다. 2구역을 만들어 직접 해 보고 고쳐야 한다.</li>
+    </ul>
+    <h3><span class="tag">제안</span>구역 배수를 5에서 4로</h3>
+    <p>가이드라인은 데미지가 9999만을 넘지 않게 정해 두었다. 구역마다 5배면 마지막 구역에서 이 한도에 걸린다.</p>
+    <div class="scroll"><table>
+      <tr><th>방식</th><th class="n">10-9 몬스터 체력</th><th class="n">마지막 보스 체력</th><th class="n">필요한 공격력</th><th class="n">가장 센 한 방 (800% 치명타)</th><th>최대 데미지 9999만</th></tr>
+      <tr><td>구역마다 5배 (지금)</td><td class="n">1.7억</td><td class="n">16.8억</td><td class="n">3,359만</td><td class="n">4.0억</td><td>넘는다. 스킬 데미지가 9999만에서 잘린다</td></tr>
+      <tr class="hot"><td>구역마다 4배 (제안)</td><td class="n">2,254만</td><td class="n">2.3억</td><td class="n">451만</td><td class="n">5,410만</td><td>넘지 않는다</td></tr>
+    </table></div>
+    <p>위의 강화 단계 표는 4배로 셈한 것이다.</p>
+  </section>
+
+  <section>
+    <h2 id="money">재화 세 가지</h2>
+    <div class="scroll"><table>
+      <tr><th>재화</th><th>얻는 곳</th><th>쓰는 곳</th><th>돈으로</th></tr>
+      <tr><td>골드</td><td>몬스터를 잡으면</td><td>강화 (공격력, 체력, 치명타)</td><td>살 수 없다</td></tr>
+      <tr><td>전리품</td><td>몬스터를 잡으면 가끔 (12%)</td><td>지금은 쓸 곳이 없다 → 스킬 강화 재료로 (제안)</td><td>살 수 없다</td></tr>
+      <tr class="hot"><td>다이아 (이름은 나중에)</td><td>처음 깨기, 도감, 일지, 날마다 하는 일, 보고 싶을 때 보는 광고</td><td>꾸밈, 한 번 사는 편의</td><td>살 수 있다</td></tr>
+    </table></div>
+    <p>가이드라인의 원칙은 "돈으로 사는 것은 모습과 편의다. 힘은 팔지 않는다"이다. 그래서 <b>다이아로 골드와 전리품을 살 수 없게</b> 한다. 이 한 줄이 지켜지면 돈을 낸 사람이 안 낸 사람보다 세지지 않는다.</p>
+    <ul>
+      <li><b>골드</b>는 구역마다 4~5배씩 불어난다. 그래서 골드와 다이아 사이에 고정된 값을 두면 안 된다. 뒤 구역으로 갈수록 골드가 헐값이 되기 때문이다.</li>
+      <li><b>다이아</b>는 불어나지 않는다. 1구역에서도 10구역에서도 하루에 모이는 양이 같다. 그래서 꾸밈 값이 끝까지 같은 뜻을 지닌다.</li>
+      <li>둘을 견줄 때는 골드가 아니라 <b>시간</b>으로 견준다. "이 옷은 며칠 치인가."</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 id="dia">다이아 <span class="tag">제안</span></h2>
+    <h3>얻는 길</h3>
+    <div class="scroll"><table>
+      <tr><th>한 번만 받는 것</th><th class="n">셈</th><th class="n">다이아</th></tr>
+      <tr><td>스테이지를 처음 깰 때</td><td class="n">5 × 9</td><td class="n">45</td></tr>
+      <tr><td>보스를 처음 잡을 때</td><td class="n">50</td><td class="n">50</td></tr>
+      <tr><td>도감 한 종을 처음 채울 때</td><td class="n">10 × 10</td><td class="n">100</td></tr>
+      <tr><td>장면을 처음 볼 때</td><td class="n">15 × 2</td><td class="n">30</td></tr>
+      <tr class="hot"><td><b>구역 하나를 끝내면</b></td><td class="n"></td><td class="n"><b>225</b></td></tr>
+    </table></div>
+    <div class="scroll"><table>
+      <tr><th>날마다 받는 것</th><th class="n">셈</th><th class="n">다이아</th></tr>
+      <tr><td>날마다 하는 일 세 가지</td><td class="n">10 × 3</td><td class="n">30</td></tr>
+      <tr><td>보고 싶을 때 보는 광고</td><td class="n">10 × 3</td><td class="n">30</td></tr>
+      <tr><td>이레 출석 (하루로 나누면)</td><td class="n">100 ÷ 7</td><td class="n">14</td></tr>
+      <tr class="hot"><td><b>하루에</b></td><td class="n">광고를 안 보면 44</td><td class="n"><b>74</b></td></tr>
+    </table></div>
+    <h3>쓰는 곳과 값</h3>
+    <p>"돈으로 치면"은 1,200원에 다이아 100개로 셈한 값이다. "안 사고 모으면"은 하루 74개를 다 받을 때의 날수다.</p>
+    <div class="scroll"><table>
+      <tr><th>살 것</th><th class="n">다이아</th><th class="n">돈으로 치면</th><th class="n">안 사고 모으면</th></tr>
+      <tr><td>머리 모양</td><td class="n">150</td><td class="n">약 1,800원</td><td class="n">2일</td></tr>
+      <tr><td>옷 한 벌</td><td class="n">300</td><td class="n">약 3,600원</td><td class="n">4일</td></tr>
+      <tr><td>등불 빛깔</td><td class="n">80</td><td class="n">약 1,000원</td><td class="n">1일</td></tr>
+      <tr><td>발밑 효과</td><td class="n">120</td><td class="n">약 1,400원</td><td class="n">2일</td></tr>
+      <tr><td>쉬는 동안 보상 30분 → 2시간 (한 번만)</td><td class="n">600</td><td class="n">약 7,200원</td><td class="n">8일</td></tr>
+    </table></div>
+    <h3>파는 상품</h3>
+    <div class="scroll"><table>
+      <tr><th>상품</th><th class="n">다이아</th><th class="n">덤</th><th class="n">다이아 한 개 값</th></tr>
+      <tr><td>1,200원</td><td class="n">100</td><td class="n">없음</td><td class="n">12원</td></tr>
+      <tr><td>5,900원</td><td class="n">550</td><td class="n">+12%</td><td class="n">10.7원</td></tr>
+      <tr><td>12,000원</td><td class="n">1,200</td><td class="n">+20%</td><td class="n">10원</td></tr>
+      <tr><td>33,000원</td><td class="n">3,600</td><td class="n">+31%</td><td class="n">9.2원</td></tr>
+      <tr class="hot"><td>월 4,900원 (날마다 40씩 30일)</td><td class="n">1,200</td><td class="n">+194%</td><td class="n">4.1원</td></tr>
+      <tr><td>광고 없애기 5,900원 (한 번만)</td><td class="n"></td><td class="n"></td><td class="n"></td></tr>
+    </table></div>
+    <ul>
+      <li>가장 이득인 것은 월 4,900원이다. 조금씩 오래 내는 사람이 가장 좋은 대우를 받게 한다.</li>
+      <li>힘을 올려 주는 상품은 없다. 쉬는 동안 보상을 늘려 주는 것 하나가 편의에 해당하는데, 다이아를 모아서도 살 수 있고 한 번만 산다.</li>
+    </ul>
+    <h3>돈을 낸 사람과 안 낸 사람</h3>
+    <div class="scroll"><table>
+      <tr><th>누가</th><th>한 달에 모이는 다이아</th><th>살 수 있는 것</th></tr>
+      <tr><td>돈을 안 쓰는 사람</td><td>74 × 30 = 2,220</td><td>옷 7벌, 또는 옷 4벌과 머리 6개</td></tr>
+      <tr><td>월 4,900원을 내는 사람</td><td>2,220 + 1,200 = 3,420</td><td>옷 11벌</td></tr>
+      <tr><td>12,000원을 한 번 낸 사람</td><td>2,220 + 1,200 = 3,420</td><td>옷 11벌</td></tr>
+    </table></div>
+    <p>돈을 내면 옷이 한 달에 네 벌쯤 더 모인다. 그 차이뿐이다. 그래서 옷이 달마다 네 벌 넘게 새로 나와야 다이아를 쓸 곳이 마르지 않는다. 지금 기사 한 사람에게 옷이 6~7벌 있으니, 출시 뒤에는 달마다 옷 서너 벌과 머리 서너 개를 더하는 것이 목표가 된다.</p>
+    <h3>매출 어림</h3>
+    <p>아래는 예측이 아니라 "이렇게 가정하면 이만큼"이라는 셈이다. 날마다 1,000명이 들어온다고 치고, 그 가운데 몇 %가 한 달에 5,900원을 낸다고 가정했다.</p>
+    <div class="scroll"><table>
+      <tr><th class="n">돈을 내는 사람의 비율</th><th class="n">1,000명 가운데</th><th class="n">한 달 매출 (한 사람 5,900원)</th><th class="n">수수료 15%를 뺀 뒤</th></tr>
+      <tr><td class="n">1%</td><td class="n">10명</td><td class="n">59,000원</td><td class="n">50,150원</td></tr>
+      <tr><td class="n">2%</td><td class="n">20명</td><td class="n">118,000원</td><td class="n">100,300원</td></tr>
+      <tr><td class="n">3%</td><td class="n">30명</td><td class="n">177,000원</td><td class="n">150,450원</td></tr>
+    </table></div>
+    <ul>
+      <li>구글 플레이는 한 해 매출 100만 달러까지 수수료가 15%이고, 정기 결제도 15%라고 안내한다. 나라에 따라 바뀌는 중이라 출시 전에 구글의 안내 쪽을 다시 봐야 한다.</li>
+      <li>한 자료는 롤플레잉 게임에서 첫날 돈을 내는 사람이 1.24%라고 적었다. 언제 어떤 게임을 센 것인지는 확인하지 못했다.</li>
+      <li>방치형 게임이 다음 날 다시 들어오는 비율은 자료마다 30~50%로 다르다. 이레 뒤는 10~30%다. 주변 사람 열 명에게 보여 줬을 때 <b>다음 날 서너 명이 다시 켜면</b> 보통은 되는 셈이다.</li>
+      <li>광고로 버는 돈은 믿을 만한 숫자를 찾지 못해 넣지 않았다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 id="ask">정해 주실 것</h2>
+    <ol>
+      <li><b>보스가 때리는 힘을 절반으로</b> 낮추고, 졌을 때 까닭을 알려 줄지.</li>
+      <li><b>치명타 강화</b>를 한 번에 +2%, 40골드로 바꿀지.</li>
+      <li><b>기억의 일격</b>을 800%로 올릴지(가이드라인의 배율 상한을 고침), 300%에 10초로 할지.</li>
+      <li><b>전리품을 스킬 강화 재료로</b> 쓸지.</li>
+      <li><b>구역마다 강화 단계가 열리는 방식</b>과 <b>구역 배수 4</b>로 갈지. 2구역을 만들기 전에 정해야 한다.</li>
+      <li><b>다이아</b>의 이름, 얻는 길, 값. 다이아로 골드를 못 사게 하는 것에 동의하시는지.</li>
+    </ol>
+    <p class="dim">1~4번은 지금 1구역에 바로 넣을 수 있다. 5번은 2구역과 함께, 6번은 사람들이 1구역을 끝까지 하는지 본 뒤에 넣어도 늦지 않다.</p>
+  </section>
+
+  <section>
+    <h2>출처</h2>
+    <ul>
+      <li><a href="https://support.google.com/googleplay/android-developer/answer/112622?hl=en">Google Play 서비스 수수료 안내</a></li>
+      <li><a href="https://appleinsider.com/articles/21/10/21/google-play-drops-all-subscription-commissions-to-15-from-day-one">구글 플레이 정기 결제 수수료 15% (AppleInsider)</a></li>
+      <li><a href="https://blog.playio.co/retention-by-game-genre">장르별 재방문 비율 (Playio)</a></li>
+      <li><a href="https://www.pocketgamer.biz/marketing-a-new-mobile-game-where-should-studios-start/">방치형 게임 재방문 비율 (PocketGamer.biz)</a></li>
+      <li><a href="https://businessofapps.com/?p=72852">롤플레잉 게임의 재방문과 결제 비율 (Business of Apps)</a></li>
+    </ul>
+    <p class="dim">게임 안의 숫자는 2026년 11월 14일의 게임 파일(index.html)에서 가져왔다. 걸리는 시간은 자동으로 강화를 사는 시험으로 잰 것이고, 사람이 하면 더 걸린다.</p>
+  </section>
+</div>
