@@ -1,480 +1,992 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>잊혀진 기사 키우기</title>
 <style>
-  * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; background: #0b0a14; color: #e9e2cf;
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
-  #wrap { max-width: 992px; margin: 0 auto; padding: 16px; }
-  #frame { border: 3px solid #4a3a2a; outline: 2px solid #15101f; border-radius: 4px;
-    box-shadow: 0 0 0 1px #7a5a36 inset, 0 8px 30px #000a; background: #000; position: relative; }
-  canvas { width: 100%; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
-  #top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
-  h1 { font-size: 20px; margin: 0; letter-spacing: 2px; color: #f0b541; text-shadow: 0 2px 0 #4a1528; }
-  h1 small { font-size: 12px; color: #8d8777; font-weight: normal; letter-spacing: 0; margin-left: 8px; }
-  #hud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
-  .stat { background: linear-gradient(#241d2e, #17131f); border: 2px solid #4a3a2a; border-radius: 4px;
-    padding: 8px 12px; font-size: 13px; color: #b9b0a0; display: flex; justify-content: space-between; }
-  .stat b { color: #ffe38a; font-size: 15px; }
-  #bar { height: 10px; background: #17131f; border: 2px solid #4a3a2a; border-radius: 3px; margin-top: 8px; }
-  #barFill { height: 100%; width: 0; background: linear-gradient(#ffe38a, #f0b541 50%, #b9762a); }
+:root{
+  --bg:#0d120d; --panel:#1c261b; --panel2:#2a2318; --box:#263324; --line:#4b4733;
+  --cream:#ece2c6; --dim:#a79e83; --acc:#e8943a; --hp:#7f9a5a; --bad:#b9735f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#070a07;overflow:hidden;overscroll-behavior:none}
+body{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","WenQuanYi Zen Hei",sans-serif;
+  color:var(--cream);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#stage{position:absolute;left:50%;top:50%;width:900px;height:1600px;transform-origin:center center;background:var(--bg);overflow:hidden}
+#cv{position:absolute;left:0;top:0;width:900px;height:992px;display:block}
+button{font:inherit;color:inherit;cursor:pointer;border:0;padding:0;background:none}
+.hidden{display:none!important}
+
+/* 아래 조작판 */
+#panel{position:absolute;left:0;top:992px;width:900px;height:608px;background:linear-gradient(#222d20,#182017);
+  border-top:4px solid var(--line);padding:16px 22px 0}
+.row{display:flex;align-items:center;gap:14px}
+#rowTop{height:76px}
+#gold{flex:1;font-size:46px;font-weight:700;display:flex;align-items:center;gap:14px}
+.coin{display:inline-block;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f3c777,#b9802f);border:3px solid #7a5420;flex:none}
+.coin.s{width:26px;height:26px;border-width:2px}
+.btn{height:68px;padding:0 26px;font-size:32px;font-weight:600;background:var(--panel2);border:3px solid var(--line);border-radius:14px}
+.btn:active{background:#3a3020}
+.btn.acc{background:var(--acc);border-color:#a8641f;color:#22170a}
+#rowStage{height:88px;margin-top:10px;background:var(--box);border:3px solid var(--line);border-radius:16px;padding:0 10px}
+.arrow{width:76px;height:68px;font-size:52px;line-height:60px;font-weight:700;border-radius:12px;background:var(--panel2);border:3px solid var(--line)}
+.arrow:disabled{opacity:.3}
+#stageName{flex:1;text-align:center;font-size:38px;font-weight:700;white-space:nowrap;overflow:hidden}
+#prog{font-size:36px;font-weight:700;color:var(--acc);min-width:110px;text-align:center}
+#auto{height:68px;padding:0 16px;font-size:28px;border-radius:12px;background:var(--panel2);border:3px solid var(--line);white-space:nowrap}
+#auto.on{border-color:var(--acc)}
+#rowHp{height:56px;margin-top:10px}
+#hpName{font-size:30px;width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hpBar{flex:1;height:40px;background:#10160f;border:3px solid var(--line);border-radius:12px;position:relative;overflow:hidden}
+#hpFill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(#93ae69,#6b854a)}
+#hpTxt{position:absolute;left:0;right:0;top:0;line-height:34px;text-align:center;font-size:28px;font-weight:700;text-shadow:0 2px 3px #000}
+.up{display:flex;align-items:center;width:100%;height:100px;margin-top:10px;padding:0 22px;background:var(--panel2);
+  border:3px solid var(--line);border-radius:16px;text-align:left}
+.up:active{background:#3a3020}
+.up .un{width:300px;font-size:36px;font-weight:700}
+.up .un small{font-size:28px;font-weight:400;color:var(--dim);margin-left:10px}
+.up .ue{flex:1;font-size:32px;color:var(--cream)}
+.up .upp{display:flex;align-items:center;gap:10px;font-size:34px;font-weight:700;color:var(--acc);min-width:170px;justify-content:flex-end}
+.up.no{opacity:.45}
+.up.no .upp{color:var(--dim)}
+
+/* 덮는 화면 */
+.ov{position:absolute;inset:0;background:#141c14;display:flex;flex-direction:column;z-index:10}
+.ovHead{display:flex;align-items:center;height:110px;padding:0 26px;border-bottom:4px solid var(--line);background:var(--panel);flex:none}
+.ovHead h2{flex:1;margin:0;font-size:46px}
+.ovBody{flex:1;overflow-y:auto;padding:22px 26px 60px;-webkit-overflow-scrolling:touch}
+.modal{position:absolute;inset:0;background:rgba(5,8,5,.78);display:flex;align-items:center;justify-content:center;z-index:20}
+.card{width:740px;background:var(--panel2);border:4px solid var(--line);border-radius:24px;padding:46px 44px;text-align:center}
+.card h3{margin:0 0 26px;font-size:44px;color:var(--acc)}
+.card p{margin:14px 0;font-size:36px;line-height:1.5}
+.card .small{font-size:30px;color:var(--dim)}
+.card .btns{display:flex;gap:20px;justify-content:center;margin-top:36px}
+.card .btn{height:84px;font-size:36px;padding:0 44px}
+
+/* 시작 화면 */
+#start{align-items:center;background:radial-gradient(ellipse at 50% 30%,#2a3a27,#0e140e 75%)}
+#start h1{margin:190px 0 14px;font-size:78px;letter-spacing:2px}
+#start .sub{font-size:32px;color:var(--dim);margin-bottom:60px}
+#gPick{display:flex;gap:36px}
+.gBtn{width:300px;height:430px;background:var(--panel);border:4px solid var(--line);border-radius:22px;font-size:36px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:22px}
+.gBtn canvas{width:240px;height:330px}
+.gBtn.sel{border-color:var(--acc);background:#2c3a28}
+#start label{font-size:32px;color:var(--dim);margin:56px 0 14px}
+#nameIn{width:460px;height:92px;font:inherit;font-size:44px;text-align:center;color:var(--cream);background:#10160f;
+  border:4px solid var(--line);border-radius:16px;outline:none;user-select:text;-webkit-user-select:text}
+#nameIn:focus{border-color:var(--acc)}
+#goBtn{margin-top:60px;width:460px;height:110px;font-size:46px}
+
+/* 꾸미기 */
+#cosTop{display:flex;gap:24px;align-items:stretch}
+#cosPrev{width:400px;height:480px;border-radius:20px;border:4px solid var(--line);flex:none}
+#cosNote{flex:1;font-size:30px;line-height:1.55;color:var(--dim);background:var(--panel);border:3px solid var(--line);border-radius:20px;padding:26px}
+#cosNote b{color:var(--cream);font-size:34px}
+.sec{margin:34px 0 14px;font-size:36px;font-weight:700;color:var(--acc)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{min-height:112px;padding:14px 20px;background:var(--panel);border:3px solid var(--line);border-radius:16px;text-align:left;display:flex;align-items:center;gap:16px}
+.opt .on{font-size:34px;font-weight:700}
+.opt .oh{font-size:26px;color:var(--dim);margin-top:4px}
+.opt.sel{border-color:var(--acc);background:#2c3a28}
+.opt.lock{opacity:.55}
+.dot{width:40px;height:40px;border-radius:50%;flex:none;border:3px solid #0008}
+
+/* 도감 */
+.dex{display:flex;gap:22px;align-items:center;background:var(--panel);border:3px solid var(--line);border-radius:18px;padding:16px 20px;margin-bottom:14px}
+.dex .pic{width:150px;height:150px;flex:none;background:#2f4230;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.dex img{width:140px;height:140px;object-fit:contain}
+.dex.un img{filter:brightness(0);opacity:.55}
+.dex .dn{font-size:36px;font-weight:700}
+.dex .dn small{font-size:28px;color:var(--acc);margin-right:12px}
+.dex .dt{font-size:29px;line-height:1.4;margin:6px 0;color:var(--cream)}
+.dex .dl{font-size:28px;color:var(--dim)}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <div id="top"><h1>잊혀진 기사 키우기<small>체험판 1단계</small></h1></div>
-  <div id="frame"><canvas id="game" width="480" height="270"></canvas></div>
-  <div id="bar"><div id="barFill"></div></div>
-  <div id="hud">
-    <div class="stat">레벨<b id="sLevel">1</b></div>
-    <div class="stat">공격력<b id="sAtk">5</b></div>
-    <div class="stat">골드<b id="sGold">0</b></div>
-    <div class="stat">처치<b id="sKills">0</b></div>
+<div id="stage">
+  <canvas id="cv"></canvas>
+
+  <div id="panel">
+    <div class="row" id="rowTop">
+      <div id="gold"><span class="coin"></span><span id="goldTxt">0</span></div>
+      <button class="btn" id="bCos">꾸미기</button>
+      <button class="btn" id="bDex">도감</button>
+      <button class="btn" id="bSet">설정</button>
+    </div>
+    <div class="row" id="rowStage">
+      <button class="arrow" id="bPrev">‹</button>
+      <div id="stageName"></div>
+      <div id="prog"></div>
+      <button id="auto"></button>
+      <button class="arrow" id="bNext">›</button>
+    </div>
+    <div class="row" id="rowHp">
+      <div id="hpName"></div>
+      <div id="hpBar"><div id="hpFill"></div><div id="hpTxt"></div></div>
+    </div>
+    <button class="up" data-k="atk"><span class="un"></span><span class="ue"></span><span class="upp"></span></button>
+    <button class="up" data-k="hp"><span class="un"></span><span class="ue"></span><span class="upp"></span></button>
+    <button class="up" data-k="crit"><span class="un"></span><span class="ue"></span><span class="upp"></span></button>
   </div>
+
+  <div class="ov hidden" id="start">
+    <h1>잊혀진 기사 키우기</h1>
+    <div class="sub">기사를 고르고 이름을 지어 주세요.</div>
+    <div id="gPick">
+      <button class="gBtn" data-g="m"><canvas width="240" height="330"></canvas>남자 기사</button>
+      <button class="gBtn" data-g="f"><canvas width="240" height="330"></canvas>여자 기사</button>
+    </div>
+    <label for="nameIn">기사 이름</label>
+    <input id="nameIn" maxlength="8" value="루" autocomplete="off" spellcheck="false">
+    <button class="btn acc" id="goBtn">시작</button>
+  </div>
+
+  <div class="ov hidden" id="cos">
+    <div class="ovHead"><h2>꾸미기</h2><button class="btn" data-close="cos">닫기</button></div>
+    <div class="ovBody">
+      <div id="cosTop">
+        <canvas id="cosPrev" width="400" height="480"></canvas>
+        <div id="cosNote"><b>모습만 바뀝니다.</b><br>꾸미기는 능력치를 바꾸지 않습니다.<br>좋아하는 모습 그대로 강해지세요.<br><br>잠긴 것은 적힌 일을 하면 열립니다.</div>
+      </div>
+      <div id="cosLists"></div>
+    </div>
+  </div>
+
+  <div class="ov hidden" id="dex">
+    <div class="ovHead"><h2>도감 · 이슬숲 길</h2><button class="btn" data-close="dex">닫기</button></div>
+    <div class="ovBody" id="dexList"></div>
+  </div>
+
+  <div class="modal hidden" id="modal"><div class="card" id="cardBox"></div></div>
 </div>
+
 <script>
 'use strict';
-/*
-  그림을 만드는 방식 (외부 그림 파일 없음, 전부 이 파일의 코드가 그린다)
-  1) 캐릭터를 관절 인형처럼 매끄러운 도형으로 그린다 (몸통·팔·다리가 각도로 움직임)
-  2) 정해 둔 색(팔레트)으로만 줄인다 → 그라데이션이 도트 특유의 층진 명암이 된다
-  3) 바깥에 어두운 외곽선을 자동으로 두른다
-  4) 게임 시작 때 동작별로 미리 구워 두고(프레임), 게임 중에는 그 그림만 찍는다
-*/
-const W = 480, H = 270, GY = 214, KX = 118;
-
-// ---------- 색 (밝음 → 어두움) ----------
-const R = {
-  steel:   ['#eef3f6', '#b4c0cc', '#7d8ba0', '#515d76', '#30364b'],
-  red:     ['#ee6a4e', '#bd3540', '#832036', '#4c162a'],
-  leather: ['#b98250', '#855632', '#5a3825', '#37221c'],
-  gold:    ['#ffe38a', '#f0b541', '#b9762a', '#7a4a1e'],
-  bone:    ['#f6f0de', '#d2c9ab', '#9d947e', '#676158'],
-  mud:     ['#b0935f', '#806842', '#584631', '#362c24'],
-  shade:   ['#9a8adc', '#6352a0', '#3f336e', '#251e45'],
-  moss:    ['#a4cc5e', '#639a43', '#3c6f3c', '#244c36'],
+/* =====================================================================
+   조정값 (TUNING) — 숫자는 전부 여기서 고친다.
+   기준: 가이드라인.md 3장 "숫자" 표.
+   ===================================================================== */
+const TUNE = {
+  // 기사 기본값 (가이드라인)
+  KNIGHT_ATK: 10, KNIGHT_HP: 100, ATK_INTERVAL: 1.0, CRIT: 0.05, CRIT_MULT: 1.5, CRIT_CAP: 0.50,
+  // 강화: 한 번에 오르는 양(step)과 첫 값(price). 값은 한 번에 7%씩 비싸진다 (가이드라인)
+  UP: {
+    atk:  { step: 1,    price: 12 },   // 공격력 +1
+    hp:   { step: 15,   price: 10 },   // 체력 +15
+    crit: { step: 0.01, price: 40 },   // 치명타 확률 +1%
+  },
+  PRICE_GROW: 1.07,
+  // 몬스터 (가이드라인)
+  MON_HP0: 20, MON_HP_GROW: 1.2, ZONE_MULT: 5,
+  BOSS_HP_MULT: 10, BOSS_TIME: 30, BOSS_GOLD_MULT: 10,
+  MON_ATK_RATIO: 0.1, GOLD_RATIO: 0.25,
+  KILLS_TO_CLEAR: 10, ON_SCREEN: 6, DMG_CAP: 99990000,
+  // 아래는 가이드라인에 없어서 이 파일에서 정한 값
+  KNIGHT_SPEED: 210,        // 기사 걷는 빠르기 (px/초)
+  REGEN: 0.01,              // 1초에 최대 체력의 1% 회복
+  REVIVE: 3,                // 쓰러진 뒤 다시 일어나는 시간(초)
+  MON_SPEED: 70,            // 몬스터 걷는 빠르기 (px/초)
+  MON_ATK_INTERVAL: 1.6,    // 몬스터 공격 간격(초)
+  BOSS_ATK_INTERVAL: 2.4,   // 보스 공격 간격(초)
+  BOSS_ATK_MULT: 1.0,       // 보스 공격력 배수 (보스 체력의 10분의 1에 곱한다)
+  MAX_ATTACKERS: 2,         // 한꺼번에 기사를 때릴 수 있는 몬스터 수
+  WAIT_RING: 1.9,           // 차례를 기다리는 몬스터가 물러서 있는 거리 (공격 거리의 배수)
+  RESPAWN: [0.8, 2.0],      // 새 몬스터가 나타나기까지(초)
+  LOOT_CHANCE: 0.12,        // 전리품이 나올 확률 (보스는 항상)
+  OFFLINE_CAP_H: 2,         // 쉬는 동안 보상 최대 시간
+  OFFLINE_SEC_PER_KILL: 20, // 쉬는 동안은 20초에 한 마리 잡은 것으로 친다
+  SAVE_EVERY: 5,            // 자동 저장 간격(초)
 };
-const OUT = '#15101f';
-const CHAR_PAL = [].concat(...Object.values(R), [OUT, '#ff5a3c', '#fff6c8', '#b8f060']);
-const SKY_PAL = ['#0b0a1a', '#141230', '#1f1a45', '#2a1f52', '#33225a', '#55306a', '#7a3a6c',
-  '#a04a6e', '#c8667a', '#e08a6a', ...R.bone];
-const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 
-// ---------- 굽기: 매끄러운 그림 → 도트 ----------
-function post(cv, pal, opt = {}) {
-  const c = cv.getContext('2d'), w = cv.width, h = cv.height;
-  const im = c.getImageData(0, 0, w, h), d = im.data;
-  const P = pal.map(hex), solid = new Uint8Array(w * h), cache = new Map();
-  const dither = opt.dither || 0;
-  for (let i = 0; i < w * h; i++) {
-    if (d[i * 4 + 3] < 120) { d[i * 4 + 3] = 0; continue; }
-    solid[i] = 1;
-    const o = dither ? (BAYER[(i % w & 3) + ((i / w | 0) & 3) * 4] / 15 - 0.5) * dither : 0;
-    const r = d[i * 4] + o, g = d[i * 4 + 1] + o, b = d[i * 4 + 2] + o;
-    const key = (r & 255) << 16 | (g & 255) << 8 | (b & 255);
-    let best = cache.get(key);
-    if (best === undefined) {
-      let bd = 1e9;
-      for (let k = 0; k < P.length; k++) {
-        const e = (P[k][0] - r) ** 2 * 0.9 + (P[k][1] - g) ** 2 * 1.2 + (P[k][2] - b) ** 2;
-        if (e < bd) { bd = e; best = k; }
-      }
-      cache.set(key, best);
-    }
-    d[i * 4] = P[best][0]; d[i * 4 + 1] = P[best][1]; d[i * 4 + 2] = P[best][2]; d[i * 4 + 3] = 255;
-  }
-  if (opt.outline !== false) {
-    const o = hex(OUT);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = y * w + x;
-      if (solid[i]) continue;
-      if ((x > 0 && solid[i - 1]) || (x < w - 1 && solid[i + 1]) || (y > 0 && solid[i - w]) || (y < h - 1 && solid[i + w])) {
-        d[i * 4] = o[0]; d[i * 4 + 1] = o[1]; d[i * 4 + 2] = o[2]; d[i * 4 + 3] = 255;
-      }
-    }
-  }
-  c.putImageData(im, 0, 0);
-  return cv;
-}
-function mk(w, h) { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; return cv; }
-function whiteOf(cv) {
-  const o = mk(cv.width, cv.height), c = o.getContext('2d');
-  c.drawImage(cv, 0, 0); c.globalCompositeOperation = 'source-in';
-  c.fillStyle = '#fff'; c.fillRect(0, 0, o.width, o.height);
-  return o;
-}
-function bake(w, h, n, draw, pal = CHAR_PAL) {
-  const frames = [];
-  for (let i = 0; i < n; i++) {
-    const cv = mk(w, h);
-    draw(cv.getContext('2d'), i / n);
-    frames.push(post(cv, pal));
-  }
-  frames.white = frames.map(whiteOf);
-  return frames;
-}
-
-// ---------- 그리기 도구 ----------
-function part(c, ramp, path, x0, y0, x1, y1) {
-  const g = c.createLinearGradient(x0, y0, x1, y1);
-  ramp.forEach((col, i) => g.addColorStop(i / (ramp.length - 1), col));
-  c.fillStyle = g; c.beginPath(); path(c); c.fill();
-}
-// 관절에서 뻗는 팔다리. ang 0 = 아래, +면 앞(오른쪽)으로. 끝점을 돌려준다
-function limb(c, x, y, ang, len, w, ramp) {
-  c.save(); c.translate(x, y); c.rotate(-ang);
-  part(c, ramp, p => p.roundRect(-w / 2, -w / 2, w, len + w, w / 2), w / 2, 0, -w / 2, 0);
-  c.restore();
-  return { x: x + Math.sin(ang) * len, y: y + Math.cos(ang) * len };
-}
-function leg(c, hx, hy, sw, bend, ramp, boot, w = 5) {
-  const k = limb(c, hx, hy, sw, 6, w, ramp);
-  const f = limb(c, k.x, k.y, sw - bend, 6, w - 0.6, ramp);
-  part(c, boot, p => p.roundRect(f.x - 2.5, f.y - 0.5, 7, 3.6, 1.5), 0, f.y - 1, 0, f.y + 4);
-}
-function sword(c, x, y, ang, blade, guard, len = 21) {
-  c.save(); c.translate(x, y); c.rotate(ang);
-  part(c, blade, p => { p.moveTo(-1.8, -3); p.lineTo(-1.8, -len + 2); p.lineTo(0, -len - 2); p.lineTo(1.8, -len + 2); p.lineTo(1.8, -3); },
-    1.8, 0, -1.8, 0);
-  part(c, guard, p => p.roundRect(-4.5, -4, 9, 2.6, 1), 0, -4, 0, -1);
-  part(c, R.leather.slice(1), p => p.rect(-1.2, -1.5, 2.4, 4.5), 1, 0, -1, 0);
-  part(c, guard, p => p.arc(0, 4, 1.8, 0, 7), 0, 2, 0, 6);
-  c.restore();
-}
-const lerp = (a, b, t) => a + (b - a) * t;
-const ease = t => t * t * (3 - 2 * t);
-
-// ---------- 전사 ----------
-function drawWarrior(c, p) {
-  const hx = 30, hy = 51 + p.bob, far = R.steel.slice(2), near = R.steel.slice(0, 4);
-  c.save(); c.translate(hx, 66); c.rotate(p.lean); c.translate(-hx, -66);
-  // 망토
-  const cs = p.cape;
-  part(c, R.red.slice(1), q => { q.moveTo(hx - 3, hy - 15); q.lineTo(hx - 7, hy - 15);
-    q.quadraticCurveTo(hx - 10 - cs, hy - 2, hx - 14 - cs * 2, hy + 9);
-    q.lineTo(hx - 5 - cs, hy + 10); q.lineTo(hx - 2, hy - 2); }, hx, hy - 15, hx - 12, hy + 10);
-  // 먼 쪽 다리, 가까운 쪽 다리
-  leg(c, hx + 1, hy, p.l2[0], p.l2[1], far, R.leather.slice(2));
-  leg(c, hx - 1, hy, p.l1[0], p.l1[1], near, R.leather.slice(1));
-  // 몸통 갑옷
-  part(c, R.steel, q => q.roundRect(hx - 6, hy - 16, 12.5, 17.5, 4), hx + 7, hy - 16, hx - 6, hy + 2);
-  part(c, R.red, q => q.roundRect(hx - 0.5, hy - 10, 6.5, 13, 1.5), hx + 6, hy - 10, hx, hy + 4);
-  c.fillStyle = R.gold[1]; c.fillRect(hx - 0.5, hy + 1.5, 6.5, 1.3);
-  part(c, R.leather, q => q.rect(hx - 6, hy - 3.5, 12.5, 2.6), 0, hy - 4, 0, hy);
-  c.fillStyle = R.gold[0]; c.fillRect(hx + 1.5, hy - 4, 3, 3.4);
-  // 투구
-  const ky = hy - 22;
-  part(c, R.red, q => { q.moveTo(hx + 1, ky - 6); q.quadraticCurveTo(hx - 8 - cs, ky - 13, hx - 12 - cs * 1.5, ky - 1);
-    q.quadraticCurveTo(hx - 6 - cs, ky - 6, hx - 2, ky - 4); }, hx, ky - 10, hx - 10, ky);
-  part(c, R.steel, q => q.arc(hx + 1, ky, 6.6, 0, 7), hx + 6, ky - 6, hx - 5, ky + 7);
-  part(c, R.steel.slice(1), q => q.roundRect(hx - 4, ky + 2.5, 11, 4.5, 1.5), hx + 7, ky + 2, hx - 4, ky + 7);
-  c.fillStyle = OUT; c.fillRect(hx + 2, ky - 1.5, 6.5, 2.2);
-  c.fillStyle = R.steel[0]; c.fillRect(hx - 1, ky - 6.6, 3, 1.4);
-  // 방패
-  c.save(); c.translate(hx + 8.5, hy - 7.5 + p.bob * 0.5);
-  const sh = (q, s) => { q.moveTo(-5.5 * s, -7.5 * s); q.lineTo(5.5 * s, -7.5 * s); q.lineTo(5.5 * s, 0);
-    q.quadraticCurveTo(5 * s, 6.5 * s, 0, 9.5 * s); q.quadraticCurveTo(-5 * s, 6.5 * s, -5.5 * s, 0); q.closePath(); };
-  part(c, R.steel, q => sh(q, 1), 5, -8, -5, 9);
-  part(c, R.red, q => sh(q, 0.7), 5, -6, -4, 7);
-  c.fillStyle = R.gold[1]; c.fillRect(-0.8, -4, 1.8, 8.5); c.fillRect(-3.2, -1.8, 6.6, 1.8);
-  c.restore();
-  // 칼 든 팔
-  const sx = hx - 1.5, sy = hy - 13;
-  const e = { x: sx + Math.sin(p.ua) * 5.5, y: sy + Math.cos(p.ua) * 5.5 };
-  const hnd = { x: e.x + Math.sin(p.fa) * 5.5, y: e.y + Math.cos(p.fa) * 5.5 };
-  sword(c, hnd.x, hnd.y, p.sa, R.steel.slice(0, 3), R.gold);
-  limb(c, sx, sy, p.ua, 5.5, 4.4, near);
-  limb(c, e.x, e.y, p.fa, 5.5, 4, R.steel.slice(1));
-  part(c, R.leather, q => q.arc(hnd.x, hnd.y, 2.4, 0, 7), hnd.x + 2, hnd.y - 2, hnd.x - 2, hnd.y + 2);
-  part(c, R.steel.slice(0, 4), q => q.arc(sx, sy - 0.5, 4.3, 0, 7), sx + 3, sy - 4, sx - 3, sy + 4);
-  c.restore();
-}
-function warriorWalk(c, t) {
-  const a = t * Math.PI * 2, s = Math.sin(a);
-  drawWarrior(c, { bob: Math.abs(Math.cos(a)) * 1.6 - 0.8, lean: 0.05, cape: 1.5 + Math.sin(a * 2) * 1.2,
-    l1: [s * 0.6, Math.max(0, Math.cos(a)) * 0.8], l2: [-s * 0.6, Math.max(0, -Math.cos(a)) * 0.8],
-    ua: -0.6 - s * 0.2, fa: -0.25 - s * 0.2, sa: -2.0 + s * 0.08 });
-}
-function warriorAttack(c, t) {
-  let ua, fa, sa, lean, k;
-  if (t < 0.3) { k = ease(t / 0.3); ua = lerp(-0.6, -2.5, k); fa = lerp(-0.25, -2.9, k); sa = lerp(-2.0, -1.0, k); lean = lerp(0.05, -0.1, k); }
-  else if (t < 0.5) { k = ease((t - 0.3) / 0.2); ua = lerp(-2.5, 1.25, k); fa = lerp(-2.9, 1.5, k); sa = lerp(-1.0, 2.2, k); lean = lerp(-0.1, 0.24, k); }
-  else { k = ease((t - 0.5) / 0.5); ua = lerp(1.25, -0.6, k); fa = lerp(1.5, -0.25, k); sa = lerp(2.2, 4.28, k); lean = lerp(0.24, 0.05, k); }
-  drawWarrior(c, { bob: lean * 6, lean, cape: 2 - lean * 14, l1: [0.55, 0], l2: [-0.6, 0.25], ua, fa, sa });
-}
-
-// ---------- 몬스터 (오른쪽을 보게 굽고, 화면에서는 뒤집어 그린다) ----------
-function drawMud(c, t) {
-  const s = Math.sin(t * Math.PI * 2), cx = 28, by = 40, w = 34 * (1 + s * 0.09), h = 24 * (1 - s * 0.11);
-  const blob = (q, k) => { q.moveTo(cx - w / 2 * k, by); q.bezierCurveTo(cx - w * 0.62 * k, by - h * 1.25 * k, cx + w * 0.62 * k, by - h * 1.4 * k, cx + w / 2 * k, by); q.closePath(); };
-  part(c, R.mud, q => blob(q, 1), cx + w / 2, by - h, cx - w / 3, by + 4);
-  part(c, R.moss, q => q.ellipse(cx - 4, by - h * 0.93, 9, 3.2, -0.15, 0, 7), cx + 4, by - h - 2, cx - 10, by - h + 4);
-  c.fillStyle = R.mud[0]; c.beginPath(); c.ellipse(cx + 8, by - h * 0.72, 3.5, 1.6, -0.5, 0, 7); c.fill();
-  for (const ex of [3, 11]) {
-    c.fillStyle = OUT; c.beginPath(); c.ellipse(cx + ex, by - h * 0.42, 2.6, 3, 0, 0, 7); c.fill();
-    c.fillStyle = '#b8f060'; c.fillRect(cx + ex - 0.2, by - h * 0.42 - 1.6, 1.8, 2.2);
-  }
-  c.fillStyle = OUT; c.beginPath(); c.ellipse(cx + 7, by - h * 0.16, 5, 1.6 + s * 0.6, 0, 0, 7); c.fill();
-  part(c, R.mud.slice(1), q => q.ellipse(cx - w / 2 - 3, by - 1.5, 3, 1.8, 0, 0, 7), 0, by - 3, 0, by);
-}
-function drawSkeleton(c, t) {
-  const a = t * Math.PI * 2, s = Math.sin(a), hx = 30, hy = 51 + Math.abs(Math.cos(a)) * 1.4 - 0.7;
-  const far = R.bone.slice(2), near = R.bone.slice(0, 3);
-  part(c, R.red.slice(2), q => { q.moveTo(hx - 2, hy - 16); q.lineTo(hx - 13 - s, hy - 12 + s); q.lineTo(hx - 11, hy - 8); q.lineTo(hx - 3, hy - 12); }, hx, hy - 16, hx - 12, hy - 8);
-  leg(c, hx + 1, hy, -s * 0.55, Math.max(0, -Math.cos(a)) * 0.7, far, far, 3);
-  leg(c, hx - 1, hy, s * 0.55, Math.max(0, Math.cos(a)) * 0.7, near, near, 3);
-  part(c, R.bone.slice(1), q => q.ellipse(hx, hy - 1, 4.5, 2.6, 0, 0, 7), hx + 4, hy - 3, hx - 4, hy + 2);
-  c.fillStyle = R.bone[2]; c.fillRect(hx - 1, hy - 7, 2.2, 6);
-  part(c, R.bone, q => q.roundRect(hx - 5, hy - 16, 10.5, 10, 3.5), hx + 6, hy - 16, hx - 5, hy - 5);
-  c.fillStyle = R.bone[3]; for (let i = 0; i < 3; i++) c.fillRect(hx - 3, hy - 13.2 + i * 2.6, 7.5, 1.1);
-  const ky = hy - 22.5;
-  part(c, R.bone, q => q.arc(hx + 1, ky, 6.2, 0, 7), hx + 6, ky - 6, hx - 5, ky + 7);
-  part(c, R.bone.slice(1), q => q.roundRect(hx - 1, ky + 3.5, 7, 3.8, 1), hx + 6, ky + 3, hx - 1, ky + 8);
-  c.fillStyle = OUT; c.beginPath(); c.arc(hx + 4, ky - 0.3, 2.2, 0, 7); c.fill(); c.fillRect(hx + 1, ky + 5.2, 5, 1);
-  c.fillStyle = '#ff5a3c'; c.fillRect(hx + 3.6, ky - 1, 1.6, 1.8);
-  const ua = 0.5 + s * 0.25, fa = 1.5 + s * 0.2, sx = hx - 1, sy = hy - 14;
-  const e = { x: sx + Math.sin(ua) * 5.5, y: sy + Math.cos(ua) * 5.5 };
-  const hnd = { x: e.x + Math.sin(fa) * 5.5, y: e.y + Math.cos(fa) * 5.5 };
-  sword(c, hnd.x, hnd.y, 0.9 + s * 0.15, R.leather.slice(0, 3), R.gold.slice(2), 17);
-  limb(c, sx, sy, ua, 5.5, 2.8, near); limb(c, e.x, e.y, fa, 5.5, 2.6, R.bone.slice(1));
-}
-function drawWolf(c, t) {
-  const a = t * Math.PI * 2, s = Math.sin(a), co = Math.cos(a), by = 27 + s * 1.5, far = R.shade.slice(2), near = R.shade.slice(0, 3);
-  const wl = (x, ph, ramp) => { const sw = Math.sin(a + ph) * 0.8;
-    const k = limb(c, x, by + 3, sw, 6.5, 4, ramp); limb(c, k.x, k.y, sw - 0.5 - Math.max(0, Math.cos(a + ph)) * 0.8, 6.5, 3, ramp); };
-  part(c, R.shade.slice(1), q => { q.moveTo(21, by - 4); q.quadraticCurveTo(8, by - 14 + co * 4, 3, by - 4 + co * 5); q.quadraticCurveTo(11, by - 4, 21, by + 2); }, 20, by - 10, 4, by + 2);
-  wl(24, 3.4, far); wl(45, 0.6, far);
-  part(c, R.shade, q => q.ellipse(34, by, 16, 8.2, -0.06, 0, 7), 44, by - 9, 24, by + 9);
-  part(c, R.shade, q => q.ellipse(46, by - 3, 8.5, 8.5, 0, 0, 7), 52, by - 11, 40, by + 6);
-  wl(22, 0, near); wl(43, 3.0, near);
-  const hx = 54, hy = by - 8 + co * 1.2;
-  part(c, R.shade.slice(1), q => { q.moveTo(hx - 5, hy - 5); q.lineTo(hx - 4, hy - 13); q.lineTo(hx, hy - 6); }, hx, hy - 12, hx - 5, hy - 5);
-  part(c, R.shade, q => q.arc(hx, hy, 6.5, 0, 7), hx + 5, hy - 6, hx - 5, hy + 6);
-  part(c, R.shade, q => { q.moveTo(hx + 2, hy - 4); q.lineTo(hx + 13, hy + 0.5); q.lineTo(hx + 12, hy + 4); q.lineTo(hx + 2, hy + 5); }, hx + 10, hy - 4, hx + 3, hy + 6);
-  part(c, R.shade, q => { q.moveTo(hx - 1, hy - 5); q.lineTo(hx + 2, hy - 13); q.lineTo(hx + 5, hy - 5); }, hx + 5, hy - 12, hx - 1, hy - 5);
-  c.fillStyle = OUT; c.fillRect(hx + 11.5, hy, 2.2, 2); c.fillRect(hx + 5, hy + 3.2, 7, 1);
-  c.fillStyle = '#fff6c8'; c.fillRect(hx + 7, hy + 3.4, 1, 1.6); c.fillRect(hx + 9.5, hy + 3.4, 1, 1.4);
-  c.fillStyle = '#ff5a3c'; c.fillRect(hx + 3, hy - 2.4, 2.4, 1.8);
-}
-function drawSlash(c, t) {
-  const k = 0.35 + t * 0.9;
-  c.translate(8, 30); c.rotate(-0.9 + t * 0.6);
-  part(c, ['#ffffff', R.gold[0], R.gold[1]], q => { q.arc(0, 0, 30, -0.9 * k, 1.1 * k); q.arc(-7 - t * 6, 0, 31, 0.95 * k, -0.8 * k, true); q.closePath(); }, 30, 0, 14, 0);
-}
-
-// ---------- 배경 ----------
-function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function bakeSky() {
-  const cv = mk(W, H), c = cv.getContext('2d'), g = c.createLinearGradient(0, 0, 0, GY);
-  [[0, '#0b0a1a'], [0.4, '#1f1a45'], [0.7, '#55306a'], [0.88, '#a04a6e'], [1, '#e08a6a']].forEach(s => g.addColorStop(s[0], s[1]));
-  c.fillStyle = g; c.fillRect(0, 0, W, H);
-  const halo = c.createRadialGradient(372, 62, 20, 372, 62, 70);
-  halo.addColorStop(0, 'rgba(160,74,110,0.55)'); halo.addColorStop(1, 'rgba(160,74,110,0)');
-  c.fillStyle = halo; c.fillRect(0, 0, W, H);
-  part(c, R.bone.slice(0, 3), q => q.arc(372, 62, 23, 0, 7), 388, 46, 352, 84);
-  c.fillStyle = R.bone[1];
-  [[364, 54, 5], [380, 70, 4], [368, 74, 2.5], [384, 52, 2.5]].forEach(m => { c.beginPath(); c.arc(m[0], m[1], m[2], 0, 7); c.fill(); });
-  post(cv, SKY_PAL, { dither: 30, outline: false });
-  const r = rng(7);
-  for (let i = 0; i < 70; i++) { const x = r() * W | 0, y = r() * 120 | 0; c.fillStyle = r() < 0.25 ? '#eef3f6' : '#9a8adc'; c.fillRect(x, y, 1, 1); if (r() < 0.08) { c.fillRect(x - 1, y, 3, 1); c.fillRect(x, y - 1, 1, 3); } }
-  return cv;
-}
-function bakeMountains() {
-  const cv = mk(W, H), c = cv.getContext('2d'), k = Math.PI * 2 / W;
-  part(c, ['#55306a', '#33225a', '#1f1a45'], q => { q.moveTo(0, H);
-    for (let x = 0; x <= W; x += 2) q.lineTo(x, 158 - 34 * Math.abs(Math.sin(x * k * 1.5)) - 14 * Math.sin(x * k * 4 + 1) - 6 * Math.sin(x * k * 11));
-    q.lineTo(W, H); }, 0, 100, 0, GY);
-  return post(cv, ['#55306a', '#44296a', '#33225a', '#2a1f52', '#1f1a45'], { dither: 22, outline: false });
-}
-function bakeRuins() {
-  const cv = mk(W, H), c = cv.getContext('2d'), r = rng(21), D = '#141230', L = '#221c4a';
-  const tower = (x, y, w) => { c.fillStyle = D; c.fillRect(x, y, w, GY - y); c.fillStyle = L; c.fillRect(x + w - 3, y, 3, GY - y);
-    c.fillStyle = D; for (let i = 0; i < w; i += 8) c.fillRect(x + i - 1, y - 6, 5, 6);
-    c.fillStyle = '#f0b541'; c.fillRect(x + w / 2 - 2, y + 18, 3, 6); c.fillStyle = '#b9762a'; c.fillRect(x + w / 2 - 2, y + 24, 3, 1); };
-  tower(40, 104, 34); tower(74, 138, 20);
-  c.fillStyle = D; for (let x = 94; x < 210; x += 6) { const h = 22 + r() * 26 * (1 - (x - 94) / 140); c.fillRect(x, GY - h, 6, h); }
-  c.fillStyle = L; c.fillRect(150, GY - 20, 2, 20);
-  const tree = (x, y, ang, len, w) => { if (len < 4) return; const x2 = x + Math.sin(ang) * len, y2 = y - Math.cos(ang) * len;
-    c.strokeStyle = D; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x2, y2); c.stroke();
-    tree(x2, y2, ang - 0.35 - r() * 0.4, len * 0.72, w * 0.7); tree(x2, y2, ang + 0.3 + r() * 0.4, len * 0.7, w * 0.7); };
-  tree(292, GY, 0.05, 30, 6); tree(450, GY, -0.1, 22, 4);
-  c.fillStyle = D; c.fillRect(372, 150, 24, GY - 150); c.beginPath(); c.moveTo(368, 150); c.lineTo(384, 122); c.lineTo(400, 150); c.fill();
-  c.fillStyle = '#f0b541'; c.fillRect(382, 164, 3, 5);
-  for (const gx of [236, 252, 330]) { c.fillStyle = D; c.beginPath(); c.roundRect(gx, GY - 13, 9, 14, [4, 4, 0, 0]); c.fill(); }
-  return post(cv, [D, L, '#f0b541', '#b9762a'], { outline: false });
-}
-function bakeGround() {
-  const cv = mk(W, H - GY + 12), c = cv.getContext('2d'), r = rng(5), g = c.createLinearGradient(0, 12, 0, cv.height);
-  g.addColorStop(0, '#5a4860'); g.addColorStop(0.35, '#3d3344'); g.addColorStop(1, '#1b1626');
-  c.fillStyle = g; c.fillRect(0, 12, W, cv.height);
-  for (let i = 0; i < 26; i++) { const x = r() * W, y = 22 + r() * 30, w = 3 + r() * 6;
-    part(c, ['#7d8ba0', '#515d76', '#30364b'], q => q.ellipse(x, y, w, w * 0.45, 0, 0, 7), x, y - 3, x, y + 3); }
-  for (let x = 0; x < W; x += 2) { const h = 3 + r() * 7, l = r();
-    c.fillStyle = l < 0.2 ? R.moss[1] : l < 0.6 ? R.moss[2] : R.moss[3];
-    c.beginPath(); c.moveTo(x - 1.5, 14); c.lineTo(x + (r() - 0.5) * 4, 14 - h); c.lineTo(x + 1.5, 14); c.fill(); }
-  return post(cv, ['#5a4860', '#4a3c52', '#3d3344', '#2c2536', '#1b1626', '#7d8ba0', '#515d76', '#30364b', ...R.moss], { dither: 26, outline: false });
-}
-function bakeFront() {
-  const cv = mk(W, 40), c = cv.getContext('2d'), r = rng(99);
-  c.fillStyle = '#0b0a1a';
-  for (let x = 0; x < W; x += 3) { const h = 6 + r() * 16 * (0.4 + 0.6 * Math.abs(Math.sin(x * Math.PI * 2 / W * 2)));
-    c.beginPath(); c.moveTo(x - 2, 40); c.lineTo(x + (r() - 0.5) * 6, 40 - h); c.lineTo(x + 2, 40); c.fill(); }
-  for (const fx of [70, 100, 130]) { c.fillRect(fx, 8 + (fx % 7), 4, 32); }
-  c.save(); c.translate(64, 22); c.rotate(-0.08); c.fillRect(0, 0, 78, 3); c.restore();
-  return post(cv, ['#0b0a1a'], { outline: false });
-}
-function bakeVignette() {
-  const cv = mk(W, H), c = cv.getContext('2d'), g = c.createRadialGradient(W / 2, H * 0.6, 90, W / 2, H * 0.6, 300);
-  g.addColorStop(0, 'rgba(8,6,20,0)'); g.addColorStop(1, 'rgba(8,6,20,0.72)');
-  c.fillStyle = g; c.fillRect(0, 0, W, H); return cv;
-}
-
-// ---------- 굽기 실행 ----------
-const A = {
-  walk: bake(80, 72, 8, warriorWalk), attack: bake(80, 72, 12, warriorAttack), slash: bake(48, 64, 4, drawSlash),
-  sky: bakeSky(), mountains: bakeMountains(), ruins: bakeRuins(), ground: bakeGround(), front: bakeFront(), vignette: bakeVignette(),
-};
+/* 1구역 몬스터 — 몬스터 도감.md 그대로. mult는 특징을 살리는 작은 배수 */
+const ZONE = 1, ZONE_NAME = '이슬숲 길';
 const MONSTERS = [
-  { name: '진흙덩이', hp: 12, gold: 3, frames: bake(60, 46, 8, drawMud), foot: 41, cx: 28, top: 26, anim: 1.6, particle: R.mud },
-  { name: '떠돌이 해골', hp: 20, gold: 5, frames: bake(64, 72, 8, drawSkeleton), foot: 67, cx: 30, top: 46, anim: 1.5, particle: R.bone },
-  { name: '그림자 늑대', hp: 30, gold: 8, frames: bake(72, 48, 8, drawWolf), foot: 42, cx: 36, top: 34, anim: 2.2, particle: R.shade },
+  { file:'1-01-냄비다람쥐', name:'냄비 쓴 다람쥐', short:'다람쥐', h:185, loot:'찌그러진 냄비',
+    trait:'가장 약하다. 냄비를 투구처럼 쓰고 표정만 사납다.', mult:{}, bb:[205,119,880,952] },
+  { file:'1-02-박쥐', name:'박쥐', short:'박쥐', h:200, fly:55, loot:'박쥐 날개',
+    trait:'날아다녀서 성가시다. 등불을 보면 덮친다.', mult:{spd:1.2}, bb:[62,72,981,869] },
+  { file:'1-03-여우', name:'여우', short:'여우', h:190, loot:'여우 꼬리',
+    trait:'마르고 날래다. 움직임이 빠르다.', mult:{spd:1.45}, bb:[46,183,982,873] },
+  { file:'1-04-사마귀', name:'거대 사마귀', short:'사마귀', h:235, loot:'사마귀 낫발',
+    trait:'풀숲에서 기다리다 낫발로 내리친다. 한 방이 아프다.', mult:{atk:1.3}, bb:[49,56,991,983] },
+  { file:'1-05-독버섯', name:'독버섯', short:'독버섯', h:206, loot:'독버섯 갓',
+    trait:'뿌리로 걸어 다닌다. 느리지만 잘 버틴다.', mult:{hp:1.3, spd:0.7}, bb:[106,69,921,963] },
+  { file:'1-06-멧돼지', name:'멧돼지', short:'멧돼지', h:200, loot:'굽은 엄니',
+    trait:'엄니를 앞세워 들이받는다. 숲에서 힘이 가장 세다.', mult:{atk:1.4}, bb:[69,117,956,956] },
+  { file:'1-07-늑대', name:'늑대', short:'늑대', h:206, loot:'늑대 송곳니',
+    trait:'이를 드러내고 낮게 다가온다. 숲에서 가장 빠르다.', mult:{spd:1.7}, bb:[84,110,972,962] },
+  { file:'1-08-고블린', name:'고블린', short:'고블린', h:212, loot:'녹슨 단검',
+    trait:'녹슨 단검을 든 약탈자. 마을 물건을 훔쳐 간다.', mult:{}, bb:[86,77,943,975] },
+  { file:'1-09-홉고블린', name:'홉고블린', short:'홉고블린', h:249, loot:'이 빠진 큰 칼',
+    trait:'고블린 무리의 싸움꾼. 가죽 갑옷이 단단하다.', mult:{hp:1.25}, bb:[87,72,865,986] },
+  { file:'1-10-고블린왕', name:'고블린 왕', short:'고블린 왕', h:400, boss:true, loot:'찌그러진 왕관',
+    trait:'숲의 우두머리. 쇠못 박힌 전투 망치를 휘두른다.', mult:{spd:0.8}, bb:[39,62,988,974] },
 ];
 
-// ---------- 상태 ----------
-const S = { gold: 0, kills: 0, level: 1, exp: 0, scroll: 0, time: 0, cool: 0, atkT: -1, hitDone: false,
-  monster: null, floats: [], parts: [], shake: 0, stop: 0 };
-const atk = () => 5 + (S.level - 1) * 2;
-const expNeed = () => 4 + S.level * 2;
-function spawn() {
-  const maxType = Math.min(MONSTERS.length - 1, Math.floor(S.kills / 5));
-  const type = MONSTERS[Math.floor(Math.random() * (maxType + 1))];
-  const hp = Math.round(type.hp * (1 + S.kills * 0.06));
-  S.monster = { type, hp, maxHp: hp, x: W + 40, flash: 0, dying: 0, push: 0 };
+/* 꾸미기 — 모습만 바꾼다. 능력치는 건드리지 않는다. ok(S)가 참이면 열린다 */
+const dexFull = s => MONSTERS.every((_, i) => (s.kills[i + 1] || 0) > 0);
+// 그림 꾸미기는 세 칸이다: 머리, 갑옷, 무기. 세 그림은 크기와 자리가 같은 캔버스에 그려서 그대로 겹친다.
+// 그리는 차례: 갑옷(몸 전체, 바탕) -> 무기 -> 머리. 그림이 없는 칸은 건너뛴다.
+// img가 null이면 그림이 아직 없다는 뜻. 그림이 생기면 img를 채우고 ok를 조건으로 바꾼다.
+const HEADS = [
+  { id:'basic', name:'기본', how:'처음부터', img:null, ok:() => true },   // 지금은 바탕 그림에 머리가 들어 있다
+  { id:'head2', name:'준비 중인 투구', how:'1구역 보스 처치', img:null, ok:() => false },
+  { id:'head3', name:'준비 중인 모자', how:'도감 10종 채우기', img:null, ok:() => false },
+];
+const ARMORS = [
+  { id:'basic', name:'기본', how:'처음부터', img:{ m:'art/knight/기본-남.png', f:'art/knight/기본-여.png' }, lantern:[0.58,0.62], ok:() => true },
+  { id:'armor2', name:'준비 중인 갑옷', how:'1구역 보스 처치', img:null, ok:() => false },
+  { id:'armor3', name:'준비 중인 갑옷', how:'업적 · 이벤트', img:null, ok:() => false },
+];
+const WEAPONS = [
+  { id:'basic', name:'기본', how:'처음부터', img:null, ok:() => true },   // 지금은 바탕 그림에 칼이 들어 있다
+  { id:'weapon2', name:'준비 중인 무기', how:'1구역 보스 처치', img:null, ok:() => false },
+  { id:'weapon3', name:'준비 중인 무기', how:'고블린 100마리 잡기', img:null, ok:() => false },
+];
+const KNIGHT_LAYERS = [['armor', ARMORS], ['weapon', WEAPONS], ['head', HEADS]];   // 겹치는 차례
+const LANTERN_COLORS = [
+  { id:'orange', name:'주황',   color:'#f0983c', how:'처음부터', ok:() => true },
+  { id:'amber',  name:'호박빛', color:'#e8c26c', how:'1-5 깨기', ok:s => s.maxStage >= 6 },
+  { id:'moon',   name:'달빛',   color:'#d6ddcc', how:'1구역 보스 처치', ok:s => s.bossDone },
+  { id:'moss',   name:'이끼빛', color:'#b3cb86', how:'도감 10종 채우기', ok:dexFull },
+];
+const FOOT_EFFECTS = [
+  { id:'none',  name:'없음', how:'처음부터', ok:() => true },
+  { id:'leaf',  name:'풀잎', how:'1-3 깨기', ok:s => s.maxStage >= 4 },
+  { id:'ember', name:'불씨', how:'늑대 30마리 잡기', ok:s => (s.kills[7] || 0) >= 30 },
+];
+const TITLES = [
+  { id:'none',   name:'없음', text:'', how:'처음부터', ok:() => true },
+  { id:'walker', name:'숲길 나그네', text:'숲길 나그네', how:'1-5 깨기', ok:s => s.maxStage >= 6 },
+  { id:'pot',    name:'냄비 수집가', text:'냄비 수집가', how:'찌그러진 냄비 5개 모으기', ok:s => (s.loot[1] || 0) >= 5 },
+  { id:'forest', name:'이슬숲의 기사', text:'이슬숲의 기사', how:'1구역 보스 처치', ok:s => s.bossDone },
+];
+const COS_GROUPS = [
+  { key:'head',    title:'머리', list:HEADS },
+  { key:'armor',   title:'갑옷', list:ARMORS },
+  { key:'weapon',  title:'무기', list:WEAPONS },
+  { key:'lantern', title:'등불 빛깔', list:LANTERN_COLORS },
+  { key:'foot',    title:'발밑 효과', list:FOOT_EFFECTS },
+  { key:'title',   title:'칭호', list:TITLES },
+];
+
+/* ===================================================================== 기본 도구 */
+const FW = 900, FH = 992, KNIGHT_H = 215, SPR_Q = 2;
+const FONT = 'system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","WenQuanYi Zen Hei",sans-serif';
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; };
+const QS = new URLSearchParams(location.search);
+const DEBUG = QS.get('debug') === '1';
+const SPEED = DEBUG ? clamp(parseInt(QS.get('speed') || '1', 10) || 1, 1, 20) : 1;
+
+function fmt(n) {             // 숫자는 작게. 만 단위까지만 쓴다
+  n = Math.floor(n);
+  if (n < 10000) return n.toLocaleString('ko-KR');
+  const m = n / 10000;
+  return (m < 100 ? (Math.floor(m * 10) / 10).toString() : Math.floor(m).toLocaleString('ko-KR')) + '만';
 }
-function burst(x, y, ramp, n, power) {
-  for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = power * (0.4 + Math.random());
-    S.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - power * 0.6, life: 0.4 + Math.random() * 0.4, c: ramp[Math.random() * ramp.length | 0], s: Math.random() < 0.5 ? 2 : 1, g: 380 }); }
+const monHp   = st => TUNE.MON_HP0 * Math.pow(TUNE.MON_HP_GROW, st - 1) * Math.pow(TUNE.ZONE_MULT, ZONE - 1);
+const baseHp  = st => st === 10 ? monHp(9) * TUNE.BOSS_HP_MULT : monHp(st);
+const goldOf  = st => Math.max(1, Math.round(st === 10 ? monHp(9) * TUNE.GOLD_RATIO * TUNE.BOSS_GOLD_MULT : monHp(st) * TUNE.GOLD_RATIO));
+const upPrice = k => Math.round(TUNE.UP[k].price * Math.pow(TUNE.PRICE_GROW, S.up[k]));
+const kAtk  = () => TUNE.KNIGHT_ATK + TUNE.UP.atk.step * S.up.atk;
+const kMax  = () => TUNE.KNIGHT_HP + TUNE.UP.hp.step * S.up.hp;
+const kCrit = () => Math.min(TUNE.CRIT_CAP, TUNE.CRIT + TUNE.UP.crit.step * S.up.crit);
+const critMaxLv = Math.round((TUNE.CRIT_CAP - TUNE.CRIT) / TUNE.UP.crit.step);
+
+/* ===================================================================== 저장 */
+const SAVE_KEY = 'forgotten-knight-save-v1';
+function freshSave() {
+  return { v:1, started:false, gender:'m', name:'루', gold:0, up:{ atk:0, hp:0, crit:0 }, stage:1, maxStage:1, auto:true,
+    kills:{}, loot:{}, bossDone:false, storySeen:false,
+    cos:{ head:'basic', armor:'basic', weapon:'basic', lantern:'orange', foot:'none', title:'none' }, last:Date.now() };
 }
-function strike() {
-  const m = S.monster, crit = Math.random() < 0.15;
-  const dmg = Math.max(1, Math.round(atk() * (0.8 + Math.random() * 0.4) * (crit ? 2 : 1)));
-  m.hp -= dmg; m.flash = 0.09; m.push = 5; S.shake = crit ? 5 : 2.5; S.stop = crit ? 0.07 : 0.035;
-  const top = GY - m.type.top;
-  S.floats.push({ text: String(dmg), x: m.x - 4, y: top - 8, c: crit ? R.gold[0] : '#ffffff', life: 0.9, big: crit });
-  burst(m.x - 8, GY - m.type.top * 0.5, m.type.particle, crit ? 12 : 6, 90);
-  if (m.hp <= 0) {
-    m.dying = 0.35; S.kills++; S.gold += m.type.gold; S.exp++;
-    burst(m.x, GY - m.type.top * 0.5, m.type.particle, 18, 130); burst(m.x, GY - 12, R.gold, 8, 110);
-    S.floats.push({ text: '+' + m.type.gold, x: m.x, y: top - 22, c: R.gold[1], life: 1.1 });
-    if (S.exp >= expNeed()) { S.exp = 0; S.level++; S.floats.push({ text: 'LV+', x: KX, y: GY - 62, c: R.gold[0], life: 1.4, big: true }); burst(KX, GY - 30, R.gold, 22, 150); }
-    hud();
-  }
+let S = freshSave();
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    if (d && d.v === 1) {
+      const f = freshSave();
+      S = Object.assign(f, d); S.up = Object.assign(freshSave().up, d.up); S.cos = Object.assign(freshSave().cos, d.cos);
+      S.kills = d.kills || {}; S.loot = d.loot || {};
+      S.stage = clamp(S.stage | 0, 1, 10); S.maxStage = clamp(S.maxStage | 0, 1, 10);
+    }
+  } catch (e) {}
 }
-function update(dt) {
-  S.time += dt;
-  if (S.stop > 0) { S.stop -= dt; return; }
-  if (!S.monster) spawn();
-  const m = S.monster, engaged = m.x - KX < 44 && m.dying <= 0;
-  if (m.dying > 0) { m.dying -= dt; if (m.dying <= 0) S.monster = null; }
-  if (S.atkT >= 0) {
-    S.atkT += dt / 0.46;
-    if (!S.hitDone && S.atkT >= 0.42) { S.hitDone = true; if (S.monster && m.dying <= 0) strike(); }
-    if (S.atkT >= 1) { S.atkT = -1; S.cool = 0.14; }
-  } else if (engaged) {
-    S.cool -= dt; if (S.cool <= 0) { S.atkT = 0; S.hitDone = false; }
-  } else if (m.dying <= 0) {
-    m.x -= 100 * dt; S.scroll += 100 * dt;
-    if (Math.random() < dt * 9) S.parts.push({ x: KX - 8, y: GY - 1, vx: -20 - Math.random() * 20, vy: -15 - Math.random() * 20, life: 0.35, c: '#5a4860', s: 2, g: 60 });
-  }
-  S.walking = S.atkT < 0 && !engaged && m.dying <= 0;
-  if (m.flash > 0) m.flash -= dt;
-  if (m.push > 0) m.push = Math.max(0, m.push - dt * 40);
-  if (S.shake > 0) S.shake = Math.max(0, S.shake - dt * 30);
-  for (const f of S.floats) { f.life -= dt; f.y -= 26 * dt; }
-  S.floats = S.floats.filter(f => f.life > 0);
-  for (const p of S.parts) { p.life -= dt; p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.y > GY + 6) { p.y = GY + 6; p.vy *= -0.35; p.vx *= 0.6; } }
-  S.parts = S.parts.filter(p => p.life > 0);
+function save() { try { S.last = Date.now(); localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ===================================================================== 그림 준비 */
+function bboxOf(img, fallback) {              // 투명하지 않은 부분만 잘라 쓴다
+  try {
+    const c = mk(img.naturalWidth, img.naturalHeight), g = c.getContext('2d', { willReadFrequently:true });
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height).data, W = c.width, H = c.height;
+    let x0 = W, y0 = H, x1 = -1, y1 = -1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 20) {
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+    if (x1 >= 0) return [x0, y0, x1 + 1, y1 + 1];
+  } catch (e) {}
+  return fallback || [0, 0, img.naturalWidth, img.naturalHeight];
+}
+function removeWhite(img) {                   // 흰 배경 그림이면 가장자리에서부터 흰색을 지운다
+  const c = mk(img.naturalWidth, img.naturalHeight), g = c.getContext('2d', { willReadFrequently:true });
+  g.drawImage(img, 0, 0);
+  try {
+    const W = c.width, H = c.height, id = g.getImageData(0, 0, W, H), d = id.data;
+    const white = i => d[i * 4 + 3] > 200 && d[i * 4] > 236 && d[i * 4 + 1] > 236 && d[i * 4 + 2] > 236;
+    if (!white(0) || !white(W - 1)) return c;
+    const seen = new Uint8Array(W * H), st = new Int32Array(W * H); let n = 0;
+    const push = i => { if (!seen[i] && white(i)) { seen[i] = 1; st[n++] = i; } };
+    for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
+    for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
+    while (n) {
+      const i = st[--n], x = i % W; d[i * 4 + 3] = 0;
+      if (x > 0) push(i - 1); if (x < W - 1) push(i + 1); if (i >= W) push(i - W); if (i < W * (H - 1)) push(i + W);
+    }
+    g.putImageData(id, 0, 0);
+  } catch (e) {}
+  return c;
+}
+/* 화면 크기에 맞춘 그림 한 장 + 맞았을 때 번쩍이는 흰 그림 */
+function makeSprite(h, aspect, paint) {
+  const w = h * aspect, c = mk(w * SPR_Q, h * SPR_Q), g = c.getContext('2d');
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  paint(g, c.width, c.height);
+  const f = mk(c.width, c.height), fg = f.getContext('2d');
+  fg.drawImage(c, 0, 0); fg.globalCompositeOperation = 'source-atop'; fg.fillStyle = '#fff6e0'; fg.fillRect(0, 0, f.width, f.height);
+  return { c, f, w, h };
+}
+const monSprites = {};     // 스테이지 번호 -> 그림
+function loadMonster(st) {
+  if (monSprites[st]) return;
+  const def = MONSTERS[st - 1], img = new Image();
+  monSprites[st] = { ready:false, w:def.h * (def.bb[2] - def.bb[0]) / (def.bb[3] - def.bb[1]), h:def.h };
+  img.onload = () => {
+    const b = bboxOf(img, def.bb), bw = b[2] - b[0], bh = b[3] - b[1];
+    const sp = makeSprite(def.h, bw / bh, (g, W, H) => g.drawImage(img, b[0], b[1], bw, bh, 0, 0, W, H));
+    sp.ready = true; monSprites[st] = sp;
+  };
+  img.src = 'art/monsters/' + encodeURIComponent(def.file) + '.png';
 }
 
-// ---------- 도트 숫자 ----------
-const GLYPH = { 0: '111101101101111', 1: '010110010010111', 2: '111001111100111', 3: '111001111001111', 4: '101101111001001',
-  5: '111100111001111', 6: '111100111101111', 7: '111001001010010', 8: '111101111101111', 9: '111101111001111',
-  '+': '000010111010000', L: '100100100100111', V: '101101101101010' };
-function text(c, str, x, y, color, sc) {
-  const w = str.length * 4 * sc - sc; x = Math.round(x - w / 2); y = Math.round(y);
-  const put = (ox, oy, col) => { c.fillStyle = col;
-    [...str].forEach((ch, n) => { const g = GLYPH[ch]; if (!g) return;
-      for (let i = 0; i < 15; i++) if (g[i] === '1') c.fillRect(x + ox + (n * 4 + i % 3) * sc, y + oy + (i / 3 | 0) * sc, sc, sc); }); };
-  for (const o of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1], [-1, 1], [0, 2]]) put(o[0], o[1], OUT);
-  put(0, 0, color);
+/* 기사 그림: 파일이 있으면 그것을, 없으면 코드로 그린 임시 기사 */
+const knightImgs = {};     // 'armor-basic-m' -> {c(canvas), bb} | 'none'
+function loadKnightImages() {
+  for (const [slot, list] of KNIGHT_LAYERS) for (const it of list) if (it.img) for (const g of ['m', 'f']) {
+    if (!it.img[g]) continue;
+    const key = slot + '-' + it.id + '-' + g, img = new Image();
+    img.onload = () => { const c = removeWhite(img); knightImgs[key] = { c, bb:bboxOf(c) }; knightSprite = null; redrawStatic(); };
+    img.onerror = () => { knightImgs[key] = 'none'; };
+    img.src = it.img[g].split('/').map(encodeURIComponent).join('/');
+  }
+}
+/* 임시 기사. 왼쪽을 보고 서서 오른손에 칼을 든 자세. 120 x 200 칸 안에 그린다 */
+function paintPlaceholder(g, W, H, gender) {
+  const u = H / 200;
+  g.save(); g.scale(u, u); g.translate((W / u - 120) / 2, 0);
+  g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = '#17150f'; g.lineWidth = 2.6;
+  const shape = (fill, fn) => { g.beginPath(); fn(); g.fillStyle = fill; g.fill(); g.stroke(); };
+  // 망토
+  shape('#4a3f2b', () => { g.moveTo(52, 50); g.lineTo(82, 54); g.quadraticCurveTo(100, 110, 104, 168); g.quadraticCurveTo(84, 160, 62, 170); g.lineTo(56, 100); g.closePath(); });
+  // 다리와 장화
+  shape('#4c5354', () => g.rect(49, 128, 12, 60)); shape('#4c5354', () => g.rect(66, 128, 12, 60));
+  shape('#2b251b', () => { g.moveTo(40, 196); g.lineTo(42, 186); g.lineTo(62, 184); g.lineTo(62, 196); g.closePath(); });
+  shape('#2b251b', () => { g.moveTo(58, 196); g.lineTo(60, 186); g.lineTo(80, 184); g.lineTo(80, 196); g.closePath(); });
+  // 몸통 갑옷
+  shape('#7c898b', () => { g.moveTo(46, 58); g.lineTo(80, 58); g.lineTo(82, 118); g.lineTo(76, 138); g.lineTo(50, 138); g.lineTo(44, 118); g.closePath(); });
+  shape('#66716f', () => { g.moveTo(50, 118); g.lineTo(76, 118); g.lineTo(80, 146); g.lineTo(46, 146); g.closePath(); });
+  shape('#4b3a26', () => g.rect(44, 110, 38, 8));
+  // 머리
+  if (gender === 'f') shape('#3b2a1c', () => { g.moveTo(64, 20); g.quadraticCurveTo(92, 26, 88, 78); g.quadraticCurveTo(78, 70, 70, 52); g.closePath(); });
+  shape('#d8b896', () => g.arc(60, 36, 16, 0, Math.PI * 2));
+  shape(gender === 'f' ? '#3b2a1c' : '#2f2a22', () => { g.moveTo(45, 31); g.quadraticCurveTo(52, 14, 68, 18); g.quadraticCurveTo(80, 24, 77, 44); g.quadraticCurveTo(70, 30, 58, 28); g.quadraticCurveTo(50, 28, 45, 31); });
+  g.fillStyle = '#17150f'; g.beginPath(); g.arc(51, 36, 1.9, 0, 7); g.fill();
+  // 칼 (앞으로 든다)
+  g.strokeStyle = '#17150f'; g.lineWidth = 9; g.beginPath(); g.moveTo(34, 100); g.lineTo(11, 30); g.stroke();
+  g.strokeStyle = '#c6cdc9'; g.lineWidth = 5; g.beginPath(); g.moveTo(34, 100); g.lineTo(11, 30); g.stroke();
+  g.strokeStyle = '#17150f'; g.lineWidth = 8; g.beginPath(); g.moveTo(25, 106); g.lineTo(44, 98); g.stroke();
+  g.strokeStyle = '#8a6a3a'; g.lineWidth = 4; g.beginPath(); g.moveTo(25, 106); g.lineTo(44, 98); g.stroke();
+  // 팔과 어깨
+  g.strokeStyle = '#17150f'; g.lineWidth = 15; g.beginPath(); g.moveTo(54, 68); g.lineTo(46, 90); g.lineTo(36, 104); g.stroke();
+  g.strokeStyle = '#6d7a7b'; g.lineWidth = 10; g.beginPath(); g.moveTo(54, 68); g.lineTo(46, 90); g.lineTo(36, 104); g.stroke();
+  g.strokeStyle = '#17150f'; g.lineWidth = 2.6;
+  shape('#93a0a0', () => g.arc(55, 64, 11, 0, Math.PI * 2));
+  // 허리의 등불 (빛은 게임에서 따로 그린다)
+  g.beginPath(); g.moveTo(72, 116); g.lineTo(72, 121); g.stroke();
+  shape('#2b251b', () => g.rect(66, 121, 12, 15));
+  g.restore();
+}
+const PLACEHOLDER_LANTERN = [72 / 120, 128.5 / 200];
+const BASIC_LOOK = { head:'basic', armor:'basic', weapon:'basic' };
+function knightArt(gender, look) {
+  const layers = []; let lantern = null;
+  for (const [slot, list] of KNIGHT_LAYERS) {
+    const it = list.find(c => c.id === look[slot]) || list[0], im = knightImgs[slot + '-' + it.id + '-' + gender];
+    if (im && im !== 'none') { layers.push(im); if (slot === 'armor') lantern = it.lantern || [0.5, 0.6]; }
+    else if (slot === 'armor') break;                 // 바탕 그림이 없으면 임시 기사를 쓴다
+  }
+  if (layers.length) {
+    // 모든 겹은 같은 캔버스를 쓴다. 겹친 전체에서 빈 곳만 한 번에 잘라 낸다.
+    const b = [1e9, 1e9, -1, -1];
+    for (const l of layers) { b[0] = Math.min(b[0], l.bb[0]); b[1] = Math.min(b[1], l.bb[1]); b[2] = Math.max(b[2], l.bb[2]); b[3] = Math.max(b[3], l.bb[3]); }
+    const bw = b[2] - b[0], bh = b[3] - b[1];
+    return { aspect:bw / bh, lantern, paint:(g, W, H) => { for (const l of layers) g.drawImage(l.c, b[0], b[1], bw, bh, 0, 0, W, H); } };
+  }
+  return { aspect:0.6, lantern:PLACEHOLDER_LANTERN, paint:(g, W, H) => paintPlaceholder(g, W, H, gender) };
+}
+let knightSprite = null;
+function getKnightSprite() {
+  if (!knightSprite) { const a = knightArt(S.gender, S.cos); knightSprite = makeSprite(KNIGHT_H, a.aspect, a.paint); knightSprite.lantern = a.lantern; }
+  return knightSprite;
+}
+const lanternColor = () => (LANTERN_COLORS.find(l => l.id === S.cos.lantern) || LANTERN_COLORS[0]).color;
+const titleText = () => (TITLES.find(t => t.id === S.cos.title) || TITLES[0]).text;
+
+/* ===================================================================== 들판 배경 (한 번만 그린다) */
+function makeBackground() {
+  const c = mk(FW, FH), g = c.getContext('2d');
+  let seed = 7; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+  g.fillStyle = '#34492f'; g.fillRect(0, 0, FW, FH);                       // 이끼색 바탕
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  const blot = (cell, rgb, alpha) => {                                     // 흐린 얼룩
+    const n = mk(Math.ceil(FW / cell) + 3, Math.ceil(FH / cell) + 3), ng = n.getContext('2d'), id = ng.createImageData(n.width, n.height);
+    for (let i = 0; i < id.data.length; i += 4) {
+      id.data[i] = rgb[0]; id.data[i + 1] = rgb[1]; id.data[i + 2] = rgb[2];
+      id.data[i + 3] = Math.max(0, rnd() * 2 - 0.9) * alpha * 255;
+    }
+    ng.putImageData(id, 0, 0); g.drawImage(n, -cell * 1.5, -cell * 1.5, n.width * cell, n.height * cell);
+  };
+  blot(150, [74, 68, 46], 0.85);       // 흙빛
+  blot(60, [70, 64, 44], 0.35);
+  blot(44, [36, 56, 38], 0.45);        // 짙은 이끼
+  blot(7, [18, 28, 18], 0.22);         // 잔 무늬
+  blot(5, [128, 146, 96], 0.09);
+  for (let i = 0; i < 46; i++) {       // 나뭇잎 사이로 떨어지는 빛 얼룩
+    const x = rnd() * FW, y = rnd() * FH, r = 34 + rnd() * 70, a = 0.07 + rnd() * 0.17;
+    g.save(); g.translate(x, y); g.scale(1.5, 0.6);
+    const gr = g.createRadialGradient(0, 0, 0, 0, 0, r);
+    gr.addColorStop(0, 'rgba(126,146,82,' + a + ')'); gr.addColorStop(1, 'rgba(126,146,82,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.restore();
+  }
+  const edge = (x0, y0, x1, y1) => {   // 가장자리는 나무 그늘로 어둡게
+    const gr = g.createLinearGradient(x0, y0, x1, y1);
+    gr.addColorStop(0, 'rgba(7,12,8,0.72)'); gr.addColorStop(0.5, 'rgba(7,12,8,0.22)'); gr.addColorStop(1, 'rgba(7,12,8,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, FW, FH);
+  };
+  g.fillStyle = 'rgba(6,10,7,0.16)'; g.fillRect(0, 0, FW, FH);
+  edge(0, 0, 240, 0); edge(FW, 0, FW - 240, 0); edge(0, 0, 0, 180); edge(0, FH, 0, FH - 180);
+  return c;
 }
 
-// ---------- 화면 ----------
-const ctx = document.getElementById('game').getContext('2d');
-ctx.imageSmoothingEnabled = false;
-function tile(img, speed, y) { const w = img.width, x = -Math.floor(S.scroll * speed % w); ctx.drawImage(img, x, y); ctx.drawImage(img, x + w, y); }
-function shadow(x, w) { ctx.fillStyle = 'rgba(11,10,26,0.45)'; ctx.fillRect(Math.round(x - w / 2), GY + 1, w, 3); ctx.fillRect(Math.round(x - w / 2) + 2, GY, w - 4, 5); }
-function render() {
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.drawImage(A.sky, 0, 0);
-  tile(A.mountains, 0.06, 0); tile(A.ruins, 0.22, 0);
-  ctx.fillStyle = 'rgba(160,74,110,0.16)'; ctx.fillRect(0, GY - 46, W, 46);
-  const sx = S.shake ? Math.round((Math.random() - 0.5) * 2 * S.shake) : 0, sy = S.shake ? Math.round((Math.random() - 0.5) * S.shake) : 0;
-  ctx.translate(sx, sy);
-  tile(A.ground, 1, GY - 13);
-  const m = S.monster;
-  if (m) {
-    const t = m.type, f = Math.floor(S.time * t.anim * 8) % 8, img = (m.flash > 0 ? t.frames.white : t.frames)[f];
-    shadow(m.x + m.push, t.frames[0].width * 0.5);
-    ctx.save(); ctx.globalAlpha = m.dying > 0 ? Math.max(0, m.dying / 0.35) : 1;
-    ctx.translate(Math.round(m.x + m.push), GY - t.foot + (m.dying > 0 ? Math.round((0.35 - m.dying) * 20) : 0)); ctx.scale(-1, 1);
-    ctx.drawImage(img, -t.cx, 0); ctx.restore();
-    if (m.dying <= 0 && m.hp < m.maxHp) {
-      const bx = Math.round(m.x) - 16, by = GY - t.top - 9;
-      ctx.fillStyle = OUT; ctx.fillRect(bx - 1, by - 1, 34, 6);
-      ctx.fillStyle = R.red[3]; ctx.fillRect(bx, by, 32, 4);
-      const w = Math.max(1, Math.round(32 * m.hp / m.maxHp));
-      ctx.fillStyle = R.red[1]; ctx.fillRect(bx, by, w, 4); ctx.fillStyle = R.red[0]; ctx.fillRect(bx, by, w, 1);
+/* ===================================================================== 게임 상태 */
+const BOUND = { x0:55, x1:845, y0:235, y1:955 };
+const R = {                          // 저장하지 않는 것
+  t:0, mons:[], floats:[], parts:[], progress:0, spawnT:0.5, advanceT:-1, bossT:TUNE.BOSS_TIME, bossWait:0,
+  banner:null, saveT:0, uiT:0, paused:true,
+  k:{ x:FW / 2, y:600, hp:100, dead:false, reviveT:0, atkT:0.5, lunge:0, flash:0, face:-1, moving:false, target:null, stepT:0 },
+};
+let bg = null, cv, ctx, viewQ = 1;
+
+function showBanner(text, sub) { R.banner = { text, sub:sub || '', t:0 }; }
+function addFloat(x, y, txt, color, size, life) { R.floats.push({ x, y, txt, color, size, t:0, life:life || 0.9 }); }
+function stageLabel(st) { return ZONE + '-' + st + ' ' + MONSTERS[st - 1].short; }
+
+function gotoStage(st, quiet) {
+  S.stage = st; R.progress = 0; R.advanceT = -1; R.spawnT = 0.5; R.bossT = TUNE.BOSS_TIME; R.bossWait = 0;
+  for (const m of R.mons) if (!m.dead) { m.dead = true; m.deadT = 0; m.gone = true; }
+  R.k.target = null; R.k.hp = kMax();
+  loadMonster(st); if (st < 10) loadMonster(st + 1);
+  if (!quiet) showBanner(stageLabel(st), st === 10 ? '30초 안에 쓰러뜨려라' : MONSTERS[st - 1].name);
+  refreshPanel();
+}
+function spawnMonster() {
+  const st = S.stage, def = MONSTERS[st - 1], sp = monSprites[st], k = R.k;
+  let x, y;
+  for (let i = 0; i < 8; i++) {
+    const side = def.boss ? 0 : Math.floor(Math.random() * 4);
+    if (side === 0) { x = rand(110, FW - 110); y = def.boss ? 540 : BOUND.y0; }
+    else if (side === 1) { x = rand(110, FW - 110); y = BOUND.y1; }
+    else if (side === 2) { x = BOUND.x0; y = rand(BOUND.y0 + 40, BOUND.y1 - 30); }
+    else { x = BOUND.x1; y = rand(BOUND.y0 + 40, BOUND.y1 - 30); }
+    if (Math.hypot(x - k.x, y - k.y) > 260) break;
+  }
+  const hp = Math.round(baseHp(st) * (def.mult.hp || 1));
+  R.mons.push({ st, def, x, y, w:sp.w, h:sp.h, hp, max:hp,
+    atk:Math.max(1, Math.round(baseHp(st) * TUNE.MON_ATK_RATIO * (def.mult.atk || 1) * (def.boss ? TUNE.BOSS_ATK_MULT : 1))),
+    spd:TUNE.MON_SPEED * (def.mult.spd || 1), cd:rand(0.5, 1.1), born:0, flash:0, kbx:0, kby:0, lunge:0,
+    dead:false, deadT:0, ph:rand(0, 6.28), face:x < k.x ? 1 : -1, slot:false, ang:0 });
+  const nm = R.mons[R.mons.length - 1], a = Math.atan2(y - k.y, x - k.x), c = Math.cos(a) >= 0 ? 1 : -1;
+  nm.ang = Math.atan2(clamp(Math.sin(a), -0.8, 0.8), c * Math.max(0.6, Math.abs(Math.cos(a))));   // 기사 바로 위아래는 피한다
+  if (def.boss) R.bossT = TUNE.BOSS_TIME;
+}
+// 몬스터는 기사 둘레(옆으로 긴 둥근 고리)에 자리를 잡는다. 위에서 내려다보는 들판이라 어느 쪽에서든 싸운다.
+const reachOf = m => (getKnightSprite().w + m.w) * 0.4;
+const RING_Y = 0.55;
+function inRange(m, pad) {
+  const k = R.k, rx = reachOf(m) + (pad || 40), ry = reachOf(m) * RING_Y + (pad || 40);
+  const dx = (k.x - m.x) / rx, dy = (k.y - m.y) / ry;
+  return dx * dx + dy * dy < 1;
+}
+function moveTo(o, tx, ty, spd, dt) {
+  const dx = tx - o.x, dy = ty - o.y, d = Math.hypot(dx, dy), step = spd * dt;
+  if (d <= step || d < 0.5) { o.x = tx; o.y = ty; return false; }
+  o.x += dx / d * step; o.y += dy / d * step; return true;
+}
+
+function killMonster(m) {
+  m.dead = true; m.deadT = 0; m.slot = false;
+  const st = m.st, g = goldOf(st), top = m.y - m.h * 0.6 - (m.def.fly || 0);
+  S.kills[st] = (S.kills[st] || 0) + 1; S.gold += g;
+  addFloat(m.x, top, '+' + fmt(g) + ' 골드', '#f0c069', 34, 1.1);
+  if (m.def.boss || Math.random() < TUNE.LOOT_CHANCE) {
+    S.loot[st] = (S.loot[st] || 0) + 1;
+    addFloat(m.x, top - 44, m.def.loot, '#ece2c6', 30, 1.5);
+  }
+  if (m.def.boss) {
+    R.bossWait = 3; S.bossDone = true;
+    if (!S.storySeen) { S.storySeen = true; setTimeout(showStory, 900); }
+    save();
+  } else if (st === S.stage) {
+    R.progress = Math.min(TUNE.KILLS_TO_CLEAR, R.progress + 1);
+    if (R.progress >= TUNE.KILLS_TO_CLEAR) {
+      if (S.maxStage < st + 1) { S.maxStage = st + 1; showBanner(stageLabel(st) + ' 깼다', '다음 길이 열렸다'); save(); }
+      if (S.auto && R.advanceT < 0) R.advanceT = 0.9;
     }
   }
-  shadow(KX, 26);
-  const kf = S.atkT >= 0 ? A.attack[Math.min(11, Math.floor(S.atkT * 12))] : A.walk[S.walking ? Math.floor(S.scroll / 7) % 8 : 0];
-  ctx.drawImage(kf, KX - 30, GY - 67);
-  if (S.atkT >= 0.3 && S.atkT < 0.62) ctx.drawImage(A.slash[Math.min(3, Math.floor((S.atkT - 0.3) / 0.08))], KX + 6, GY - 62);
-  for (const p of S.parts) { ctx.fillStyle = p.c; ctx.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s); }
-  tile(A.front, 1.5, H - 34);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  for (let i = 0; i < 14; i++) { // 반딧불
-    const x = (i * 83 + S.time * (6 + i % 5) - S.scroll * 0.4) % (W + 20), y = 120 + (i * 47) % 90 + Math.sin(S.time * 1.3 + i) * 6;
-    if (Math.sin(S.time * 2.2 + i * 1.7) > -0.2) { ctx.fillStyle = i % 3 ? R.gold[1] : R.gold[0]; ctx.fillRect(Math.round((x + W + 20) % (W + 20)) - 10, Math.round(y), 1, 1); }
-  }
-  ctx.drawImage(A.vignette, 0, 0);
-  for (const f of S.floats) { ctx.globalAlpha = Math.min(1, f.life / 0.25); text(ctx, f.text, f.x, f.y, f.c, f.big ? 3 : 2); }
-  ctx.globalAlpha = 1;
+  refreshPanel();
 }
-function hud() {
-  document.getElementById('sLevel').textContent = S.level;
-  document.getElementById('sAtk').textContent = atk();
-  document.getElementById('sGold').textContent = S.gold.toLocaleString();
-  document.getElementById('sKills').textContent = S.kills.toLocaleString();
-  document.getElementById('barFill').style.width = (S.exp / expNeed() * 100) + '%';
+function bossFail(msg) {
+  S.auto = false;
+  gotoStage(9, true);
+  showBanner(msg, '1-9로 돌아간다');
 }
 
-if (location.search.includes('sheet')) { // 그림 점검용: 구운 그림을 크게 늘어놓는다
-  document.body.innerHTML = ''; document.body.style.background = '#3d3344';
-  for (const set of [A.walk, A.attack, A.slash, ...MONSTERS.map(m => m.frames)]) { const row = document.createElement('div');
-    for (const f of set) { f.style.cssText = `display:inline-block;width:${f.width * 3}px;image-rendering:pixelated;margin:2px;background:#5a4860`; row.appendChild(f); }
-    document.body.appendChild(row); }
-} else {
-  let last = performance.now();
-  const loop = now => { const dt = Math.min(0.05, (now - last) / 1000); last = now; update(dt); render(); requestAnimationFrame(loop); };
-  hud(); requestAnimationFrame(loop);
+function update(dt) {
+  R.t += dt;
+  const k = R.k, ks = getKnightSprite(), stDef = MONSTERS[S.stage - 1];
+  // 다음 스테이지로
+  if (R.advanceT >= 0) { R.advanceT -= dt; if (R.advanceT < 0 && S.auto && S.stage < 10 && S.maxStage > S.stage) gotoStage(S.stage + 1); }
+  // 새 몬스터
+  const alive = R.mons.filter(m => !m.dead).length, sp = monSprites[S.stage];
+  if (sp && sp.ready && !k.dead) {
+    if (stDef.boss) {
+      if (R.bossWait > 0) R.bossWait -= dt;
+      else if (alive === 0) spawnMonster();
+    } else if (alive < TUNE.ON_SCREEN) {
+      R.spawnT -= dt;
+      if (R.spawnT <= 0) { spawnMonster(); R.spawnT = alive < 3 ? 0.45 : rand(TUNE.RESPAWN[0], TUNE.RESPAWN[1]); }
+    }
+  }
+  // 기사
+  k.atkT = Math.max(0, k.atkT - dt); k.lunge = Math.max(0, k.lunge - dt); k.flash = Math.max(0, k.flash - dt);
+  k.moving = false;
+  if (k.dead) {
+    k.reviveT -= dt;
+    if (k.reviveT <= 0) { k.dead = false; k.hp = kMax(); k.atkT = 0.4; }
+  } else {
+    k.hp = Math.min(kMax(), k.hp + kMax() * TUNE.REGEN * dt);
+    if (!k.target || k.target.dead) {
+      let best = null, bd = 1e9;
+      for (const m of R.mons) if (!m.dead && m.born > 0.25) { const d = Math.hypot(m.x - k.x, (m.y - k.y) * 1.4); if (d < bd) { bd = d; best = m; } }
+      k.target = best;
+    }
+    const m = k.target;
+    if (m) {
+      const side = k.x <= m.x ? -1 : 1;
+      k.face = -side;                                   // face: 1이면 오른쪽을 본다
+      if (!inRange(m)) k.moving = moveTo(k, clamp(m.x + side * reachOf(m) * 0.9, BOUND.x0, BOUND.x1), clamp(m.y, BOUND.y0, BOUND.y1), TUNE.KNIGHT_SPEED, dt);
+      else if (k.atkT <= 0) {
+        k.atkT = TUNE.ATK_INTERVAL; k.lunge = 0.24;
+        const crit = Math.random() < kCrit();
+        const dmg = Math.min(TUNE.DMG_CAP, Math.round(kAtk() * (crit ? TUNE.CRIT_MULT : 1)));
+        m.hp -= dmg; m.flash = 0.16; m.kbx = -side * (m.def.boss ? 40 : 190);
+        addFloat(m.x + rand(-24, 24), m.y - m.h * 0.75 - (m.def.fly || 0), fmt(dmg) + (crit ? '!' : ''), crit ? '#f5a03c' : '#f1ead4', crit ? 54 : 36, crit ? 1.0 : 0.8);
+        if (m.hp <= 0) killMonster(m);
+      }
+    }
+  }
+  // 발밑 효과
+  if (S.cos.foot !== 'none' && !k.dead) {
+    k.stepT -= dt * (k.moving ? 1 : 0.35);
+    if (k.stepT <= 0) {
+      k.stepT = S.cos.foot === 'leaf' ? 0.13 : 0.1;
+      R.parts.push({ kind:S.cos.foot, x:k.x + rand(-30, 30), y:k.y + rand(-6, 8), vx:rand(-22, 22), vy:S.cos.foot === 'leaf' ? rand(-36, -14) : rand(-64, -30), t:0, life:rand(0.6, 1.1), r:rand(0, 6.28) });
+    }
+  }
+  for (const p of R.parts) { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.kind === 'leaf') p.vy += 60 * dt; }
+  R.parts = R.parts.filter(p => p.t < p.life);
+  // 몬스터
+  let slots = 0;
+  for (const m of R.mons) { if (m.dead) m.slot = false; if (m.slot) slots++; }
+  while (slots < TUNE.MAX_ATTACKERS) {                 // 가까운 순서로 덤빌 차례를 준다. 나머지는 한 발 물러서 둘러싼다
+    let best = null, bd = 1e9;
+    for (const m of R.mons) if (!m.dead && !m.slot) { const d = Math.hypot(m.x - k.x, m.y - k.y); if (d < bd) { bd = d; best = m; } }
+    if (!best) break; best.slot = true; slots++;
+  }
+  for (const m of R.mons) {
+    m.flash = Math.max(0, m.flash - dt); m.lunge = Math.max(0, m.lunge - dt);
+    if (m.dead) { m.deadT += dt; continue; }
+    m.born += dt;
+    m.x += m.kbx * dt; m.kbx *= Math.exp(-9 * dt);
+    if (!k.dead) {
+      const side = m.x >= k.x ? 1 : -1; m.face = -side;
+      const near = m.slot || m === k.target, rr = reachOf(m) * (near ? 1 : TUNE.WAIT_RING);
+      if (!near) moveTo(m, k.x + Math.cos(m.ang) * rr, k.y + Math.sin(m.ang) * rr * 0.8, m.spd, dt);
+      else if (!inRange(m, 18)) moveTo(m, k.x + Math.cos(m.ang) * rr, k.y + Math.sin(m.ang) * rr * RING_Y, m.spd, dt);
+      if (inRange(m)) {
+        if (m.slot) {
+          m.cd -= dt;
+          if (m.cd <= 0) {
+            m.cd = m.def.boss ? TUNE.BOSS_ATK_INTERVAL : TUNE.MON_ATK_INTERVAL; m.lunge = 0.26;
+            k.hp -= m.atk; k.flash = 0.16;
+            addFloat(k.x - m.face * 20 + rand(-14, 14), k.y - ks.h * 0.72, '-' + fmt(m.atk), '#d9907c', 32, 0.8);
+            if (k.hp <= 0) {
+              k.hp = 0; k.dead = true; k.reviveT = TUNE.REVIVE; k.target = null;
+              if (m.def.boss) { bossFail('기사가 쓰러졌다'); return; }
+            }
+          }
+        }
+      }
+    }
+    for (const o of R.mons) if (o !== m && !o.dead) {          // 서로 겹치지 않게 살짝 민다
+      const dx = m.x - o.x, dy = (m.y - o.y) * 1.6, d = Math.hypot(dx, dy), min = (m.w + o.w) * 0.42;
+      if (d < min && d > 0.01) {
+        const p = (min - d) / min * 150 * dt; m.x += dx / d * p; m.y += dy / d * p;
+        m.ang += (Math.atan2(m.y - k.y, m.x - k.x) - m.ang) * Math.min(1, dt * 2) * (Math.abs(Math.atan2(m.y - k.y, m.x - k.x) - m.ang) < 1.5 ? 1 : 0);
+      }
+    }
+    m.x = clamp(m.x, BOUND.x0 - 10, BOUND.x1 + 10); m.y = clamp(m.y, BOUND.y0 - 10, BOUND.y1 + 10);
+  }
+  R.mons = R.mons.filter(m => !(m.dead && m.deadT > 0.7));
+  // 보스 시간
+  if (stDef.boss && !k.dead) {
+    const boss = R.mons.find(m => m.def.boss && !m.dead);
+    if (boss && boss.born > 0.4) { R.bossT -= dt; if (R.bossT <= 0) { bossFail('시간이 다 됐다'); return; } }
+  }
+  for (const f of R.floats) f.t += dt;
+  R.floats = R.floats.filter(f => f.t < f.life);
+  if (R.banner) { R.banner.t += dt; if (R.banner.t > 2.2) R.banner = null; }
 }
+
+/* ===================================================================== 그리기 */
+function drawShadow(g, x, y, rx, ry, a) {
+  g.save(); g.translate(x, y); g.scale(rx, ry);
+  const gr = g.createRadialGradient(0, 0, 0.1, 0, 0, 1);
+  gr.addColorStop(0, 'rgba(6,11,8,' + a + ')'); gr.addColorStop(0.6, 'rgba(6,11,8,' + a * 0.7 + ')'); gr.addColorStop(1, 'rgba(6,11,8,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 1, 0, 7); g.fill(); g.restore();
+}
+function drawSprite(g, sp, x, y, o) {     // o: flip, sx, sy, rot, alpha, flash, dx
+  g.save(); g.translate(x + (o.dx || 0), y); if (o.rot) g.rotate(o.rot);
+  g.scale((o.flip ? -1 : 1) * (o.sx || 1), o.sy || 1);
+  g.globalAlpha = o.alpha == null ? 1 : o.alpha;
+  g.drawImage(sp.c, -sp.w / 2, -sp.h * 0.96, sp.w, sp.h);
+  if (o.flash > 0) { g.globalAlpha *= Math.min(1, o.flash); g.drawImage(sp.f, -sp.w / 2, -sp.h * 0.96, sp.w, sp.h); }
+  g.restore();
+}
+function glow(g, x, y, r, color, a) {
+  const gr = g.createRadialGradient(x, y, 0, x, y, r);
+  gr.addColorStop(0, color); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.save(); g.globalAlpha = a; g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.restore();
+}
+function outlined(g, txt, x, y, size, color, align) {
+  g.font = '700 ' + size + 'px ' + FONT; g.textAlign = align || 'center'; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = Math.max(4, size * 0.16); g.strokeStyle = 'rgba(10,14,10,0.9)';
+  g.strokeText(txt, x, y); g.fillStyle = color; g.fillText(txt, x, y);
+}
+function drawKnight(g, sp, x, y, face, t, opt) {   // 들판과 꾸미기 미리보기가 함께 쓴다
+  const sc = opt.scale || 1, flip = face > 0, breath = 1 + Math.sin(t * 2.6) * 0.012;
+  g.save(); g.translate(x, y); g.scale(sc, sc);
+  drawSprite(g, sp, 0, 0, { flip, sy:breath, sx:1 / Math.sqrt(breath), rot:opt.rot, alpha:opt.alpha, flash:opt.flash, dx:opt.dx });
+  if (!opt.rot) {                                    // 허리의 등불 빛
+    const lx = (sp.lantern[0] - 0.5) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ly = -sp.h * 0.96 + sp.lantern[1] * sp.h;
+    const fl = 0.85 + Math.sin(t * 7.3) * 0.08 + Math.sin(t * 13.1) * 0.05, col = lanternColor();
+    glow(g, lx, ly, 44, col, 0.5 * fl * (opt.alpha == null ? 1 : opt.alpha)); glow(g, lx, ly, 9, '#fff3d6', 0.9 * fl * (opt.alpha == null ? 1 : opt.alpha));
+  }
+  g.restore();
+}
+function drawPart(g, p) {
+  const a = 1 - p.t / p.life;
+  g.save(); g.translate(p.x, p.y);
+  if (p.kind === 'leaf') { g.rotate(p.r + p.t * 3); g.globalAlpha = a * 0.9; g.fillStyle = '#8fae5e'; g.beginPath(); g.ellipse(0, 0, 9, 4, 0, 0, 7); g.fill(); }
+  else { g.globalAlpha = a; g.fillStyle = lanternColor(); g.beginPath(); g.arc(0, 0, 3.4, 0, 7); g.fill(); glow(g, 0, 0, 12, lanternColor(), a * 0.5); }
+  g.restore();
+}
+function bar(g, x, y, w, h, ratio, fill) {
+  g.fillStyle = 'rgba(8,12,8,0.85)'; g.fillRect(x - 3, y - 3, w + 6, h + 6);
+  g.fillStyle = '#2a2a20'; g.fillRect(x, y, w, h);
+  g.fillStyle = fill; g.fillRect(x, y, w * clamp(ratio, 0, 1), h);
+}
+function draw() {
+  const g = ctx, k = R.k, ks = getKnightSprite();
+  g.setTransform(viewQ, 0, 0, viewQ, 0, 0);
+  g.drawImage(bg, 0, 0);
+  if (R.paused) return;
+  const list = R.mons.slice().sort((a, b) => a.y - b.y);
+  // 그림자 먼저
+  for (const m of list) {
+    const a = Math.min(1, m.born / 0.4) * (m.dead ? Math.max(0, 1 - m.deadT / 0.5) : 1), f = m.def.fly ? 0.75 : 1;
+    drawShadow(g, m.x, m.y, m.w * 0.46 * f, m.h * 0.085, (m.def.fly ? 0.4 : 0.6) * a);
+  }
+  drawShadow(g, k.x, k.y, ks.w * 0.5, ks.h * 0.08, k.dead ? 0.35 : 0.6);
+  for (const p of R.parts) drawPart(g, p);
+  // y 순서대로
+  const ents = list.map(m => ({ y:m.y, m })); ents.push({ y:k.y + 0.5, k:true }); ents.sort((a, b) => a.y - b.y);
+  for (const e of ents) {
+    if (e.k) {
+      const lunge = k.lunge > 0 ? Math.sin((1 - k.lunge / 0.24) * Math.PI) * 26 * k.face : 0;
+      const walk = k.moving ? Math.abs(Math.sin(R.t * 11)) * -5 : 0;
+      if (k.dead) drawKnight(g, ks, k.x, k.y, k.face, 0, { rot:-k.face * 1.35 * Math.min(1, (TUNE.REVIVE - k.reviveT) / 0.35), alpha:0.75 });
+      else drawKnight(g, ks, k.x, k.y + walk, k.face, R.t, { dx:lunge, flash:k.flash / 0.16 * 0.8 });
+      continue;
+    }
+    const m = e.m, sp = monSprites[m.st]; if (!sp || !sp.ready) continue;
+    const lift = m.def.fly ? m.def.fly + Math.sin(R.t * 3.2 + m.ph) * 9 : 0;
+    const br = 1 + Math.sin(R.t * 2.4 + m.ph) * 0.016, lunge = m.lunge > 0 ? Math.sin((1 - m.lunge / 0.26) * Math.PI) * 24 * m.face : 0;
+    let alpha = Math.min(1, m.born / 0.4), rot = 0, sink = 0;
+    if (m.dead) { const q = Math.min(1, m.deadT / 0.55); alpha = 1 - q; rot = m.gone ? 0 : -m.face * q * 0.5; sink = q * 14 + lift * q; }
+    drawSprite(g, sp, m.x, m.y - lift + sink, { flip:m.face > 0, sy:br, sx:1 / Math.sqrt(br), rot, alpha, flash:m.flash / 0.16 * 0.85, dx:lunge });
+    if (!m.dead && !m.def.boss && m.hp < m.max) bar(g, m.x - 45, m.y - m.h - (m.def.fly || 0) - 20, 90, 9, m.hp / m.max, '#b9735f');
+  }
+  // 이름과 칭호
+  if (!k.dead) {
+    const ty = k.y - ks.h - 26, tt = titleText();
+    outlined(g, S.name, k.x, ty, 28, '#ece2c6');
+    if (tt) outlined(g, tt, k.x, ty - 32, 24, '#e8b25a');
+  } else outlined(g, Math.ceil(k.reviveT) + '초 뒤에 다시 일어난다', k.x, k.y - 120, 32, '#ece2c6');
+  for (const f of R.floats) {
+    const q = f.t / f.life; g.globalAlpha = q < 0.7 ? 1 : 1 - (q - 0.7) / 0.3;
+    const pop = f.t < 0.12 ? 1.3 - f.t / 0.12 * 0.3 : 1;
+    outlined(g, f.txt, f.x, f.y - q * 70, f.size * pop, f.color);
+  }
+  g.globalAlpha = 1;
+  // 보스 체력과 남은 시간
+  const boss = R.mons.find(m => m.def.boss && !m.dead);
+  if (boss) {
+    outlined(g, '우두머리 · ' + boss.def.name, 100, 44, 32, '#ece2c6', 'left');
+    outlined(g, '남은 시간 ' + Math.ceil(Math.max(0, R.bossT)) + '초', 800, 44, 32, R.bossT < 10 ? '#e8943a' : '#ece2c6', 'right');
+    bar(g, 100, 74, 700, 26, boss.hp / boss.max, '#b9735f');
+    outlined(g, fmt(Math.max(0, boss.hp)) + ' / ' + fmt(boss.max), 450, 88, 24, '#ece2c6');
+  }
+  if (R.banner) {
+    const b = R.banner, a = b.t < 0.25 ? b.t / 0.25 : b.t > 1.7 ? Math.max(0, 1 - (b.t - 1.7) / 0.5) : 1;
+    g.globalAlpha = a; g.fillStyle = 'rgba(10,15,10,0.72)'; g.fillRect(0, 150, FW, b.sub ? 130 : 90);
+    outlined(g, b.text, 450, 195, 46, '#ece2c6'); if (b.sub) outlined(g, b.sub, 450, 248, 30, '#e8b25a');
+    g.globalAlpha = 1;
+  }
+  if (DEBUG) outlined(g, 'debug x' + SPEED + '  N:넘기기 G:골드', 890, 975, 20, '#a79e83', 'right');
+}
+
+/* ===================================================================== 아래 조작판 */
+const UP_INFO = {
+  atk:  { name:'공격력',      cur:() => fmt(kAtk()),  next:() => fmt(kAtk() + TUNE.UP.atk.step) },
+  hp:   { name:'체력',        cur:() => fmt(kMax()),  next:() => fmt(kMax() + TUNE.UP.hp.step) },
+  crit: { name:'치명타 확률', cur:() => Math.round(kCrit() * 100) + '%', next:() => Math.round((kCrit() + TUNE.UP.crit.step) * 100) + '%' },
+};
+const setText = (el, t) => { if (el.textContent !== t) el.textContent = t; };
+function refreshPanel() {
+  if (!$('goldTxt')) return;
+  setText($('goldTxt'), fmt(S.gold));
+  const boss = S.stage === 10;
+  setText($('stageName'), stageLabel(S.stage));
+  setText($('prog'), boss ? '보스' : R.progress + '/' + TUNE.KILLS_TO_CLEAR);
+  $('bPrev').disabled = S.stage <= 1; $('bNext').disabled = S.stage >= S.maxStage;
+  setText($('auto'), S.auto ? '자동 진행 켬' : '자동 진행 끔'); $('auto').classList.toggle('on', S.auto);
+  setText($('hpName'), S.name);
+  $('hpFill').style.width = clamp(R.k.hp / kMax() * 100, 0, 100) + '%';
+  setText($('hpTxt'), fmt(Math.ceil(R.k.hp)) + ' / ' + fmt(kMax()));
+  document.querySelectorAll('.up').forEach(b => {
+    const key = b.dataset.k, inf = UP_INFO[key], maxed = key === 'crit' && S.up.crit >= critMaxLv;
+    b.children[0].innerHTML = inf.name + '<small>' + S.up[key] + '단계</small>';
+    setText(b.children[1], maxed ? inf.cur() + ' (끝)' : inf.cur() + ' → ' + inf.next());
+    b.children[2].innerHTML = maxed ? '끝' : '<span class="coin s"></span>' + fmt(upPrice(key));
+    b.classList.toggle('no', maxed || S.gold < upPrice(key));
+  });
+}
+function buy(key) {
+  if (key === 'crit' && S.up.crit >= critMaxLv) return false;
+  const p = upPrice(key); if (S.gold < p) return false;
+  S.gold -= p; S.up[key]++;
+  if (key === 'hp') R.k.hp = Math.min(kMax(), R.k.hp + TUNE.UP.hp.step);
+  refreshPanel(); return true;
+}
+
+/* ===================================================================== 덮는 화면들 */
+function showCard(html, buttons) {
+  $('cardBox').innerHTML = html + '<div class="btns"></div>';
+  const row = $('cardBox').querySelector('.btns');
+  for (const b of buttons) {
+    const el = document.createElement('button'); el.className = 'btn' + (b.acc ? ' acc' : ''); el.textContent = b.text;
+    el.onclick = () => { $('modal').classList.add('hidden'); if (b.fn) b.fn(); };
+    row.appendChild(el);
+  }
+  $('modal').classList.remove('hidden');
+}
+function showStory() {
+  const call = S.gender === 'f' ? '누나!' : '형!';
+  showCard('<h3>기억 조각</h3><p>첫 번째 기억 조각을 되찾았다.</p><p>미로가 달려와 안긴다.</p><p>“' + call + '”</p><p class="small">2구역은 나중에 열립니다.</p>',
+    [{ text:'계속하기', acc:true }]);
+}
+function showSettings() {
+  showCard('<h3>설정</h3><p>' + (S.gender === 'f' ? '여자 기사' : '남자 기사') + ' · ' + escapeHtml(S.name) + '</p><p class="small">게임은 몇 초마다 저절로 저장됩니다.</p>',
+    [{ text:'처음부터', fn:() => showCard('<h3>처음부터</h3><p>모은 것이 모두 사라집니다.</p><p>정말 처음부터 할까요?</p>',
+        [{ text:'아니요', acc:true }, { text:'네, 지웁니다', fn:resetAll }]) }, { text:'닫기', acc:true }]);
+}
+function resetAll() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  S = freshSave(); knightSprite = null; R.mons = []; R.floats = []; R.parts = []; R.banner = null; R.progress = 0;
+  R.k.x = FW / 2; R.k.y = 600; R.k.dead = false; R.k.target = null;
+  openStart();
+}
+const escapeHtml = s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+let startGender = 'm';
+function drawStartPreviews() {
+  document.querySelectorAll('.gBtn').forEach(b => {
+    const c = b.querySelector('canvas'), g = c.getContext('2d'), a = knightArt(b.dataset.g, BASIC_LOOK), h = 280, w = h * a.aspect;
+    g.clearRect(0, 0, c.width, c.height);
+    drawShadow(g, 120, 304, w * 0.5, 18, 0.6);
+    const t = mk(w * 2, h * 2); a.paint(t.getContext('2d'), t.width, t.height);
+    g.imageSmoothingQuality = 'high'; g.drawImage(t, 120 - w / 2, 310 - h, w, h);
+    glow(g, 120 + (a.lantern[0] - 0.5) * w, 310 - h + a.lantern[1] * h, 50, '#f0983c', 0.5);
+    b.classList.toggle('sel', b.dataset.g === startGender);
+  });
+}
+function openStart() {
+  R.paused = true; startGender = S.gender; $('nameIn').value = S.name || '루';
+  $('start').classList.remove('hidden'); drawStartPreviews();
+}
+function startGame() {
+  S.gender = startGender; S.name = ($('nameIn').value || '').trim().slice(0, 8) || '루'; S.started = true;
+  knightSprite = null; $('start').classList.add('hidden'); R.paused = false;
+  R.k.hp = kMax(); gotoStage(S.stage); save();
+}
+
+function buildCos() {
+  const box = $('cosLists'); box.innerHTML = '';
+  for (const grp of COS_GROUPS) {
+    const h = document.createElement('div'); h.className = 'sec'; h.textContent = grp.title; box.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'grid'; box.appendChild(grid);
+    for (const it of grp.list) {
+      const open = it.ok(S), b = document.createElement('button');
+      b.className = 'opt' + (S.cos[grp.key] === it.id ? ' sel' : '') + (open ? '' : ' lock');
+      b.innerHTML = (it.color ? '<span class="dot" style="background:' + it.color + '"></span>' : '') +
+        '<span><div class="on">' + it.name + '</div><div class="oh">' + (open ? (S.cos[grp.key] === it.id ? '쓰는 중' : '고를 수 있음') : '잠김 · ' + it.how) + '</div></span>';
+      b.onclick = () => { if (!it.ok(S)) return; S.cos[grp.key] = it.id; knightSprite = null; buildCos(); save(); };
+      grid.appendChild(b);
+    }
+  }
+}
+function drawCosPreview(t) {
+  const c = $('cosPrev'), g = c.getContext('2d'), sp = getKnightSprite(), sc = 1.6;
+  g.drawImage(bg, 250, 420, 400, 480, 0, 0, 400, 480);
+  drawShadow(g, 200, 425, sp.w * sc * 0.5, 24, 0.6);
+  if (S.cos.foot !== 'none') for (let i = 0; i < 7; i++) {
+    const q = (t * 0.8 + i / 7) % 1;
+    drawPart(g, { kind:S.cos.foot, x:200 + Math.sin(i * 2.4) * 80, y:430 - q * (S.cos.foot === 'leaf' ? 40 : 90), t:q, life:1, r:i });
+  }
+  drawKnight(g, sp, 200, 425, -1, t, { scale:sc });
+  const tt = titleText();
+  outlined(g, S.name, 200, 58, 34, '#ece2c6'); if (tt) outlined(g, tt, 200, 24, 26, '#e8b25a');
+}
+function buildDex() {
+  const box = $('dexList'); box.innerHTML = '';
+  MONSTERS.forEach((m, i) => {
+    const st = i + 1, n = S.kills[st] || 0, seen = n > 0, d = document.createElement('div');
+    d.className = 'dex' + (seen ? '' : ' un');
+    d.innerHTML = '<div class="pic"><img alt="" src="art/monsters/' + encodeURIComponent(m.file) + '.png"></div><div>' +
+      '<div class="dn"><small>' + ZONE + '-' + st + (m.boss ? ' 보스' : '') + '</small>' + (seen ? m.name : '???') + '</div>' +
+      '<div class="dt">' + (seen ? m.trait : '아직 잡지 못했다.') + '</div>' +
+      '<div class="dl">' + (seen ? '전리품: ' + m.loot + ' ' + (S.loot[st] || 0) + '개 · 잡은 수 ' + fmt(n) : '전리품: ???') + '</div></div>';
+    box.appendChild(d);
+  });
+}
+function redrawStatic() { if (!$('start').classList.contains('hidden')) drawStartPreviews(); }
+
+/* 쉬는 동안 모은 골드 */
+function offlineReward(sec) {
+  if (!S.started || sec < 60) return;
+  const g = Math.floor(Math.min(sec, TUNE.OFFLINE_CAP_H * 3600) / TUNE.OFFLINE_SEC_PER_KILL) * goldOf(Math.min(S.stage, 9));
+  if (g <= 0) return;
+  S.gold += g; save(); refreshPanel();
+  showCard('<h3>다녀왔습니다</h3><p>쉬는 동안 골드를 모았다.</p><p><b>+' + fmt(g) + ' 골드</b></p><p class="small">최대 ' + TUNE.OFFLINE_CAP_H + '시간까지 쌓입니다.</p>', [{ text:'받기', acc:true }]);
+}
+
+/* ===================================================================== 시작 */
+function fit() {
+  const s = Math.min(innerWidth / 900, innerHeight / 1600);
+  $('stage').style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  viewQ = clamp(s * (window.devicePixelRatio || 1), 1, 2);
+  cv.width = Math.round(FW * viewQ); cv.height = Math.round(FH * viewQ);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+}
+let lastT = 0;
+function frame(t) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, Math.max(0, (t - lastT) / 1000)); lastT = t;      // 탭이 가려졌다 돌아와도 튀지 않게
+  if (!R.paused) {
+    for (let i = 0; i < SPEED; i++) update(dt);
+    R.saveT += dt; if (R.saveT > TUNE.SAVE_EVERY) { R.saveT = 0; save(); }
+    R.uiT += dt; if (R.uiT > 0.15) { R.uiT = 0; refreshPanel(); }
+  }
+  draw();
+  if (!$('cos').classList.contains('hidden')) drawCosPreview(t / 1000);
+}
+function init() {
+  cv = $('cv'); ctx = cv.getContext('2d');
+  load(); bg = makeBackground(); fit(); addEventListener('resize', fit);
+  loadKnightImages(); for (let i = 1; i <= 10; i++) loadMonster(i);
+
+  $('bPrev').onclick = () => { if (S.stage > 1) gotoStage(S.stage - 1); };
+  $('bNext').onclick = () => { if (S.stage < S.maxStage) gotoStage(S.stage + 1); };
+  $('auto').onclick = () => { S.auto = !S.auto; if (S.auto && R.progress >= TUNE.KILLS_TO_CLEAR && S.stage < 10) R.advanceT = 0.3; refreshPanel(); };
+  $('bCos').onclick = () => { buildCos(); $('cos').classList.remove('hidden'); };
+  $('bDex').onclick = () => { buildDex(); $('dex').classList.remove('hidden'); };
+  $('bSet').onclick = showSettings;
+  document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => $(b.dataset.close).classList.add('hidden'));
+  document.querySelectorAll('.gBtn').forEach(b => b.onclick = () => { startGender = b.dataset.g; drawStartPreviews(); });
+  $('goBtn').onclick = startGame;
+  $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
+  // 강화 단추: 누르고 있으면 계속 산다
+  document.querySelectorAll('.up').forEach(b => {
+    let h1 = 0, h2 = 0;
+    const stop = () => { clearTimeout(h1); clearInterval(h2); };
+    b.addEventListener('pointerdown', e => { e.preventDefault(); stop(); buy(b.dataset.k); h1 = setTimeout(() => { h2 = setInterval(() => { if (!buy(b.dataset.k)) stop(); }, 90); }, 420); });
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, stop);
+  });
+  document.addEventListener('contextmenu', e => e.preventDefault());
+
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { hiddenAt = Date.now(); if (S.started) save(); }
+    else if (hiddenAt) { offlineReward((Date.now() - hiddenAt) / 1000); hiddenAt = 0; }
+  });
+  addEventListener('pagehide', () => { if (S.started) save(); });
+
+  if (DEBUG) {
+    window.__g = { get S() { return S; }, R, TUNE, buy, gotoStage };
+    addEventListener('keydown', e => {
+      if (e.target === $('nameIn') || R.paused) return;
+      if (e.key === 'n' || e.key === 'N') {             // 스테이지 넘기기
+        if (S.stage === 10) { const b = R.mons.find(m => m.def.boss && !m.dead); if (b) { b.hp = 0; killMonster(b); } }
+        else { S.maxStage = Math.max(S.maxStage, S.stage + 1); S.kills[S.stage] = S.kills[S.stage] || 1; gotoStage(S.stage + 1); }
+      }
+      if (e.key === 'g' || e.key === 'G') { S.gold += 1000; refreshPanel(); }
+    });
+  }
+
+  if (S.started) {
+    const away = (Date.now() - (S.last || Date.now())) / 1000;
+    R.paused = false; R.k.hp = kMax(); gotoStage(S.stage); offlineReward(away);
+  } else openStart();
+  refreshPanel();
+  requestAnimationFrame(t => { lastT = t; frame(t); });
+}
+init();
 </script>
 </body>
 </html>
