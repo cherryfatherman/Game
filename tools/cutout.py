@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageOps
 import numpy as np
 
 LOW, HIGH = 14, 70   # 종이색에서 이만큼 다르면 반투명 시작 / 완전 불투명
+NEAR = 26            # 틈새를 따라 들어갈 때 종이로 보는 한계
 
 
 def cutout(src, dst, flip=False, size=1024):
@@ -36,10 +37,25 @@ def cutout(src, dst, flip=False, size=1024):
             if cand.getpixel((x, y)) == 255:
                 ImageDraw.floodfill(cand, (x, y), 128)
     bg = np.asarray(cand.point(lambda v: 255 if v == 128 else 0).filter(ImageFilter.MaxFilter(7))) > 0
+    # 털이나 가시 사이에 낀 종이색도 지운다: 배경에서 이어지는, 종이와 거의 같은 색만 따라 들어간다.
+    near = Image.fromarray(np.where(bg | (dist < NEAR), 255, 0).astype(np.uint8)).copy()
+    for x in range(0, w, 8):
+        for y in (0, h - 1):
+            if near.getpixel((x, y)) == 255:
+                ImageDraw.floodfill(near, (x, y), 128)
+    for y in range(0, h, 8):
+        for x in (0, w - 1):
+            if near.getpixel((x, y)) == 255:
+                ImageDraw.floodfill(near, (x, y), 128)
+    bg = np.asarray(near.point(lambda v: 255 if v == 128 else 0).filter(ImageFilter.MaxFilter(3))) > 0
     alpha = np.full(dist.shape, 255.0)
     soft = np.clip((dist - LOW) / (HIGH - LOW), 0, 1) * 255
     alpha[bg] = soft[bg]
-    out = np.dstack([a.astype(np.uint8), alpha.astype(np.uint8)])
+    # 가장자리의 반투명한 점에서 종이색을 빼낸다. 안 그러면 털 사이에 밝은 테가 남는다.
+    af = (alpha / 255.0)[..., None]
+    rgb = np.where(af > 0.02, (a - (1 - af) * paper) / np.maximum(af, 0.02), a)
+    rgb = np.clip(rgb, 0, 255)
+    out = np.dstack([rgb.astype(np.uint8), alpha.astype(np.uint8)])
     Image.fromarray(out, 'RGBA').save(dst)
 
 
