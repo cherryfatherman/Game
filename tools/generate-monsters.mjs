@@ -4,6 +4,7 @@
 //   GEMINI_API_KEY=키 node tools/generate-monsters.mjs --limit 5      ← 먼저 5종만 시험
 //   GEMINI_API_KEY=키 node tools/generate-monsters.mjs                ← 나머지 전부
 //   GEMINI_API_KEY=키 node tools/generate-monsters.mjs --only ogre,goblin --force   ← 골라서 다시 뽑기
+// 그림체 기준은 가이드라인.md 4장. 승인된 기준 그림(art/기준/오우거.jpg)이 있으면 함께 넣어 그림체를 맞춘다.
 //
 // 이미 파일이 있는 몬스터는 건너뛴다(--force 로 덮어쓰기). 키는 절대 파일에 적지 않는다.
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
@@ -11,8 +12,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const STYLE = (process.argv.includes('--style') && process.argv[process.argv.indexOf('--style') + 1]) || 'ink'; // ink(흑백) · wash(옅은 채색) · vivid(선명한 채색)
-const OUT = path.join(ROOT, 'art', STYLE === 'ink' ? 'monsters' : 'monsters-' + STYLE);
+// 그림체는 하나뿐이다. 가이드라인.md 4장과 prompts.json의 style이 기준이다.
+const OUT = path.join(ROOT, 'art', 'monsters');
 const MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-nano-banana-2.1';
 const KEY = process.env.GEMINI_API_KEY;
 const WAIT_MS = Number(process.env.GEMINI_WAIT_MS || 4000); // 주문 사이 쉬는 시간
@@ -27,14 +28,25 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 if (!KEY) { console.error('GEMINI_API_KEY 환경변수가 없습니다. Google AI Studio에서 API 키를 만들어 넣어 주세요.'); process.exit(1); }
 
 const spec = JSON.parse(await readFile(path.join(ROOT, '잊혀진 기사 키우기 세계관', 'prompts.json'), 'utf8'));
-const styleText = spec.styles?.[STYLE] || spec.style;
-if (!spec.styles?.[STYLE] && STYLE !== 'ink') { console.error('모르는 그림체: ' + STYLE); process.exit(1); }
+const styleText = spec.style;
+// 승인된 기준 그림이 있으면 매번 함께 넣어서 그림체를 맞춘다.
+let refPart = null;
+if (spec.reference) {
+  try {
+    const buf = await readFile(path.join(ROOT, spec.reference));
+    refPart = { inline_data: { mime_type: spec.reference.endsWith('.png') ? 'image/png' : 'image/jpeg', data: buf.toString('base64') } };
+    console.log('기준 그림 사용: ' + spec.reference);
+  } catch { console.log('기준 그림이 아직 없습니다. 글 주문만으로 뽑습니다.'); }
+}
 await mkdir(OUT, { recursive: true });
 const have = new Set((await readdir(OUT)).map(f => f.replace(/\.[^.]+$/, '')));
 
 async function generate(m) {
   const body = {
-    contents: [{ parts: [{ text: `${styleText}. Subject: ${m.en}.` }] }],
+    contents: [{ parts: [
+      { text: `${styleText}. Subject: ${m.en}.` + (refPart ? ' Match the attached reference image exactly in rendering style, line quality, palette, lighting and background; draw a different creature.' : '') },
+      ...(refPart ? [refPart] : []),
+    ] }],
     generationConfig: { responseModalities: ['Image'], imageConfig: { aspectRatio: '1:1' } },
   };
   const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent`, {

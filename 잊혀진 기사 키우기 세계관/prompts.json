@@ -1,11 +1,6 @@
 {
- "style": "Black and white pen and ink illustration, dense cross-hatching and stippling, old monster manual bestiary plate, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border, no color",
- "styles": {
-  "ink": "Black and white pen and ink illustration, dense cross-hatching and stippling, old monster manual bestiary plate, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border, no color",
-  "wash": "Pen and ink illustration with dense cross-hatching, tinted with a light muted watercolor wash over the ink lines, hand-colored old bestiary plate, soft earthy palette, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border",
-  "vivid": "Vivid 2D fantasy game creature illustration, bold confident ink outlines, rich saturated colors, strong cel-shaded lighting with bright highlights and deep shadows, hand-painted detail, lively expressive pose that feels alive and breathing, crisp and sharp, full body, single creature, slightly grotesque and unsettling, standing on a small ground shadow, plain white background, no text, no border",
-  "painted": "Hand-painted fantasy creature illustration in the manner of classic hand-drawn animation film art: soft natural daylight, painterly gouache and watercolor textures, muted earthy greens, browns and greys, grounded realistic anatomy with real weight, believable weathered skin with moss, dirt and old scars, small deep-set eyes, quietly menacing and genuinely frightening presence, thin drifting mist around its feet, full body, single creature, simple pale background, no text, no border"
- },
+ "style": "Detailed realistic dark-fantasy creature illustration. Fine pen and ink linework with cross-hatching defines the form and shadow; grounded believable anatomy with real weight, weathered skin, dirt, moss and old scars; small deep-set eyes; genuinely frightening and menacing, never cute, no exaggerated cartoon proportions, no gore. Over the ink, a restrained hand-painted color wash in muted earth browns, moss greens, bone and misty blue-grey, under soft natural daylight: only a slight touch, about one part in ten, of the gentle warmth of classic hand-drawn animation film art in the color and light, never in the creature's design. Full body, single creature, facing left, three-quarter view, thin drifting mist and a soft shadow at its feet, plain pale off-white background, square image, no text, no border, no signature, no saturated or neon colors",
+ "reference": "art/기준/오우거.jpg",
  "size": "square",
  "monsters": [
   {
