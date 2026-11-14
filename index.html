@@ -627,7 +627,12 @@ const R = {                          // 저장하지 않는 것
 };
 for (const sk of SKILLS) R.cd[sk.id] = 0;
 let bg = null, fg = null, cv, ctx, viewQ = 1;
-const heroImg = new Image();      // 대표 그림의 얼굴 (스킬 연출에 눈매를 쓴다)
+function setHeroFace() {            // 고른 기사에 맞는 얼굴로 바꾼다
+  const f = (typeof S !== 'undefined' && S && S.gender === 'f'); heroImg = heroImgs[f ? 'f' : 'm'];
+  const el = document.querySelector('#face img'); if (el) el.src = 'art/ui/' + encodeURIComponent('영웅-얼굴' + (f ? '-여' : '') + '-256') + '.png';
+}
+const heroImgs = { m:new Image(), f:new Image() }, HERO_EYES = { m:338, f:418 };   // 눈 높이(1024 그림 기준)
+let heroImg = heroImgs.m;      // 대표 그림의 얼굴 (스킬 연출에 눈매를 쓴다)
 for (let i = 0; i < 16; i++) R.flies.push({ x:rand(70, 830), y:rand(240, 1480), ph:rand(0, 6.28), sp:rand(0.12, 0.34), r:rand(30, 90) });
 
 function showBanner(text, sub) { R.banner = { text, sub:sub || '', t:0 }; }
@@ -994,7 +999,7 @@ function drawCutIn(g) {
   g.save(); g.translate(450, 590); g.rotate(-0.13); g.globalAlpha = a;
   g.beginPath(); g.rect(-620, -100, 1240, 200); g.clip();
   g.fillStyle = '#05080a'; g.fillRect(-620, -100, 1240, 200);
-  if (heroImg.ok) g.drawImage(heroImg, 0, 338, 1024, 174, -590 + slide + (0.5 - q) * 50, -100, 1180, 200);   // 그림의 눈 높이만 잘라 쓴다
+  if (heroImg.ok) g.drawImage(heroImg, 0, heroImg.eyeY, 1024, 174, -590 + slide + (0.5 - q) * 50, -100, 1180, 200);   // 그림의 눈 높이만 잘라 쓴다
   for (const [y0, y1] of [[-100, -40], [100, 40]]) { const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(4,6,8,0.92)'); gr.addColorStop(1, 'rgba(4,6,8,0)'); g.fillStyle = gr; g.fillRect(-620, Math.min(y0, y1), 1240, 60); }
   g.lineCap = 'round';
   for (let i = 0; i < 18; i++) {      // 빠르게 스치는 선
@@ -1336,7 +1341,7 @@ function openStart() {
   $('start').classList.remove('hidden'); drawStartPreviews();
 }
 function startGame() {
-  S.gender = startGender; S.name = ($('nameIn').value || '').trim().slice(0, 8) || '루'; S.started = true;
+  S.gender = startGender; S.name = ($('nameIn').value || '').trim().slice(0, 8) || '루'; S.started = true; setHeroFace();
   knightSprite = null; $('start').classList.add('hidden'); R.paused = false;
   R.k.hp = kMax(); buildSkills(); addLog(ZONE_NAME + '에 들어섰다', 'd'); gotoStage(S.stage); save();
 }
@@ -1379,7 +1384,8 @@ function init() {
   cv = $('cv'); ctx = cv.getContext('2d');
   document.querySelectorAll('[data-ic]').forEach(e => { e.outerHTML = icon(e.dataset.ic); });
   load(); bg = makeBackground(); fg = makeCanopy(); fit(); addEventListener('resize', fit);
-  heroImg.onload = () => { heroImg.ok = true; }; heroImg.src = 'art/ui/' + encodeURIComponent('영웅-얼굴') + '.png';
+  for (const k of ['m', 'f']) { const im = heroImgs[k]; im.eyeY = HERO_EYES[k]; im.onload = () => { im.ok = true; }; im.src = 'art/ui/' + encodeURIComponent('영웅-얼굴' + (k === 'f' ? '-여' : '')) + '.png'; }
+  setHeroFace();
   loadKnightImages(); for (let i = 1; i <= 10; i++) loadMonster(i);
   buildSkills();
 
