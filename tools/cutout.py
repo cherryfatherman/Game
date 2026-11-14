@@ -6,6 +6,7 @@
 - 가장자리와 이어진 종이색, 그리고 다리 사이처럼 갇힌 순백 덩어리를 지운다. 몸 안의 밝은 부분(배, 이빨)은 남긴다.
 - 발밑의 푸른 안개는 반투명으로 남긴다.
 - --flip 을 주면 좌우를 뒤집는다(오른쪽을 보는 그림을 왼쪽으로).
+- --흰옷 을 주면 몸 안에 갇힌 흰색을 지우지 않는다(흰 옷이 뚫리는 것을 막는다. 대신 팔다리 사이의 흰 배경이 남을 수 있다).
 """
 import sys
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
@@ -17,7 +18,7 @@ POCKET = 10          # 갇힌 틈에서 종이로 보는 한계(거의 순백만
 POCKET_AREA = 60     # 이 넓이(픽셀)보다 큰 갇힌 흰 덩어리만 지운다
 
 
-def cutout(src, dst, flip=False, size=1024):
+def cutout(src, dst, flip=False, size=1024, pockets=True):
     im = Image.open(src).convert('RGB')
     if im.size[0] != size:
         im = im.resize((size, size), Image.LANCZOS)
@@ -64,6 +65,8 @@ def cutout(src, dst, flip=False, size=1024):
         if comp.sum() >= POCKET_AREA:
             holes |= comp
         pocket = Image.fromarray(np.where(comp, 0, np.asarray(pocket)).astype(np.uint8)).copy()
+    if not pockets:
+        holes[:] = False          # 흰 옷을 입은 그림: 몸 안의 흰색을 지우지 않는다
     if holes.any():
         bg = bg | (np.asarray(Image.fromarray((holes * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))) > 0)
     alpha = np.full(dist.shape, 255.0)
@@ -79,4 +82,4 @@ def cutout(src, dst, flip=False, size=1024):
 
 if __name__ == '__main__':
     args = [x for x in sys.argv[1:] if not x.startswith('--')]
-    cutout(args[0], args[1], flip='--flip' in sys.argv)
+    cutout(args[0], args[1], flip='--flip' in sys.argv, pockets='--흰옷' not in sys.argv)
