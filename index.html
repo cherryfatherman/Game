@@ -6,13 +6,15 @@
 <title>잊혀진 기사 키우기</title>
 <style>
 :root{
+  color-scheme:dark;
   --panel:#1c261b; --panel2:#2a2318; --box:#263324; --line:#5a5540; --hud:rgba(15,21,14,.68); --hudline:rgba(150,140,100,.42);
   --cream:#ece2c6; --dim:#aaa187; --acc:#e8943a; --red:#b9735f;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#070a07;overflow:hidden;overscroll-behavior:none}
+html,body{margin:0;height:100%;background:#0a110b;overflow:hidden;overscroll-behavior:none}
 body{font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","WenQuanYi Zen Hei",sans-serif;
   color:var(--cream);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#app{position:relative;width:100%;height:100%;overflow:hidden;background:#0a110b}   /* 길쭉한 휴대폰에서 위아래에 남는 곳: 숲 가장자리와 같은 어두운 풀빛 */
 #stage{position:absolute;left:50%;top:50%;width:900px;height:1600px;transform-origin:center center;background:#0d120d;overflow:hidden}
 #cv{position:absolute;left:0;top:0;width:900px;height:1600px;display:block}
 button{font:inherit;color:inherit;cursor:pointer;border:0;padding:0;background:none}
@@ -27,24 +29,25 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 #stagePill:active,.mBtn:active,.skill:active,#autoSk:active,#logBtn:active,#hintUp:active,#hintTog:active{filter:brightness(1.6)}
 
 /* 왼쪽 위: 둥근 작은 지도와 스테이지 */
-#mini{position:absolute;left:16px;top:16px;width:170px;height:170px;z-index:5;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+#mini{position:absolute;left:30px;top:16px;width:170px;height:170px;z-index:5;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
 #mini canvas{width:170px;height:170px;display:block}
-#stagePill{position:absolute;left:10px;top:192px;height:84px;padding:0 20px;z-index:5;display:flex;align-items:center;gap:12px;font-size:30px;font-weight:700;border-radius:42px;background:rgba(8,12,8,.28)}
+#stagePill{position:absolute;left:46px;top:192px;height:84px;padding:0 20px;z-index:5;display:flex;align-items:center;gap:12px;font-size:30px;font-weight:700;border-radius:42px;background:rgba(8,12,8,.28)}
 #stagePill b{color:var(--acc)}
 #stagePill svg{font-size:28px;color:var(--dim)}
 
 /* 위 가운데: 골드와 전리품 */
-#cur{position:absolute;left:196px;top:28px;width:316px;display:flex;justify-content:center;align-items:center;gap:10px;font-size:32px;font-weight:700;z-index:5;pointer-events:none}
+#cur{position:absolute;left:210px;top:28px;width:270px;display:flex;justify-content:center;align-items:center;gap:10px;font-size:32px;font-weight:700;z-index:5;pointer-events:none}
 #cur .coin{box-shadow:0 2px 5px rgba(0,0,0,.8)}
 #cur svg{font-size:32px;color:var(--dim);margin-left:22px}
 
 /* 오른쪽 위: 메뉴와 할 일 */
-#tr{position:absolute;right:8px;top:8px;width:380px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;z-index:5;pointer-events:none}
+#tr{position:absolute;right:46px;top:8px;width:380px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;z-index:5;pointer-events:none}
 #menu,#menu2{display:flex;gap:2px;pointer-events:auto}
-.mBtn{width:92px;height:108px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:23px;font-weight:600}
+.mBtn{position:relative;width:92px;height:108px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:23px;font-weight:600}
 .mBtn svg{font-size:52px}
 .mBtn.on{color:var(--acc)}
-#hint{pointer-events:auto;width:372px;margin:6px 6px 0 0;padding:0 14px 10px 16px;border-radius:16px;background:linear-gradient(90deg,rgba(8,12,8,.5),rgba(8,12,8,.16));border-left:4px solid var(--acc);text-align:left}
+.mBtn.nw::after,.cTab.nw::after{content:"";position:absolute;right:16px;top:12px;width:16px;height:16px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px rgba(8,12,8,.85)}
+#hint{pointer-events:auto;width:372px;margin:6px 0 0 0;padding:0 14px 10px 16px;border-radius:16px;background:linear-gradient(90deg,rgba(8,12,8,.5),rgba(8,12,8,.16));border-left:4px solid var(--acc);text-align:left}
 #hintTog{width:100%;height:50px;display:flex;align-items:center;justify-content:space-between;font-size:23px;font-weight:700;color:var(--acc)}
 #hintTog svg{font-size:26px;color:var(--dim)}
 #hintGoal{font-size:24px;line-height:34px;font-weight:600}
@@ -60,19 +63,22 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 .skill.cool svg{opacity:.22}
 .skill.lock{opacity:.5} .skill.lock svg{font-size:.32em;color:var(--dim)}
 .skill .cd{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;pointer-events:none}
-#autoSk{position:absolute;right:30px;bottom:334px;width:92px;height:92px;border-radius:50%;z-index:5;font-size:25px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;
+#autoSk{position:absolute;right:56px;bottom:340px;width:92px;height:92px;border-radius:50%;z-index:5;font-size:25px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;
   color:var(--dim);background:rgba(8,12,8,.45);box-shadow:0 0 0 3px rgba(236,226,198,.25),0 4px 12px rgba(0,0,0,.6)}
 #autoSk small{font-size:21px;font-weight:700}
 #autoSk.on{color:var(--acc);box-shadow:0 0 0 4px var(--acc),0 0 20px rgba(232,148,58,.55),0 4px 12px rgba(0,0,0,.6)}
 
 /* 아래: 기사 체력, 잡은 수, 기록 */
-#log{position:absolute;left:16px;bottom:12px;width:550px;z-index:5;display:flex;flex-direction:column;pointer-events:none}
+#log{position:absolute;left:46px;bottom:12px;width:506px;z-index:5;display:flex;flex-direction:column;pointer-events:none}
 #logTop{display:flex;align-items:center;gap:16px}
 #logBars{flex:1}
 #face{width:120px;height:120px;flex:none;border-radius:50%;overflow:hidden;background:#10160f;box-shadow:0 0 0 3px var(--acc),0 5px 14px rgba(0,0,0,.75);transition:box-shadow .3s,filter .3s}
 #face img{width:100%;height:100%;display:block;object-fit:cover;transform:scale(1.1)}
 #face.hit{box-shadow:0 0 0 5px #ff4a3a,0 0 24px rgba(255,74,58,.85),0 5px 14px rgba(0,0,0,.75);transition:none}
 #face.down{filter:grayscale(1) brightness(.55)}
+#dmgLine{font-size:23px;font-weight:700;margin:0 0 8px 8px;color:var(--cream)} #dmgLine b{display:inline-block;margin-left:8px;font-size:28px;color:var(--acc)}
+#dmgLine b.pop{animation:pop .55s ease}
+@keyframes pop{0%{transform:scale(2);color:#fff}100%{transform:scale(1)}}
 #hpBar{height:32px;border-radius:16px;background:rgba(8,12,8,.62);position:relative;overflow:hidden;box-shadow:0 0 0 2px rgba(236,226,198,.3),0 3px 8px rgba(0,0,0,.6)}
 #hpFill{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:16px;background:linear-gradient(#a3c072,#6f8c4b)}
 #hpFill.low{background:linear-gradient(#d98a6c,#a8563f)}
@@ -84,57 +90,67 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 #log.open #logLines{height:304px}
 #logLines div{font-size:25px;line-height:38px;height:38px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cream)}
 #logLines .tg{font-weight:700;margin-right:8px}
-#logLines .a .tg{color:var(--acc)} #logLines .g .tg{color:#e9c376} #logLines .b .tg{color:#e07a62} #logLines .d .tg{color:var(--dim)} #logLines .l .tg{color:#b9c9a0}
+#logLines .a .tg,#logLines .c .tg{color:var(--acc)} #logLines .j .tg{color:#d8cfae} #logLines .g .tg{color:#e9c376} #logLines .b .tg{color:#e07a62} #logLines .d .tg{color:var(--dim)} #logLines .l .tg{color:#b9c9a0}
 #logBtn{width:84px;height:84px;border-radius:50%;font-size:40px;display:flex;align-items:center;justify-content:center;color:var(--cream);pointer-events:auto}
 #log.open #logBtn svg{transform:rotate(180deg)}
-#toast{position:absolute;left:50%;bottom:520px;transform:translateX(-50%);padding:16px 30px;font-size:32px;font-weight:600;border-radius:40px;z-index:6;white-space:nowrap;pointer-events:none;transition:opacity .3s;background:rgba(10,14,10,.8)}
+#toast.high{bottom:auto;top:296px}   /* 판이 열려 있을 때는 판 위쪽 들판에 띄운다 (판의 단추를 가리지 않게) */
+#toast{position:absolute;left:50%;bottom:520px;transform:translateX(-50%);padding:16px 30px;font-size:32px;font-weight:600;border-radius:40px;z-index:22;white-space:nowrap;pointer-events:none;transition:opacity .3s;background:rgba(10,14,10,.88);box-shadow:0 0 0 2px rgba(150,140,100,.4)}
 
 /* 아래에서 올라오는 판 */
 #sheetWrap{position:absolute;inset:0;background:rgba(4,7,4,.4);z-index:10}
 #sheet{position:absolute;left:0;right:0;bottom:0;max-height:1240px;display:flex;flex-direction:column;background:rgba(24,32,23,.97);
   border-top:3px solid var(--line);border-radius:30px 30px 0 0}
-#sheetHead{display:flex;align-items:center;padding:18px 22px 14px 30px;flex:none}
+#sheetHead{display:flex;align-items:center;padding:18px 46px 14px 46px;flex:none}
 #sheetHead h2{flex:1;margin:0;font-size:42px}
-#sheetBody{overflow-y:auto;padding:6px 24px 40px;-webkit-overflow-scrolling:touch}
+#sheetBody{overflow-y:auto;padding:6px 46px 40px;-webkit-overflow-scrolling:touch}
 .btn{min-height:84px;padding:0 30px;font-size:32px;font-weight:600;background:var(--panel2);border:3px solid var(--line);border-radius:16px}
 .btn:active{background:#463a26;transform:translateY(2px)}
 .btn.acc{background:var(--acc);border-color:#a8641f;color:#22170a} .btn.acc:active{background:#c97a2a}
 .btn:disabled{opacity:.35}
-.up{display:flex;align-items:center;width:100%;height:116px;margin-top:12px;padding:0 24px;background:var(--panel2);border:3px solid var(--line);border-radius:18px;text-align:left}
+.btn.wide{width:100%}
+#upHead{font-size:34px;font-weight:700;margin:2px 6px 6px;word-break:keep-all} #upHead small{display:block;font-size:25px;font-weight:400;color:var(--dim);margin-top:6px}
+.up{display:flex;align-items:center;width:100%;height:136px;margin-top:12px;padding:0 22px;background:var(--panel2);border:3px solid var(--line);border-radius:18px;text-align:left}
 .up:active{background:#463a26;transform:translateY(2px)}
-.up .un{width:300px;font-size:36px;font-weight:700}
-.up .un small{font-size:28px;font-weight:400;color:var(--dim);margin-left:10px}
-.up .ue{flex:1;font-size:32px}
-.up .upp{display:flex;align-items:center;gap:10px;font-size:34px;font-weight:700;color:var(--acc);min-width:170px;justify-content:flex-end}
+.up .un{width:206px;font-size:34px;font-weight:700;white-space:nowrap}
+.up .un small{display:block;font-size:25px;font-weight:400;color:var(--dim);margin-top:4px}
+.up .ue{flex:1;font-size:32px;font-weight:600;white-space:nowrap}
+.up .ue small{display:block;font-size:23px;font-weight:400;color:var(--dim);margin-top:6px;letter-spacing:-.5px} .up .ue small.go{color:var(--acc)}
+.up .upp{display:flex;align-items:center;gap:10px;font-size:32px;font-weight:700;color:var(--acc);min-width:140px;justify-content:flex-end}
 .up.no{opacity:.45} .up.no .upp{color:var(--dim)}
-.note{font-size:28px;line-height:1.5;color:var(--dim);margin:16px 6px 0}
+.note{font-size:28px;line-height:1.5;color:var(--dim);margin:16px 6px 0;word-break:keep-all} .note.gap{margin:10px 6px 22px;font-size:26px}
 .sec{margin:30px 0 12px;font-size:34px;font-weight:700;color:var(--acc)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .opt{min-height:108px;padding:12px 20px;background:var(--panel);border:3px solid var(--line);border-radius:16px;text-align:left;display:flex;align-items:center;gap:16px}
 .opt:active{background:#33432f}
-.opt .on{font-size:33px;font-weight:700} .opt .oh{font-size:25px;color:var(--dim);margin-top:4px}
+.opt .on{font-size:33px;font-weight:700} .opt .oh{font-size:25px;color:var(--dim);margin-top:4px;word-break:keep-all}
 .opt.sel{border-color:var(--acc);background:#2c3a28} .opt.lock{opacity:.5}
 .opt svg{font-size:36px;color:var(--dim)}
 .dot{width:40px;height:40px;border-radius:50%;flex:none;border:3px solid #0008}
-#cosPrev{width:100%;height:540px;border-radius:20px;border:3px solid var(--line);display:block}
-#cosTabs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:14px 0}
-.cTab{height:84px;font-size:27px;font-weight:700;border-radius:14px;background:var(--panel);border:3px solid var(--line)}
+#cosPrev{width:100%;height:480px;border-radius:20px;border:3px solid var(--line);display:block}
+#cosLine{min-height:78px;margin:12px 4px 0;font-size:25px;line-height:1.5;color:var(--dim);word-break:keep-all} #cosLine b{color:var(--cream);font-size:28px;margin-right:12px}
+#cosTabs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:10px 0 14px}
+.cTab{position:relative;height:84px;font-size:27px;font-weight:700;border-radius:14px;background:var(--panel);border:3px solid var(--line)}
 .cTab:active{background:#33432f} .cTab.sel{border-color:var(--acc);color:var(--acc);background:#2c3a28}
 #cosGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.cCard{position:relative;height:300px;border-radius:18px;background:var(--panel);border:3px solid var(--line);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 10px}
+.cCard{position:relative;height:322px;border-radius:18px;background:var(--panel);border:3px solid var(--line);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 6px 10px}
 .cCard:active{background:#33432f}
 .cCard canvas,.cCard .big{position:absolute;left:0;top:0;width:100%;height:214px}
 .cCard .big{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:var(--acc);padding:0 12px;text-align:center}
 .cCard .big .dot{width:92px;height:92px}
-.cCard .cn{font-size:25px;font-weight:700;white-space:nowrap;letter-spacing:-1px} .cCard .ch{font-size:21px;color:var(--dim);margin-top:2px;white-space:nowrap}
+.cCard .cn{font-size:25px;font-weight:700;white-space:nowrap;letter-spacing:-1px} .cCard .ch{font-size:20px;line-height:1.25;color:var(--dim);margin-top:3px;min-height:50px;text-align:center;word-break:keep-all;letter-spacing:-.5px}
 .cCard.sel{border-color:var(--acc);box-shadow:inset 0 0 0 3px var(--acc);background:#2c3a28} .cCard.sel .ch{color:var(--acc)}
-.cCard.lock{opacity:.45}
+.cCard.lock canvas,.cCard.lock .big{opacity:.4} .cCard.lock .cn{color:var(--dim)}
+.cCard .lk{position:absolute;right:10px;top:10px;width:52px;height:52px;border-radius:50%;background:rgba(8,12,8,.66);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--cream)}
+.cCard .ld{position:absolute;left:0;top:0;width:100%;height:214px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--dim)}
+.jr{background:var(--panel);border:3px solid var(--line);border-radius:18px;padding:16px 22px;margin-bottom:12px}
+.jr .jh{font-size:25px;font-weight:700;color:var(--acc);margin-bottom:6px} .jr .jt{font-size:30px;line-height:1.55;word-break:keep-all}
+.jr.un{opacity:.55;padding:12px 22px} .jr.un .jh{display:inline-block;color:var(--dim);margin:0 16px 0 0} .jr.un .jt{display:inline;color:var(--dim);font-size:26px}
 #cosNote{flex:1;font-size:28px;line-height:1.5;color:var(--dim);background:var(--panel);border:3px solid var(--line);border-radius:20px;padding:22px}
 #cosNote b{color:var(--cream);font-size:32px}
 .dex{display:flex;gap:20px;align-items:center;background:var(--panel);border:3px solid var(--line);border-radius:18px;padding:14px 18px;margin-bottom:12px}
 .dex .pic{width:140px;height:140px;flex:none;background:#2f4230;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .dex img{width:130px;height:130px;object-fit:contain}
-.dex.un img{filter:brightness(0);opacity:.55}
+.dex .pic.q{font-size:70px;font-weight:800;color:#55654f}
 .dex .dn{font-size:34px;font-weight:700} .dex .dn small{font-size:27px;color:var(--acc);margin-right:12px}
 .dex .dt{font-size:28px;line-height:1.4;margin:6px 0} .dex .dl{font-size:27px;color:var(--dim)}
 .toggle{display:flex;align-items:center;width:100%;min-height:96px;padding:0 24px;font-size:34px;font-weight:700;background:var(--panel2);border:3px solid var(--line);border-radius:18px}
@@ -151,9 +167,32 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 .card .btn{font-size:36px;padding:0 44px}
 #lowOv{position:absolute;inset:0;background:rgba(0,0,0,.74);z-index:30;display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--dim);text-align:center;line-height:1.6}
 
+/* 이야기 카드: 들판을 어둡게 덮고 한 장씩 보여 준다 */
+#story{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 50% 46%,rgba(5,8,6,.8) 0,rgba(3,5,4,.95) 70%)}
+#story.intro{background:#05080a}
+#stBg{position:absolute;left:0;top:30px;width:900px;height:900px;background:center/cover no-repeat;opacity:.22;filter:saturate(.75);pointer-events:none;
+  -webkit-mask-image:radial-gradient(closest-side,#000 45%,transparent 100%);mask-image:radial-gradient(closest-side,#000 45%,transparent 100%)}
+#stName{position:absolute;left:46px;top:48px;font-size:26px;color:var(--dim);letter-spacing:3px;pointer-events:none}
+#stSkip{position:absolute;right:46px;top:16px;height:84px;padding:0 22px;font-size:27px;color:var(--dim);border:2px solid rgba(170,161,135,.35);border-radius:42px}
+#stSkip:active{background:rgba(236,226,198,.12)}
+#stCard{position:relative;width:740px;text-align:center;animation:stIn .5s ease both;pointer-events:none}
+@keyframes stIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+#stWho{font-size:29px;font-weight:700;color:var(--acc);letter-spacing:3px;min-height:40px;margin-bottom:18px}
+#stText{font-size:42px;line-height:1.7;word-break:keep-all;text-shadow:0 2px 6px #000}
+#stSub{font-size:34px;font-weight:700;color:var(--cream);margin-top:22px}
+#stCard.say #stText{font-size:45px;font-weight:600}
+#stCard.big #stText{font-size:60px;font-weight:800;color:var(--acc);line-height:1.45}
+#stCard.small #stText{font-size:30px;color:var(--dim)}
+#stCard.title #stText{font-size:84px;font-weight:800;letter-spacing:2px;line-height:1.3;text-shadow:0 4px 8px #000,0 0 40px rgba(232,148,58,.35)}
+#stCard.gift{padding:38px 30px;border:3px solid var(--acc);border-radius:24px;background:rgba(232,148,58,.08)}
+#stCard.gift #stText{font-size:36px;color:var(--acc);font-weight:700}
+#stFoot{position:absolute;left:0;right:0;bottom:74px;text-align:center;font-size:24px;color:var(--dim);pointer-events:none}
+#stFoot span{display:block;margin-top:10px}
+
 /* 시작 화면 */
 #start{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;
-  background:linear-gradient(rgba(8,12,9,.5) 0,rgba(8,12,9,.05) 200px,rgba(8,12,9,.05) 430px,#0e140e 620px),url('art/ui/영웅-얼굴.png') center top/900px 900px no-repeat,#0e140e}
+  background:linear-gradient(rgba(8,12,9,.5) 0,rgba(8,12,9,.05) 200px,rgba(8,12,9,.05) 430px,#0e140e 620px),var(--hero,none) center top/900px 900px no-repeat,#0e140e}
 #start h1{margin:56px 0 8px;font-size:78px;letter-spacing:2px;text-shadow:0 4px 6px #000,0 0 26px #000,0 0 50px rgba(0,0,0,.8)}
 #start .sub{font-size:32px;color:var(--cream);margin-bottom:412px;text-shadow:0 2px 4px #000,0 0 16px #000}
 #gPick{display:flex;gap:36px}
@@ -170,6 +209,7 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 </style>
 </head>
 <body>
+<div id="app">
 <div id="stage">
   <canvas id="cv"></canvas>
 
@@ -186,7 +226,7 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
     </div>
     <div id="menu2" class="hidden">
       <button class="mBtn" data-open="set"><span data-ic="gear"></span>설정</button>
-      <button class="mBtn" id="bJournal"><span data-ic="page"></span>일지</button>
+      <button class="mBtn" id="bJournal" data-open="journal"><span data-ic="page"></span>일지</button>
       <button class="mBtn" id="bLow"><span data-ic="moon"></span>절전</button>
     </div>
     <div id="hint">
@@ -200,8 +240,8 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
 
   <div id="log">
     <div id="logTop">
-      <div id="face"><img src="art/ui/영웅-얼굴-256.png" alt=""></div>
-      <div id="logBars"><div id="hpBar"><div id="hpFill"></div><div id="hpTxt"></div></div><div id="progLine"><div id="progFill"></div></div></div>
+      <div id="face"><img alt=""></div>
+      <div id="logBars"><div id="dmgLine">한 대<b id="dmgVal"></b></div><div id="hpBar"><div id="hpFill"></div><div id="hpTxt"></div></div><div id="progLine"><div id="progFill"></div></div></div>
     </div>
     <div id="logIn"><div id="logLines"></div><button id="logBtn"><span data-ic="upArrow"></span></button></div>
   </div>
@@ -227,7 +267,15 @@ svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-
   </div>
 
   <div class="modal hidden" id="modal"><div class="card" id="cardBox"></div></div>
+  <div id="story" class="hidden">
+    <div id="stBg"></div>
+    <div id="stName"></div>
+    <button id="stSkip">건너뛰기</button>
+    <div id="stCard"><div id="stWho"></div><div id="stText"></div><div id="stSub"></div></div>
+    <div id="stFoot"><span id="stCount"></span><span id="stHint">화면을 누르면 넘어갑니다</span></div>
+  </div>
   <div id="lowOv" class="hidden">절전 중<br>화면을 누르면 풀립니다</div>
+</div>
 </div>
 
 <script>
@@ -302,49 +350,158 @@ const MONSTERS = [
     trait:'숲의 우두머리. 쇠못 박힌 전투 망치를 휘두른다.', mult:{spd:0.8}, bb:[39,62,988,974] },
 ];
 
-/* 꾸미기 — 모습만 바꾼다. 능력치는 건드리지 않는다. ok(S)가 참이면 열린다 */
-const dexFull = s => MONSTERS.every((_, i) => (s.kills[i + 1] || 0) > 0);
-// 그림 꾸미기는 머리와 옷이다. 모든 겹 그림은 크기와 자리가 같은 1024 캔버스라서 그대로 겹친다.
+/* 글 — `잊혀진 기사 키우기 세계관/1구역-글.json`을 그대로 옮긴 것. 글을 고칠 때는 그 파일을 먼저 고치고 여기에 옮긴다.
+   {이름}=기사 이름, {형}=남자 기사면 형·여자 기사면 누나, {아저씨}=남자 기사면 아저씨·여자 기사면 누나. 말하는이가 없으면 풀이 글이다 */
+const TXT = {
+  "여는장면": {
+    "제목": "그 밤",
+    "카드": [
+      {"글": "세 해 전, 산골 마을."},
+      {"글": "밤에 괴물 떼가 마을을 덮쳤다. 기사단은 멀리 있었다."},
+      {"글": "수습기사 {이름}. 혼자 싸워 괴물을 몰아냈다."},
+      {"글": "돌아보니 여섯 살 동생 미로가 쓰러져 있었다. 숨이 꺼져 가고 있었다."},
+      {"말하는이": "마녀", "글": "살려 주마. 값은 너다. 너를 아는 모든 사람이 너를 잊는다."},
+      {"글": "망설이지 않았다."},
+      {"말하는이": "미로", "글": "…{아저씨}는 누구예요?"},
+      {"말하는이": "엄마", "글": "고맙습니다. 다치셨네. 들어와서 밥이라도 들고 가세요."},
+      {"글": "그날 엄마가 차려 준 밥을 손님으로 먹었다. 그리고 마을을 떠났다."},
+      {"제목카드": true, "글": "잊혀진 기사 키우기"},
+      {"글": "세 해 뒤. 이슬숲 길."},
+      {"글": "숲에 괴물이 다시 불어났다. 숲 맨 안쪽 굴에 첫 번째 기억 조각이 있다."}
+    ]
+  },
+  "일지": [
+    {"스테이지": 1, "글": "다람쥐가 쓰고 있던 냄비는 우리 집 부엌에 걸려 있던 것이다. 손잡이에 엄마가 감아 둔 헝겊이 그대로였다."},
+    {"스테이지": 2, "글": "고목 구멍마다 박쥐가 매달려 있다. 깜빡이가 등불 안쪽으로 숨었다."},
+    {"스테이지": 3, "글": "여우 굴 앞에 아이 신발 한 짝이 있었다. 여섯 살짜리 발 크기였다."},
+    {"스테이지": 4, "글": "버려진 밭두렁에 사마귀가 서 있다. 세 해 전에는 보리가 자라던 밭이다."},
+    {"스테이지": 5, "글": "나무 밑에 썩은 도시락 통이 있고, 그 위로 붉은 버섯이 자랐다. 통에는 아빠 이름이 새겨져 있었다."},
+    {"스테이지": 6, "글": "멧돼지가 파헤친 땅에서 녹슨 편자가 나왔다. 대장간 표시는 할아버지 것이었다."},
+    {"스테이지": 7, "글": "늑대 무리가 지나간 길에 들꽃이 한 줄로 꺾여 있었다. 누군가 꽃을 따며 이 길로 나갔다."},
+    {"스테이지": 8, "글": "고블린 굴 어귀에 마을에서 없어진 물건이 쌓여 있다. 뜨다 만 장갑 한 짝도 있었다."},
+    {"스테이지": 9, "글": "홉고블린의 큰 칼은 마을 경비대의 것이었다. 자루에 하린의 이름이 새겨져 있었다."},
+    {"스테이지": 10, "글": "고블린 왕이 깔고 앉았던 더미에서 작은 밥그릇이 나왔다. 바닥에 내 이름이 새겨져 있었다."}
+  ],
+  "장면": [
+    {
+      "id": "밥상",
+      "제목": "네 번째 밥그릇",
+      "언제": "1-3을 처음 깼을 때",
+      "카드": [
+        {"글": "고향 마을. 세 해 만이다. 알아보는 사람은 없다."},
+        {"말하는이": "미로", "글": "누구세요? 엄마는 없어요. 멀리 갔어요."},
+        {"말하는이": "옆집 할머니", "글": "숲 괴물 잡아 주는 기사 양반이구먼. 들어와요. 밥 먹고 가요."},
+        {"글": "아홉 살이 된 미로가 밥상에 그릇을 넷 놓는다. 앉은 사람은 셋이다."},
+        {"말하는이": "미로", "글": "엄마가 늘 이렇게 놨어요. 왜 그러는지는 엄마도 모른대요."},
+        {"말하는이": "미로", "글": "이 옷, 장롱에 있던 건데 주인이 없어요. 기사님한테 맞겠다."},
+        {"얻음": "옷", "글": "꾸밈을 얻었다: 장롱에 있던 옷"}
+      ]
+    },
+    {
+      "id": "첫조각",
+      "제목": "첫 번째 기억 조각",
+      "언제": "고블린 왕을 처음 쓰러뜨렸을 때",
+      "카드": [
+        {"글": "고블린 왕이 쓰러졌다. 깜빡이가 환하게 밝아진다."},
+        {"강조": true, "글": "첫 번째 기억 조각을 되찾았다."},
+        {"글": "왕이 깔고 앉았던 더미에 작은 밥그릇이 있다. 바닥에 이름이 새겨져 있다. {이름}."},
+        {"글": "집. 미로가 그릇을 받아 든다. 한참 들여다본다."},
+        {"말하는이": "미로", "글": "이거… {형} 거였구나."},
+        {"말하는이": "미로", "강조": true, "글": "{형}!"},
+        {"말하는이": "미로", "글": "엄마는 마녀를 찾으러 갔어. 뭘 잃어버렸는데 그게 뭔지 모르겠대. 마녀는 잃어버린 걸 찾아 준다니까."},
+        {"글": "그날 저녁, 미로가 넷째 그릇에 밥을 담았다."},
+        {"글": "엄마가 간 길은 옛 왕도 수로로 이어진다."},
+        {"작게": true, "글": "2구역은 준비하고 있어요."}
+      ]
+    }
+  ],
+  "꾸밈": {
+    "남자": [
+      {"종류": "머리", "이름": "검은 머리", "얻는길": "처음부터", "글": "세 해 동안 자르지 못한 머리."},
+      {"종류": "옷", "이름": "검은 갑옷", "얻는길": "처음부터", "글": "세 해 동안 입고 떠돈 갑옷. 망토의 기운 자국은 누가 기워 준 것인지 아무도 기억하지 못한다."},
+      {"종류": "옷", "이름": "훈련복", "얻는길": "밥상 장면을 본 뒤 (1-3 처음 깨기)", "글": "장롱에 있던 주인 없는 옷. 미로가 꺼내 왔다."},
+      {"종류": "머리", "이름": "잿빛 투블럭", "얻는길": "몬스터 150마리 잡기", "글": "먼 나라 상인이 잘라 준 머리."},
+      {"종류": "옷", "이름": "도시 점퍼", "얻는길": "몬스터 150마리 잡기", "글": "먼 나라 상인에게서 산 옷. 어디서 온 옷인지는 상인도 모른다."},
+      {"종류": "옷", "이름": "도시 점퍼(검은 검)", "얻는길": "기억의 일격 10번 쓰기", "글": "검은 칼날은 은광의 쇠로 벼린 것이다."},
+      {"종류": "머리", "이름": "남색 묶은 머리", "얻는길": "도감 10종 모두 채우기", "글": "먼바다의 섬 사람들이 묶는 방식."},
+      {"종류": "옷", "이름": "달밤 하오리", "얻는길": "도감 10종 모두 채우기", "글": "먼바다의 섬에서 흘러온 옷. 섬 사람들은 달이 뜨면 서로의 이름을 부른다고 한다."},
+      {"종류": "머리", "이름": "백금 올백", "얻는길": "고블린 왕 쓰러뜨리기", "글": "기사단 사람들이 넘기는 방식."},
+      {"종류": "옷", "이름": "은빛 기사 갑옷", "얻는길": "고블린 왕 쓰러뜨리기", "글": "항구 요새 기사단의 갑옷. 고블린 왕이 깔고 앉아 있었다."}
+    ],
+    "여자": [
+      {"종류": "머리", "이름": "분홍 양갈래", "얻는길": "처음부터", "글": "리본은 등불과 같은 색이다."},
+      {"종류": "옷", "이름": "은빛 가슴 갑옷", "얻는길": "처음부터", "글": "세 해 동안 입고 떠돈 갑옷. 망토의 기운 자국은 누가 기워 준 것인지 아무도 기억하지 못한다."},
+      {"종류": "옷", "이름": "집옷", "원래이름": "속옷", "얻는길": "밥상 장면을 본 뒤 (1-3 처음 깨기)", "글": "장롱에 있던 주인 없는 옷. 미로가 꺼내 왔다."},
+      {"종류": "머리", "이름": "보라 단발", "얻는길": "몬스터 150마리 잡기", "글": "먼 나라 상인이 잘라 준 머리."},
+      {"종류": "옷", "이름": "교복 가디건", "얻는길": "몬스터 150마리 잡기", "글": "먼 나라 상인에게서 산 옷. 어디서 온 옷인지는 상인도 모른다."},
+      {"종류": "머리", "이름": "둥근 머리", "얻는길": "치명타 100번 내기", "글": "고갯마루 사람들이 올리는 방식."},
+      {"종류": "옷", "이름": "붉은 치파오", "얻는길": "치명타 100번 내기", "글": "고갯마루 우체국에 맡겨져 있던 꾸러미에서 나왔다. 받는 사람 칸이 비어 있었다."},
+      {"종류": "머리", "이름": "검은 긴 머리", "얻는길": "도감 10종 모두 채우기", "글": "먼바다의 섬 사람들이 묶는 방식."},
+      {"종류": "옷", "이름": "달밤 하오리", "얻는길": "도감 10종 모두 채우기", "글": "먼바다의 섬에서 흘러온 옷. 섬 사람들은 달이 뜨면 서로의 이름을 부른다고 한다."},
+      {"종류": "머리", "이름": "댕기 머리", "얻는길": "전리품 10종을 하나씩 모두 모으기", "글": "엄마가 땋아 주던 방식."},
+      {"종류": "옷", "이름": "한복", "얻는길": "전리품 10종을 하나씩 모두 모으기", "글": "누가 입을지도 모르면서 지어 둔 옷. 엄마의 바느질이다."},
+      {"종류": "머리", "이름": "꿀빛 땋은 머리", "얻는길": "고블린 왕 쓰러뜨리기", "글": "기사단 사람들이 땋는 방식."},
+      {"종류": "옷", "이름": "중세 드레스 갑옷", "얻는길": "고블린 왕 쓰러뜨리기", "글": "항구 요새 기사단의 갑옷. 고블린 왕이 깔고 앉아 있었다."}
+    ],
+    "등불": [
+      {"이름": "호박빛", "얻는길": "처음부터"},
+      {"이름": "달빛", "얻는길": "1-7에 닿기"},
+      {"이름": "이끼빛", "얻는길": "도감 5종 채우기"}
+    ],
+    "발밑": [
+      {"이름": "없음", "얻는길": "처음부터"},
+      {"이름": "풀잎", "얻는길": "강화를 모두 합쳐 20번 하기"},
+      {"이름": "불씨", "얻는길": "고블린 왕 쓰러뜨리기"}
+    ],
+    "칭호": [
+      {"이름": "숲길 나그네", "얻는길": "1-5에 닿기"},
+      {"이름": "냄비 수집가", "얻는길": "찌그러진 냄비 10개 모으기"},
+      {"이름": "이슬숲의 기사", "얻는길": "고블린 왕 쓰러뜨리기"}
+    ]
+  }
+};
+
+/* 꾸미기 — 모습만 바꾼다. 능력치는 건드리지 않는다. 이름, 얻는 길, 한 줄 글은 위의 TXT.꾸밈에서 이름으로 찾아 쓴다 */
+// 그림 꾸미기는 머리와 옷이다. 모든 겹 그림은 크기와 자리가 같은 캔버스라서 그대로 겹친다.
 // 그리는 차례: 뒷머리(몸 뒤로 늘어지는 긴 머리, 있을 때만) -> 옷(목깃 아래 전부, 무기와 등불 포함) -> 머리 -> 깃(옷 가운데 머리 앞에 오는 조각, 있을 때만).
 // 겹 그림은 tools/꾸밈나누기.py 가 한 장짜리 그림에서 나눠 만든다. 무기는 지금은 옷에 딸려 있다.
 // 남자와 여자는 목록을 따로 쓴다 (img에 그 성별 그림이 있는 것만 그 성별의 목록에 나온다). name은 성별마다 다를 수 있다.
-// ok(S)는 열리는 조건 (지금은 입어 볼 수 있게 모두 열어 둔다).
-// 자리 정보(at)는 1024 그림의 픽셀 값이다.
+// 자리 정보(at)는 1024 그림의 픽셀 값이다. 실제 그림이 더 작아도(웹용 그림) 비율로 맞춰 쓴다.
 //   머리: eyesPx = 두 눈의 한가운데 [그림에서 왼쪽 눈(얼음빛), 오른쪽 눈(등불빛)]
 //   옷:   lanternPx = 허리 등불의 한가운데, footPx = 두 발 사이의 x, groundPx = 발바닥이 닿는 y (맨발·운동화·쇠신·나막신 모두 같은 땅에 서게),
 //         figurePx = 발끝에서 머리끝까지의 높이 (화면 키 KNIGHT_H에 맞춘다)
 const EYES_M = [[477, 323], [601, 323]], EYES_F = [[484, 330], [606, 328]];
 const HM = n => ({ m:'art/knight/머리/' + n + '-남.png' }), HF = n => ({ f:'art/knight/머리/' + n + '-여.png' }), HB = n => ({ f:'art/knight/머리/' + n + '-여-뒤.png' });
 const HEADS = [
-  { id:'basic',    name:{ m:'검은 머리', f:'분홍 양갈래' }, how:'처음부터', img:{ m:HM('기본').m, f:HF('기본').f }, back:HB('기본'), at:{ m:{ eyesPx:EYES_M }, f:{ eyesPx:EYES_F } }, ok:() => true },
-  { id:'platinum', name:'백금 올백',       how:'처음부터', img:HM('중세'), at:{ m:{ eyesPx:EYES_M } }, ok:() => true },
-  { id:'ash',      name:'잿빛 투블럭',     how:'처음부터', img:HM('현대'), at:{ m:{ eyesPx:EYES_M } }, ok:() => true },
-  { id:'navy',     name:'남색 묶은 머리',  how:'처음부터', img:HM('달밤'), at:{ m:{ eyesPx:EYES_M } }, ok:() => true },
-  { id:'honey',    name:'꿀빛 땋은 머리',  how:'처음부터', img:HF('중세'), back:HB('중세'), at:{ f:{ eyesPx:EYES_F } }, ok:() => true },
-  { id:'beret',    name:'보라 단발',       how:'처음부터', img:HF('현대'), back:HB('현대'), at:{ f:{ eyesPx:EYES_F } }, ok:() => true },
-  { id:'long',     name:'검은 긴 머리',    how:'처음부터', img:HF('달밤'), back:HB('달밤'), at:{ f:{ eyesPx:EYES_F } }, ok:() => true },
-  { id:'daenggi',  name:'댕기 머리',       how:'처음부터', img:HF('한복'), back:HB('한복'), at:{ f:{ eyesPx:EYES_F } }, ok:() => true },
-  { id:'buns',     name:'둥근 머리',       how:'처음부터', img:HF('중국'), back:HB('중국'), at:{ f:{ eyesPx:EYES_F } }, ok:() => true },
+  { id:'basic',    name:{ m:'검은 머리', f:'분홍 양갈래' }, img:{ m:HM('기본').m, f:HF('기본').f }, back:HB('기본'), at:{ m:{ eyesPx:EYES_M }, f:{ eyesPx:EYES_F } } },
+  { id:'ash',      name:'잿빛 투블럭',     img:HM('현대'), at:{ m:{ eyesPx:EYES_M } } },
+  { id:'navy',     name:'남색 묶은 머리',  img:HM('달밤'), at:{ m:{ eyesPx:EYES_M } } },
+  { id:'platinum', name:'백금 올백',       img:HM('중세'), at:{ m:{ eyesPx:EYES_M } } },
+  { id:'beret',    name:'보라 단발',       img:HF('현대'), back:HB('현대'), at:{ f:{ eyesPx:EYES_F } } },
+  { id:'buns',     name:'둥근 머리',       img:HF('중국'), back:HB('중국'), at:{ f:{ eyesPx:EYES_F } } },
+  { id:'long',     name:'검은 긴 머리',    img:HF('달밤'), back:HB('달밤'), at:{ f:{ eyesPx:EYES_F } } },
+  { id:'daenggi',  name:'댕기 머리',       img:HF('한복'), back:HB('한복'), at:{ f:{ eyesPx:EYES_F } } },
+  { id:'honey',    name:'꿀빛 땋은 머리',  img:HF('중세'), back:HB('중세'), at:{ f:{ eyesPx:EYES_F } } },
 ];
 const OM = (n, lan, ground) => ({ img:{ m:'art/knight/옷/' + n + '-남.png' }, at:{ m:{ lanternPx:lan, footPx:576, groundPx:ground, figurePx:878 } } });
 const OF = (n, lan, ground) => ({ img:{ f:'art/knight/옷/' + n + '-여.png' }, at:{ f:{ lanternPx:lan, footPx:576, groundPx:ground, figurePx:886 } } });
 const ARMORS = [
-  { id:'basic', name:{ m:'검은 갑옷', f:'은빛 가슴 갑옷' }, how:'처음부터', img:{ m:'art/knight/옷/기본-남.png', f:'art/knight/옷/기본-여.png' }, front:{ m:'art/knight/옷/기본-남-깃.png' },
-    at:{ m:{ lanternPx:[458, 707], footPx:576, groundPx:926, figurePx:878 }, f:{ lanternPx:[452, 695], footPx:576, groundPx:927, figurePx:886 } }, ok:() => true },
-  Object.assign({ id:'train',  name:'훈련복',            how:'처음부터', ok:() => true }, OM('속옷', [457, 703], 927)),
-  Object.assign({ id:'silver', name:'은빛 기사 갑옷',    how:'처음부터', ok:() => true, front:{ m:'art/knight/옷/중세-남-깃.png' } }, OM('중세', [454, 705], 927)),
-  Object.assign({ id:'city',   name:'도시 점퍼',         how:'처음부터', ok:() => true }, OM('현대', [455, 720], 949)),
-  Object.assign({ id:'city2',  name:'도시 점퍼(검은 검)', how:'처음부터', ok:() => true }, OM('현대2', [461, 703], 927)),
-  Object.assign({ id:'moon',   name:'달밤 하오리',       how:'처음부터', ok:() => true }, OM('달밤', [474, 700], 928)),
-  Object.assign({ id:'slip',   name:'속옷',              how:'처음부터', ok:() => true }, OF('속옷', [449, 691], 928)),
-  Object.assign({ id:'dress',  name:'중세 드레스 갑옷',  how:'처음부터', ok:() => true }, OF('중세', [455, 705], 930)),
-  Object.assign({ id:'school', name:'교복 가디건',       how:'처음부터', ok:() => true }, OF('현대', [455, 700], 934)),
-  Object.assign({ id:'moonf',  name:'달밤 하오리',       how:'처음부터', ok:() => true }, OF('달밤', [451, 696], 935)),
-  Object.assign({ id:'hanbok', name:'한복',              how:'처음부터', ok:() => true }, OF('한복', [450, 700], 936)),
-  Object.assign({ id:'qipao',  name:'붉은 치파오',       how:'처음부터', ok:() => true }, OF('중국', [462, 665], 936)),
+  { id:'basic', name:{ m:'검은 갑옷', f:'은빛 가슴 갑옷' }, img:{ m:'art/knight/옷/기본-남.png', f:'art/knight/옷/기본-여.png' }, front:{ m:'art/knight/옷/기본-남-깃.png' },
+    at:{ m:{ lanternPx:[458, 707], footPx:576, groundPx:926, figurePx:878 }, f:{ lanternPx:[452, 695], footPx:576, groundPx:927, figurePx:886 } } },
+  Object.assign({ id:'train',  name:'훈련복' }, OM('속옷', [457, 703], 927)),
+  Object.assign({ id:'city',   name:'도시 점퍼' }, OM('현대', [455, 720], 949)),
+  Object.assign({ id:'city2',  name:'도시 점퍼(검은 검)' }, OM('현대2', [461, 703], 927)),
+  Object.assign({ id:'moon',   name:'달밤 하오리' }, OM('달밤', [474, 700], 928)),
+  Object.assign({ id:'silver', name:'은빛 기사 갑옷', front:{ m:'art/knight/옷/중세-남-깃.png' } }, OM('중세', [454, 705], 927)),
+  Object.assign({ id:'slip',   name:'집옷' }, OF('속옷', [449, 691], 928)),          // 그림 파일 이름은 속옷-여.png 그대로다
+  Object.assign({ id:'school', name:'교복 가디건' }, OF('현대', [455, 700], 934)),
+  Object.assign({ id:'qipao',  name:'붉은 치파오' }, OF('중국', [462, 665], 936)),
+  Object.assign({ id:'moonf',  name:'달밤 하오리' }, OF('달밤', [451, 696], 935)),
+  Object.assign({ id:'hanbok', name:'한복' }, OF('한복', [450, 700], 936)),
+  Object.assign({ id:'dress',  name:'중세 드레스 갑옷' }, OF('중세', [455, 705], 930)),
 ];
 const WEAPONS = [
-  { id:'basic', name:'옷에 딸린 무기', how:'옷과 함께 바뀝니다', img:null, ok:() => true },
+  { id:'basic', name:'옷에 딸린 무기', how:'옷과 함께 바뀝니다', img:null },
 ];
 // 겹 그림을 잘라 쓰는 틀 (x0, y0, x1, y1). 어떤 머리와 옷을 섞어도 크기와 자리가 변하지 않게 성별마다 고정한다
 const KNIGHT_FRAME = { m:[150, 40, 840, 956], f:[190, 28, 925, 946] };
@@ -352,30 +509,64 @@ const hasArt = (it, g) => !!(it.img && it.img[g]);
 const pickArt = (list, id, g) => { const it = list.find(c => c.id === id); return it && hasArt(it, g) ? it : list.find(c => hasArt(c, g)) || list[0]; };
 const nameOf = (it, g) => typeof it.name === 'string' ? it.name : it.name[g] || it.name.m;
 const LANTERN_COLORS = [
-  { id:'orange', name:'주황',   color:'#f0983c', how:'처음부터', ok:() => true },
-  { id:'amber',  name:'호박빛', color:'#e8c26c', how:'1-5 깨기', ok:s => s.maxStage >= 6 },
-  { id:'moon',   name:'달빛',   color:'#d6ddcc', how:'1구역 보스 처치', ok:s => s.bossDone },
-  { id:'moss',   name:'이끼빛', color:'#b3cb86', how:'도감 10종 채우기', ok:dexFull },
+  { id:'orange', name:'주황',   color:'#f0983c' },
+  { id:'amber',  name:'호박빛', color:'#e8c26c' },
+  { id:'moon',   name:'달빛',   color:'#d6ddcc' },
+  { id:'moss',   name:'이끼빛', color:'#b3cb86' },
 ];
 const FOOT_EFFECTS = [
-  { id:'none',  name:'없음', how:'처음부터', ok:() => true },
-  { id:'leaf',  name:'풀잎', how:'1-3 깨기', ok:s => s.maxStage >= 4 },
-  { id:'ember', name:'불씨', how:'늑대 30마리 잡기', ok:s => (s.kills[7] || 0) >= 30 },
+  { id:'none',  name:'없음' },
+  { id:'leaf',  name:'풀잎' },
+  { id:'ember', name:'불씨' },
 ];
 const TITLES = [
-  { id:'none',   name:'없음', text:'', how:'처음부터', ok:() => true },
-  { id:'walker', name:'숲길 나그네', text:'숲길 나그네', how:'1-5 깨기', ok:s => s.maxStage >= 6 },
-  { id:'pot',    name:'냄비 수집가', text:'냄비 수집가', how:'찌그러진 냄비 5개 모으기', ok:s => (s.loot[1] || 0) >= 5 },
-  { id:'forest', name:'이슬숲의 기사', text:'이슬숲의 기사', how:'1구역 보스 처치', ok:s => s.bossDone },
+  { id:'none',   name:'없음', text:'' },
+  { id:'walker', name:'숲길 나그네', text:'숲길 나그네' },
+  { id:'pot',    name:'냄비 수집가', text:'냄비 수집가' },
+  { id:'forest', name:'이슬숲의 기사', text:'이슬숲의 기사' },
 ];
 const COS_GROUPS = [
-  { key:'head',    title:'머리', list:HEADS },
-  { key:'armor',   title:'옷', list:ARMORS },
-  { key:'weapon',  title:'무기', list:WEAPONS },
-  { key:'lantern', title:'등불', list:LANTERN_COLORS },
-  { key:'foot',    title:'발밑', list:FOOT_EFFECTS },
-  { key:'title',   title:'칭호', list:TITLES },
+  { key:'head',    title:'머리', list:HEADS, base:'basic', kind:'머리' },
+  { key:'armor',   title:'옷', list:ARMORS, base:'basic', kind:'옷' },
+  { key:'weapon',  title:'무기', list:WEAPONS, base:'basic' },
+  { key:'lantern', title:'등불', list:LANTERN_COLORS, base:'orange', desc:'허리에 단 등불의 빛깔.' },
+  { key:'foot',    title:'발밑', list:FOOT_EFFECTS, base:'none', desc:'걸을 때 발밑에 흩날린다.' },
+  { key:'title',   title:'칭호', list:TITLES, base:'none', desc:'이름 위에 뜨는 말.' },
 ];
+/* 얻는 길 — TXT.꾸밈의 '얻는길' 글 그대로를 열쇠로 쓴다. cur는 지금까지 한 만큼, need는 채워야 할 만큼.
+   flag가 참이면 "87/150" 같은 숫자를 붙이지 않는다 (했다/안 했다만 있는 것) */
+const sumVals = o => Object.values(o || {}).reduce((a, b) => a + b, 0), kindsOf = o => Object.values(o || {}).filter(v => v > 0).length;
+const COND = {
+  '처음부터': { cur:() => 1, need:1, flag:true, free:true },
+  '밥상 장면을 본 뒤 (1-3 처음 깨기)': { cur:s => s.scenes['밥상'] ? 1 : 0, need:1, flag:true },
+  '몬스터 150마리 잡기': { cur:s => sumVals(s.kills), need:150 },
+  '치명타 100번 내기': { cur:s => s.cnt.crit, need:100 },
+  '기억의 일격 10번 쓰기': { cur:s => s.cnt.shard, need:10 },
+  '도감 5종 채우기': { cur:s => kindsOf(s.kills), need:5 },
+  '도감 10종 모두 채우기': { cur:s => kindsOf(s.kills), need:10 },
+  '전리품 10종을 하나씩 모두 모으기': { cur:s => kindsOf(s.loot), need:10 },
+  '찌그러진 냄비 10개 모으기': { cur:s => s.loot[1] || 0, need:10 },
+  '강화를 모두 합쳐 20번 하기': { cur:s => s.up.atk + s.up.hp + s.up.crit, need:20 },
+  '고블린 왕 쓰러뜨리기': { cur:s => s.bossDone || (s.kills[10] || 0) > 0 ? 1 : 0, need:1, flag:true },
+  '1-5에 닿기': { cur:s => s.maxStage, need:5, flag:true },
+  '1-7에 닿기': { cur:s => s.maxStage, need:7, flag:true },
+};
+const condOf = how => COND[how] || { cur:() => 0, need:1, flag:true };
+const condDone = how => { const c = condOf(how); return c.cur(S) >= c.need; };
+const condText = how => { const c = condOf(how); return c.flag ? how : how + ' ' + Math.min(c.need, c.cur(S)) + '/' + c.need; };   // "몬스터 150마리 잡기 87/150"
+function cosInfo(grp, it, g) {         // 그 꾸밈의 이름, 얻는 길, 한 줄 글
+  const nm = grp.kind ? nameOf(it, g) : it.name;
+  const src = grp.kind ? TXT.꾸밈[g === 'f' ? '여자' : '남자'].filter(e => e.종류 === grp.kind) : TXT.꾸밈[grp.title] || [];
+  const e = src.find(x => x.이름 === nm) || {};
+  return { name:nm, how:e.얻는길 || '처음부터', text:e.글 || '' };
+}
+const isOpen = how => !!S.openAll || condDone(how);
+/* 받침이 있으면 a, 없으면 b를 붙인다 ("훈련복을", "하오리를") */
+function josa(w, a, b) {
+  const m = w.match(/[가-힣0-9](?=[^가-힣0-9]*$)/), c = m ? m[0].charCodeAt(0) : 0;
+  const has = c >= 0xAC00 ? (c - 0xAC00) % 28 > 0 : /[013678]/.test(m ? m[0] : '');
+  return w + (has ? a : b);
+}
 
 /* 그림글자(아이콘) — 전부 이 게임에서 직접 그린 선 그림. 24x24 칸 */
 const ICONS = {
@@ -427,7 +618,8 @@ const lootTotal = () => Object.values(S.loot).reduce((a, b) => a + b, 0);
 const SAVE_KEY = 'forgotten-knight-save-v1';
 function freshSave() {
   return { v:1, started:false, gender:'m', name:'루', gold:0, up:{ atk:0, hp:0, crit:0 }, stage:1, maxStage:1, auto:true, autoSkill:true,
-    kills:{}, loot:{}, bossDone:false, storySeen:false, shake:true, hintOff:false, cutin:true,
+    kills:{}, loot:{}, bossDone:false, storySeen:false, shake:true, hintOff:false, cutin:true, sound:true, openAll:false,
+    introDone:false, scenes:{}, cnt:{ crit:0, shard:0 }, got:{}, cosNew:{}, jrNew:false,     // 본 장면, 세는 것(치명타·기억의 일격), 얻은 꾸밈, 새것 표시
     cos:{ head:'basic', armor:'basic', weapon:'basic', lantern:'orange', foot:'none', title:'none' }, last:Date.now() };
 }
 let S = freshSave();
@@ -438,6 +630,10 @@ function load() {
       S = Object.assign(freshSave(), d); S.up = Object.assign(freshSave().up, d.up); S.cos = Object.assign(freshSave().cos, d.cos);
       delete S.cos.costume;
       S.kills = d.kills || {}; S.loot = d.loot || {};
+      S.scenes = Object.assign({}, d.scenes); S.cnt = Object.assign({ crit:0, shard:0 }, d.cnt); S.got = Object.assign({}, d.got); S.cosNew = Object.assign({}, d.cosNew);
+      if (d.scenes === undefined && d.started) {          // 이야기 카드가 생기기 전의 저장: 여는 장면을 억지로 보여 주지 않는다
+        S.introDone = true; S.jrNew = S.maxStage > 1;
+      }
       S.stage = clamp(S.stage | 0, 1, 10); S.maxStage = clamp(S.maxStage | 0, 1, 10);
     }
   } catch (e) {}
@@ -445,39 +641,15 @@ function load() {
 function save() { try { S.last = Date.now(); localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
 
 /* ===================================================================== 그림 준비 */
-function bboxOf(img, fallback) {              // 투명하지 않은 부분만 잘라 쓴다
-  try {
-    const W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
-    const c = mk(W, H), g = c.getContext('2d', { willReadFrequently:true });
-    g.drawImage(img, 0, 0);
-    const d = g.getImageData(0, 0, W, H).data;
-    let x0 = W, y0 = H, x1 = -1, y1 = -1;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 20) {
-      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
-    }
-    if (x1 >= 0) return [x0, y0, x1 + 1, y1 + 1];
-  } catch (e) {}
-  return fallback || [0, 0, img.naturalWidth || img.width, img.naturalHeight || img.height];
-}
-function removeWhite(img) {                   // 흰 배경 그림이면 가장자리에서부터 흰색을 지운다
-  const c = mk(img.naturalWidth, img.naturalHeight), g = c.getContext('2d', { willReadFrequently:true });
-  g.drawImage(img, 0, 0);
-  try {
-    const W = c.width, H = c.height, id = g.getImageData(0, 0, W, H), d = id.data;
-    const white = i => d[i * 4 + 3] > 200 && d[i * 4] > 236 && d[i * 4 + 1] > 236 && d[i * 4 + 2] > 236;
-    if (!white(0) || !white(W - 1)) return c;
-    const seen = new Uint8Array(W * H), st = new Int32Array(W * H); let n = 0;
-    const push = i => { if (!seen[i] && white(i)) { seen[i] = 1; st[n++] = i; } };
-    for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
-    for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
-    while (n) {
-      const i = st[--n], x = i % W; d[i * 4 + 3] = 0;
-      if (x > 0) push(i - 1); if (x < W - 1) push(i + 1); if (i >= W) push(i - W); if (i < W * (H - 1)) push(i + W);
-    }
-    g.putImageData(id, 0, 0);
-  } catch (e) {}
-  return c;
-}
+/* 그림 주소: 게임 안의 모든 그림은 이 함수를 거친다.
+   웹에 올릴 때는 tools/웹빌드.py 가 짧은 영문 이름으로 바꾼 표(ASSET_MAP)를 여기에 채운다. 채우지 않으면 원래 한글 경로를 그대로 쓴다 */
+const ASSET_MAP = /*@@ASSET_MAP@@*/null;
+function assetUrl(path) { return ASSET_MAP && ASSET_MAP[path] ? ASSET_MAP[path] : path.split('/').map(encodeURIComponent).join('/'); }
+const monPath = st => 'art/monsters/' + MONSTERS[st - 1].file + '.png';
+const heroPath = (g, small) => 'art/ui/영웅-얼굴' + (g === 'f' ? '-여' : '') + (small ? '-256' : '') + '.png';
+/* 자리 값(bb, lanternPx, 틀 …)은 모두 1024 그림 기준이다. 실제 그림이 더 작으면(웹용) 그림 너비 / 1024 만큼 줄여서 쓴다 */
+const scaleOf = img => (img.naturalWidth || 1024) / 1024;
+
 /* 화면 크기에 맞춘 그림 한 장 + 맞았을 때 번쩍이는 밝은 그림. ax는 발이 놓이는 x 자리(0~1) */
 function makeSprite(h, aspect, paint, ax) {
   const w = h * aspect, c = mk(w * SPR_Q, h * SPR_Q), g = c.getContext('2d');
@@ -487,34 +659,46 @@ function makeSprite(h, aspect, paint, ax) {
   fg.drawImage(c, 0, 0); fg.globalCompositeOperation = 'source-atop'; fg.fillStyle = '#fff6e0'; fg.fillRect(0, 0, f.width, f.height);
   return { c, f, w, h, ax:ax == null ? 0.5 : ax };
 }
-const monSprites = {};     // 스테이지 번호 -> 그림
+const monSprites = {};     // 스테이지 번호 -> 그림. 그 스테이지에 들어갈 때 불러온다
 function loadMonster(st) {
   if (monSprites[st]) return;
-  const def = MONSTERS[st - 1], img = new Image();
-  monSprites[st] = { ready:false, w:def.h * (def.bb[2] - def.bb[0]) / (def.bb[3] - def.bb[1]), h:def.h };
+  const def = MONSTERS[st - 1], img = new Image(), b = def.bb, bw = b[2] - b[0], bh = b[3] - b[1];
+  monSprites[st] = { ready:false, w:def.h * bw / bh, h:def.h };
   img.onload = () => {
-    const b = bboxOf(img, def.bb), bw = b[2] - b[0], bh = b[3] - b[1];
-    const sp = makeSprite(def.h, bw / bh, (g, W, H) => g.drawImage(img, b[0], b[1], bw, bh, 0, 0, W, H));
+    const k = scaleOf(img);
+    const sp = makeSprite(def.h, bw / bh, (g, W, H) => g.drawImage(img, b[0] * k, b[1] * k, bw * k, bh * k, 0, 0, W, H));
     sp.ready = true; monSprites[st] = sp;
   };
-  img.src = 'art/monsters/' + encodeURIComponent(def.file) + '.png';
+  img.onerror = () => { setTimeout(() => { delete monSprites[st]; if (S.stage === st) loadMonster(st); }, 3000); };   // 못 읽으면 조금 뒤에 다시
+  img.src = assetUrl(monPath(st));
 }
 
-/* 기사 그림: 파일을 쓴다. 파일을 못 읽으면 코드로 그린 임시 기사를 쓴다 */
-const knightImgs = {};     // 'armor-basic-m', 'head-basic-m', 'front-basic-m' -> {c(canvas), bb} | 'none'
-function loadKnightImages() {
-  const one = (key, path) => {
-    const img = new Image();
-    img.onload = () => { const c = removeWhite(img); knightImgs[key] = { c, bb:bboxOf(c) }; knightSprite = null; redrawStatic(); if (R.sheet === 'cos') buildCosGrid(); };
-    img.onerror = () => { knightImgs[key] = 'none'; knightSprite = null; redrawStatic(); };
-    img.src = path.split('/').map(encodeURIComponent).join('/');
-  };
-  for (const [slot, list] of [['armor', ARMORS], ['head', HEADS]]) for (const it of list) for (const g of ['m', 'f']) {
-    if (it.img && it.img[g]) one(slot + '-' + it.id + '-' + g, it.img[g]);
-    if (it.front && it.front[g]) one('front-' + it.id + '-' + g, it.front[g]);
-    if (it.back && it.back[g]) one('back-' + it.id + '-' + g, it.back[g]);
-  }
+/* 기사 그림 겹: 필요한 것만 불러온다. 시작할 때는 입고 있는 것만, 꾸미기 창을 열면 그 성별의 것을 모두 */
+const knightImgs = {};     // 'armor-basic-m' 같은 이름 -> { c:그림, k:1024 기준 비율 } | 'wait'(불러오는 중) | 'none'(못 읽음)
+let layerT = 0;
+function layerChanged() {              // 여러 장이 잇달아 도착해도 화면은 한 번만 다시 짠다
+  knightSprite = null; clearTimeout(layerT);
+  layerT = setTimeout(() => { redrawStatic(); if (R.sheet === 'cos') buildCosGrid(); }, 60);
 }
+function loadLayer(key, path) {
+  if (!path || knightImgs[key]) return;
+  knightImgs[key] = 'wait';
+  const img = new Image();
+  img.onload = () => { knightImgs[key] = { c:img, k:scaleOf(img) }; layerChanged(); };
+  img.onerror = () => { knightImgs[key] = 'none'; layerChanged(); };
+  img.src = assetUrl(path);
+}
+const layerKeys = (slot, it, g) => slot === 'armor'
+  ? [['armor-' + it.id + '-' + g, it.img && it.img[g]], ['front-' + it.id + '-' + g, it.front && it.front[g]]]
+  : [['head-' + it.id + '-' + g, it.img && it.img[g]], ['back-' + it.id + '-' + g, it.back && it.back[g]]];
+function loadLook(g, look) {           // 한 벌(머리와 옷)에 드는 겹만 불러온다
+  for (const [k, p] of layerKeys('armor', pickArt(ARMORS, look.armor, g), g).concat(layerKeys('head', pickArt(HEADS, look.head, g), g))) loadLayer(k, p);
+}
+function loadAllLayers(g) {            // 꾸미기 창을 열 때: 그 성별의 머리와 옷 전부
+  for (const it of ARMORS) if (hasArt(it, g)) for (const [k, p] of layerKeys('armor', it, g)) loadLayer(k, p);
+  for (const it of HEADS) if (hasArt(it, g)) for (const [k, p] of layerKeys('head', it, g)) loadLayer(k, p);
+}
+const layerOf = k => { const im = knightImgs[k]; return im && im.c ? im : null; };
 /* 임시 기사(그림을 못 읽었을 때만). 왼쪽을 보고 서서 칼을 든 자세. 120 x 200 칸 안에 그린다 */
 function paintPlaceholder(g, W, H, gender) {
   const u = H / 200;
@@ -547,25 +731,26 @@ function paintPlaceholder(g, W, H, gender) {
 const BASIC_LOOK = { head:'basic', armor:'basic', weapon:'basic' };
 function knightArt(gender, look) {
   const outfit = pickArt(ARMORS, look.armor, gender), head = pickArt(HEADS, look.head, gender);
-  const got = k => { const im = knightImgs[k]; return im && im !== 'none' ? im : null; };
-  const oi = got('armor-' + outfit.id + '-' + gender);
-  if (!oi) return { aspect:0.6, hMul:1, ax:0.5, gy:0.97, lantern:[72 / 120, 128.5 / 200], eyes:[], paint:(g, W, H) => paintPlaceholder(g, W, H, gender) };   // 그림이 없으면 임시 기사
-  const layers = [got('back-' + head.id + '-' + gender), oi, hasArt(head, gender) && got('head-' + head.id + '-' + gender), got('front-' + outfit.id + '-' + gender)].filter(Boolean);   // 뒷머리 -> 옷 -> 머리 -> 깃
-  const at = Object.assign({}, outfit.at && outfit.at[gender], hasArt(head, gender) && head.at && head.at[gender]);
-  let b = KNIGHT_FRAME[gender];
-  if (!b) { b = [1e9, 1e9, -1, -1]; for (const l of layers) { b[0] = Math.min(b[0], l.bb[0]); b[1] = Math.min(b[1], l.bb[1]); b[2] = Math.max(b[2], l.bb[2]); b[3] = Math.max(b[3], l.bb[3]); } }
-  const bw = b[2] - b[0], bh = b[3] - b[1], lp = at.lanternPx || [b[0] + bw * 0.5, b[1] + bh * 0.6];
-  return { aspect:bw / bh, hMul:bh / (at.figurePx || bh), ax:((at.footPx || b[0] + bw / 2) - b[0]) / bw,
+  const keys = layerKeys('armor', outfit, gender).concat(layerKeys('head', head, gender)).filter(e => e[1]).map(e => e[0]);
+  if (knightImgs['armor-' + outfit.id + '-' + gender] === 'none')         // 그림을 못 읽었을 때만 임시 기사
+    return { aspect:0.6, hMul:1, ax:0.5, gy:0.97, lantern:[72 / 120, 128.5 / 200], eyes:[], paint:(g, W, H) => paintPlaceholder(g, W, H, gender) };
+  const pending = keys.some(k => !knightImgs[k] || knightImgs[k] === 'wait');   // 아직 불러오는 중이면 빈 그림 (임시 기사가 번쩍 보이지 않게)
+  const layers = pending ? [] : [layerOf('back-' + head.id + '-' + gender), layerOf('armor-' + outfit.id + '-' + gender),
+    layerOf('head-' + head.id + '-' + gender), layerOf('front-' + outfit.id + '-' + gender)].filter(Boolean);                 // 뒷머리 -> 옷 -> 머리 -> 깃
+  const at = Object.assign({}, outfit.at && outfit.at[gender], head.at && head.at[gender]);
+  const b = KNIGHT_FRAME[gender] || [0, 0, 1024, 1024], bw = b[2] - b[0], bh = b[3] - b[1], lp = at.lanternPx || [b[0] + bw * 0.5, b[1] + bh * 0.6];
+  return { pending, aspect:bw / bh, hMul:bh / (at.figurePx || bh), ax:((at.footPx || b[0] + bw / 2) - b[0]) / bw,
     gy:at.groundPx ? (at.groundPx - 22 - b[1]) / bh : 0.97,       // 발바닥이 놓이는 높이 (0~1)
     lantern:[(lp[0] - b[0]) / bw, (lp[1] - b[1]) / bh], eyes:(at.eyesPx || []).map(e => [(e[0] - b[0]) / bw, (e[1] - b[1]) / bh]),
-    paint:(g, W, H) => { for (const l of layers) g.drawImage(l.c, b[0], b[1], bw, bh, 0, 0, W, H); } };
+    paint:(g, W, H) => { for (const l of layers) g.drawImage(l.c, b[0] * l.k, b[1] * l.k, bw * l.k, bh * l.k, 0, 0, W, H); } };   // 틀은 1024 기준, 그림 크기에 맞춰 줄인다
 }
 let knightSprite = null;
 function getKnightSprite() {
   if (!knightSprite) {
+    loadLook(S.gender, S.cos);
     const a = knightArt(S.gender, S.cos);
     knightSprite = makeSprite(KNIGHT_H * a.hMul, a.aspect, a.paint, a.ax);
-    knightSprite.lantern = a.lantern; knightSprite.eyes = a.eyes || []; knightSprite.gy = a.gy; knightSprite.bw = KNIGHT_H * 0.5;      // bw: 몸통 너비 (칼은 뺀다)
+    knightSprite.lantern = a.lantern; knightSprite.eyes = a.eyes || []; knightSprite.gy = a.gy; knightSprite.pending = !!a.pending; knightSprite.bw = KNIGHT_H * 0.5;      // bw: 몸통 너비 (칼은 뺀다)
   }
   return knightSprite;
 }
@@ -658,16 +843,23 @@ const R = {                          // 저장하지 않는 것
   t:0, mons:[], floats:[], parts:[], fx:[], progress:0, spawnT:0.5, advanceT:-1, bossT:TUNE.BOSS_TIME, bossWait:0,
   banner:null, saveT:0, uiT:0, paused:true, cosTab:'head', cd:{}, skillGap:0, log:[], logDirty:true, sheet:null, low:false, frameN:0,
   stop:0, shake:0, floatN:0, flies:[], perfSum:0, perfN:0, atkN:0, eyeT:0, cut:null, pend:null,
+  hold:false, sceneQ:[], faceG:null, lastAtk:null,       // 이야기 카드가 떠 있는가, 기다리는 장면, 지금 얼굴 그림, 지난번 한 대
   k:{ x:FW / 2, y:900, hp:100, dead:false, reviveT:0, atkT:0.5, lunge:0, flash:0, face:-1, moving:false, target:null, stepT:0 },
 };
 for (const sk of SKILLS) R.cd[sk.id] = 0;
 let bg = null, fg = null, cv, ctx, viewQ = 1;
-function setHeroFace() {            // 고른 기사에 맞는 얼굴로 바꾼다
-  const f = (typeof S !== 'undefined' && S && S.gender === 'f'); heroImg = heroImgs[f ? 'f' : 'm'];
-  const el = document.querySelector('#face img'); if (el) el.src = 'art/ui/' + encodeURIComponent('영웅-얼굴' + (f ? '-여' : '') + '-256') + '.png';
+/* 대표 그림의 얼굴: 작은 것은 왼쪽 아래 초상, 큰 것은 스킬 연출·여는 장면·시작 화면에 쓴다. 큰 것은 쓸 때 불러온다 */
+const heroImgs = {}, HERO_EYES = { m:338, f:418 };   // 눈 높이(1024 그림 기준)
+function needHero(g) {
+  if (heroImgs[g]) return heroImgs[g];
+  const im = new Image(); im.eyeY = HERO_EYES[g]; im.onload = () => { im.ok = true; }; im.src = assetUrl(heroPath(g));
+  return heroImgs[g] = im;
 }
-const heroImgs = { m:new Image(), f:new Image() }, HERO_EYES = { m:338, f:418 };   // 눈 높이(1024 그림 기준)
-let heroImg = heroImgs.m;      // 대표 그림의 얼굴 (스킬 연출에 눈매를 쓴다)
+function setHeroFace() {            // 초상은 늘 저장된 기사를 따른다
+  const g = S.gender === 'f' ? 'f' : 'm'; R.faceG = S.gender;
+  const im = document.querySelector('#face img'); if (im) im.src = assetUrl(heroPath(g, true));
+  if (S.maxStage >= 7) needHero(g);                  // 기억의 일격(1-8)이 가까워지면 눈매 그림을 미리 불러 둔다
+}
 for (let i = 0; i < 16; i++) R.flies.push({ x:rand(70, 830), y:rand(240, 1480), ph:rand(0, 6.28), sp:rand(0.12, 0.34), r:rand(30, 90) });
 
 function showBanner(text, sub) { R.banner = { text, sub:sub || '', t:0 }; }
@@ -686,20 +878,22 @@ function addLog(txt, cls, gold) {
   R.log.push({ txt, cls:cls || '', gold:gold || 0, n:1 }); if (R.log.length > 40) R.log.shift(); R.logDirty = true; }
 function stageLabel(st) { return ZONE + '-' + st + ' ' + MONSTERS[st - 1].short; }
 let toastT = 0;
-function toast(txt) { const el = $('toast'); el.textContent = txt; el.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => { el.style.opacity = 0; }, 1800); }
+function toast(txt) { const el = $('toast'); el.textContent = txt; el.classList.toggle('high', !!R.sheet); el.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => { el.style.opacity = 0; }, 1800); }
 
 function setMaxStage(n) {             // 새 길이 열릴 때: 기록을 남기고 스킬이 열렸는지 본다
   if (n <= S.maxStage) return;
   const old = S.maxStage; S.maxStage = n;
   addLog(stageLabel(n) + ' 길이 열렸다', 'a');
   for (const sk of SKILLS) if (sk.unlock > old && sk.unlock <= n) { addLog('스킬이 열렸다 (' + sk.name + ')', 'a'); toast('스킬이 열렸다: ' + sk.name); }
-  buildSkills(); save();
+  newJournal();                        // 길을 처음 깰 때마다 일지가 한 줄 적힌다
+  if (n >= 7) needHero(S.gender === 'f' ? 'f' : 'm');
+  buildSkills(); checkUnlocks(); save();
 }
 function gotoStage(st, quiet) {
   S.stage = st; R.pend = null; R.progress = 0; R.advanceT = -1; R.spawnT = 0.5; R.bossT = TUNE.BOSS_TIME; R.bossWait = 0;
   for (const m of R.mons) if (!m.dead) { m.dead = true; m.deadT = 0; m.gone = true; }
   R.k.target = null; R.k.hp = kMax();
-  loadMonster(st); if (st < 10) loadMonster(st + 1);
+  loadMonster(st);                     // 그 스테이지의 몬스터 그림은 들어갈 때 불러온다
   if (st === 10) { $('menu2').classList.add('hidden'); $('bMore').classList.remove('on'); }
   if (!quiet) showBanner(stageLabel(st), st === 10 ? '30초 안에 쓰러뜨려라' : MONSTERS[st - 1].name);
   refreshHud();
@@ -715,12 +909,11 @@ function spawnMonster() {
     else { x = FW + sp.w * 0.2; y = rand(560, 1200); }
     if (def.boss || Math.hypot(x - k.x, y - k.y) > 300) break;
   }
-  const hp = Math.round(baseHp(st) * (def.mult.hp || 1));
-  R.mons.push({ st, def, x, y, w:sp.w, h:sp.h, hp, max:hp,
-    atk:Math.max(1, Math.round(baseHp(st) * TUNE.MON_ATK_RATIO * (def.mult.atk || 1) * (def.boss ? TUNE.BOSS_ATK_MULT : 1))),
+  const hp = stageHp(st);
+  R.mons.push({ st, def, x, y, w:sp.w, h:sp.h, hp, max:hp, atk:stageAtk(st),
     spd:TUNE.MON_SPEED * (def.mult.spd || 1), cd:rand(0.5, 1.1), born:0, flash:0, kbx:0, lunge:0,
     dead:false, deadT:0, ph:rand(0, 6.28), face:x < k.x ? 1 : -1, slot:false, side:0, wi:-1 });
-  if (def.boss) R.bossT = TUNE.BOSS_TIME;
+  if (def.boss) { R.bossT = TUNE.BOSS_TIME; Snd.boss(); }
 }
 /* 자리 잡기: 덤비는 몬스터는 기사 양옆 살짝 뒤(위)에 선다. 그래서 기사가 늘 앞에 보인다.
    나머지는 바깥 고리의 여섯 자리 가운데 빈 곳에서 기다린다. 그래서 서로 겹치지 않는다. */
@@ -767,7 +960,7 @@ function moveTo(o, tx, ty, spd, dt) {
 function killMonster(m) {
   m.dead = true; m.deadT = 0; m.slot = false; m.wi = -1;
   const st = m.st, g = goldOf(st), top = m.y - m.h * 0.6 - (m.def.fly || 0);
-  S.kills[st] = (S.kills[st] || 0) + 1; S.gold += g;
+  S.kills[st] = (S.kills[st] || 0) + 1; S.gold += g; Snd.coin();
   addFloat(m.x, top, '+' + fmt(g), '#f0c069', 34, 1.1);
   addLog('+' + fmt(g) + ' 골드', 'g', g);
   if (m.def.boss || Math.random() < TUNE.LOOT_CHANCE) {
@@ -777,17 +970,19 @@ function killMonster(m) {
   }
   if (m.def.boss) {
     R.bossWait = 3; addLog('고블린 왕을 쓰러뜨렸다', 'a');
-    if (!S.bossDone) { S.bossDone = true; addLog('첫 번째 기억 조각을 되찾았다', 'a'); }
-    if (!S.storySeen) { S.storySeen = true; setTimeout(showStory, 900); }
+    if (!S.bossDone) { S.bossDone = true; S.storySeen = true; addLog('첫 번째 기억 조각을 되찾았다', 'a'); newJournal(); Snd.clear(); }
+    queueDueScenes(1.2);                 // 장면: 첫 번째 기억 조각
     save();
   } else if (st === S.stage) {
     R.progress = Math.min(TUNE.KILLS_TO_CLEAR, R.progress + 1);
+    if (R.progress >= TUNE.KILLS_TO_CLEAR - 2 && S.auto && st < 10) loadMonster(st + 1);   // 곧 넘어갈 다음 길의 그림을 조금 먼저 불러 둔다
     if (R.progress >= TUNE.KILLS_TO_CLEAR) {
-      if (S.maxStage < st + 1) { showBanner(stageLabel(st) + ' 깼다', '다음 길이 열렸다'); setMaxStage(st + 1); }
+      if (S.maxStage < st + 1) { showBanner(stageLabel(st) + ' 깼다', '다음 길이 열렸다'); setMaxStage(st + 1); Snd.clear(); }
+      queueDueScenes(1.0);               // 장면: 네 번째 밥그릇 (1-3을 처음 깼을 때)
       if (S.auto && R.advanceT < 0) R.advanceT = 0.9;
     }
   }
-  refreshHud();
+  checkUnlocks(); refreshHud();
 }
 function bossFail(msg) {
   S.auto = false; addLog(msg + '. 1-9로 돌아간다', 'b');
@@ -802,13 +997,13 @@ function hitMonster(m, mult, big) {
   // 보통은 흰 숫자, 치명타는 등불 주황에 더 크게, 작은 불꽃 표시를 붙인다
   addFloat(m.x, m.y - m.h * 0.78 - (m.def.fly || 0) - (big ? 20 : 0), fmt(dmg), crit ? (Math.random() < 0.2 ? '#8fdcff' : '#ffab3d') : '#ffffff',   // 치명타는 주황. 가끔 얼음빛(모양만 다르다)
     (big ? 52 : 38) * (crit ? 1.35 : 1), crit || big ? 1.05 : 0.8, { num:true, spark:crit });
-  if (crit) jolt(0.055, 7); else if (m.def.boss) jolt(0.04, 3.5);
-  if (m.hp <= 0) killMonster(m);
+  if (crit) { S.cnt.crit++; Snd.crit(); jolt(0.055, 7); } else { Snd.hit(); if (m.def.boss) jolt(0.04, 3.5); }
+  if (m.hp <= 0) killMonster(m); else if (crit) checkUnlocks();
 }
 function castSkill(sk, manual) {
   const k = R.k;
   if (S.maxStage < sk.unlock) { if (manual) toast(ZONE + '-' + sk.unlock + '에 가면 열립니다'); return false; }
-  if (R.paused || k.dead || R.cd[sk.id] > 0) return false;
+  if (R.paused || R.hold || k.dead || R.cd[sk.id] > 0) return false;
   const live = R.mons.filter(m => !m.dead && m.born > 0.25);
   let targets = [];
   if (sk.kind === 'one') { if (k.target && !k.target.dead && inRange(k.target)) targets = [k.target]; }
@@ -817,6 +1012,7 @@ function castSkill(sk, manual) {
   if (!targets.length) { if (manual) toast('닿는 몬스터가 없습니다'); return false; }
   R.cd[sk.id] = sk.cd; R.skillGap = TUNE.SKILL_GAP; k.lunge = 0.24; R.eyeT = 0.5;
   addFloat(k.x, k.y - getKnightSprite().h - 118, sk.name, '#ffd590', 30, 0.9);
+  if (sk.id === 'shard') { S.cnt.shard++; checkUnlocks(); }
   if (sk.id === 'shard' && S.cutin !== false) {      // 가장 센 스킬: 눈매 연출이 먼저 지나가고, 그다음에 맞는다. 게임은 멈추지 않는다
     R.cut = { t:0, life:0.55, name:sk.name }; R.pend = { sk, m:targets[0], t:0.45 }; R.skillGap = 0.65; return true;
   }
@@ -824,7 +1020,7 @@ function castSkill(sk, manual) {
   return true;
 }
 function landSkill(sk, targets) {
-  const k = R.k, t = targets[0];
+  const k = R.k, t = targets[0]; Snd.skill(sk.fx);
   R.fx.push({ kind:sk.fx, x:sk.kind === 'one' ? t.x : k.x, y:sk.kind === 'one' ? t.y : k.y, h:t.h, r:reachOf(t) + 90, dir:t.x >= k.x ? 1 : -1, t:0, life:sk.fx === 'flash' ? 0.6 : 0.42 });
   for (const m of targets) hitMonster(m, sk.mult, true);
 }
@@ -918,7 +1114,7 @@ function update(dt) {
           if (m.def.boss) jolt(0.05, 8);
           if (k.hp <= 0) {
             k.hp = 0; k.dead = true; k.reviveT = TUNE.REVIVE; k.target = null;
-            addLog(S.name + '이(가) 쓰러졌다', 'b');
+            addLog(S.name + '이(가) 쓰러졌다', 'b'); Snd.down();
             if (m.def.boss) { bossFail('기사가 쓰러졌다'); return; }
           }
         }
@@ -966,7 +1162,7 @@ function drawKnight(g, sp, x, y, face, t, opt) {   // 들판과 꾸미기 미리
   const sc = opt.scale || 1, flip = face > 0, breath = 1 + Math.sin(t * 2.6) * 0.012, al = opt.alpha == null ? 1 : opt.alpha;
   g.save(); g.translate(x, y); g.scale(sc, sc);
   drawSprite(g, sp, 0, 0, { flip, sy:breath, sx:1 / Math.sqrt(breath), rot:opt.rot, alpha:opt.alpha, flash:opt.flash, dx:opt.dx });
-  if (!opt.rot && !opt.noGlow) {                     // 허리의 등불 빛 (그림 속 등불 자리에 맞춘다)
+  if (!opt.rot && !opt.noGlow && !sp.pending) {      // 허리의 등불 빛 (그림 속 등불 자리에 맞춘다)
     const lx = (sp.lantern[0] - sp.ax) * sp.w * (flip ? -1 : 1) + (opt.dx || 0), ly = (sp.lantern[1] - (sp.gy || 0.97)) * sp.h * breath;
     const fl = 0.85 + Math.sin(t * 7.3) * 0.08 + Math.sin(t * 13.1) * 0.05, col = lanternColor();
     glow(g, lx, ly, 46, col, 0.5 * fl * al); glow(g, lx, ly, 9, '#fff3d6', 0.8 * fl * al);
@@ -1009,8 +1205,8 @@ function drawFx(g, f) {
     for (const [w, c, al] of FX_ICE) { g.globalAlpha = a * al; g.strokeStyle = c; g.lineWidth = w * 1.1; g.beginPath(); g.ellipse(0, 0, r, r * 0.5, 0, 0, 7); g.stroke(); }
     g.globalAlpha = a * 0.22; g.fillStyle = '#7fd6ff'; g.beginPath(); g.ellipse(0, 0, r, r * 0.5, 0, 0, 7); g.fill();
   } else if (f.kind === 'flash') {    // 등불 섬광: 등불에서 화면 전체로 번지는 빛, 가장자리에 가는 푸른 테
-    g.globalAlpha = a * 0.34; g.fillStyle = '#ffc56a'; g.fillRect(-20, -20, FW + 40, FH + 40);
-    glow(g, f.x, f.y - 70, 240 + q * 1100, '#ffb84a', a * 0.9); glow(g, f.x, f.y - 70, 120 + q * 260, '#fff4d2', a);
+    g.globalAlpha = a * 0.2; g.fillStyle = '#ffc56a'; g.fillRect(-20, -20, FW + 40, FH + 40);
+    glow(g, f.x, f.y - 70, 240 + q * 1100, '#ffb84a', a * 0.42); glow(g, f.x, f.y - 60, 60 + q * 150, '#fff4d2', a * 0.3);   // 가운데는 약하게: 기사가 하얗게 묻히지 않는다
     g.translate(f.x, f.y - 70); g.strokeStyle = '#fff4d2'; g.lineWidth = 7; g.globalAlpha = a * 0.9;
     for (let i = 0; i < 14; i++) { const an = i / 14 * 6.283 + 0.2, r0 = 70 + q * 330, r1 = r0 + 130; g.beginPath(); g.moveTo(Math.cos(an) * r0, Math.sin(an) * r0); g.lineTo(Math.cos(an) * r1, Math.sin(an) * r1); g.stroke(); }
     const rr = 160 + (1 - (1 - q) * (1 - q)) * 760; g.strokeStyle = '#7fd6ff'; g.lineWidth = 5; g.globalAlpha = a * 0.85; g.beginPath(); g.ellipse(0, 0, rr, rr * 0.7, 0, 0, 7); g.stroke();
@@ -1034,7 +1230,8 @@ function drawCutIn(g) {
   g.save(); g.translate(450, 590); g.rotate(-0.13); g.globalAlpha = a;
   g.beginPath(); g.rect(-620, -100, 1240, 200); g.clip();
   g.fillStyle = '#05080a'; g.fillRect(-620, -100, 1240, 200);
-  if (heroImg.ok) g.drawImage(heroImg, 0, heroImg.eyeY, 1024, 174, -590 + slide + (0.5 - q) * 50, -100, 1180, 200);   // 그림의 눈 높이만 잘라 쓴다
+  const hi = heroImgs[S.gender === 'f' ? 'f' : 'm'], hk = hi && hi.ok ? scaleOf(hi) : 1;
+  if (hi && hi.ok) g.drawImage(hi, 0, hi.eyeY * hk, 1024 * hk, 174 * hk, -590 + slide + (0.5 - q) * 50, -100, 1180, 200);   // 그림의 눈 높이만 잘라 쓴다 (1024 기준)
   for (const [y0, y1] of [[-100, -40], [100, 40]]) { const gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(4,6,8,0.92)'); gr.addColorStop(1, 'rgba(4,6,8,0)'); g.fillStyle = gr; g.fillRect(-620, Math.min(y0, y1), 1240, 60); }
   g.lineCap = 'round';
   for (let i = 0; i < 18; i++) {      // 빠르게 스치는 선
@@ -1098,8 +1295,8 @@ function draw() {
     if (m.dead) { const q = Math.min(1, m.deadT / 0.55); alpha = 1 - q; rot = m.gone ? 0 : -m.face * q * 0.5; sink = q * 14 + lift * q; }
     drawSprite(g, sp, m.x, m.y - lift + sink, { flip:m.face > 0, sy:br, sx:1 / Math.sqrt(br), rot, alpha, flash:m.flash / 0.16 * 0.85, dx:ml });
   }
-  if (!k.dead) drawKnight(g, ks, k.x, k.y + walk, k.face, t, { dx:lunge, alpha:0.42, noGlow:true });   // 큰 몬스터에 가려도 기사가 비쳐 보이게
   for (const f of R.fx) drawFx(g, f);
+  if (!k.dead) drawKnight(g, ks, k.x, k.y + walk, k.face, t, { dx:lunge, alpha:0.42, noGlow:true });   // 큰 몬스터나 스킬 빛에 가려도 기사가 비쳐 보이게
   g.drawImage(fg, -12, -12, FW + 24, FH + 24);          // 가장자리의 나무와 덤불: 몬스터 위에
   for (const fl of R.flies) {         // 천천히 떠다니는 반딧불
     const x = fl.x + Math.sin(t * fl.sp + fl.ph) * fl.r, y = fl.y + Math.cos(t * fl.sp * 0.8 + fl.ph * 2) * fl.r * 0.6;
@@ -1155,20 +1352,114 @@ function drawMini() {                 // 둥근 작은 지도: 기사는 주황 
   g.strokeStyle = 'rgba(236,226,198,0.5)'; g.lineWidth = 4; g.beginPath(); g.arc(W / 2, W / 2, W / 2 - 6, 0, 7); g.stroke();
 }
 
+/* ===================================================================== 소리 */
+/* 전부 코드로 만든 소리다. 파일을 쓰지 않는다. 작고 부드럽게 낸다. 음악은 없다.
+   화면을 처음 누른 뒤에만 켜진다. 소리를 낼 수 없는 곳에서는 아무 일 없이 넘어간다 */
+const Snd = (() => {
+  let ac = null, out = null, nbuf = null; const last = {};
+  const wake = () => { if (ac && ac.state === 'suspended') { const p = ac.resume(); if (p && p.catch) p.catch(() => {}); } };
+  function init() {
+    try {
+      if (ac) return wake();
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      ac = new AC(); out = ac.createGain(); out.gain.value = 0.2;                       // 전체 크기는 작게
+      const comp = ac.createDynamicsCompressor(); comp.threshold.value = -20; comp.ratio.value = 4;
+      out.connect(comp); comp.connect(ac.destination);
+      nbuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+      const d = nbuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      wake();
+    } catch (e) { ac = null; }
+  }
+  const on = () => ac && ac.state === 'running' && S.sound !== false && SPEED === 1;
+  const lim = (k, ms) => { const n = performance.now(); if (n - (last[k] || 0) < ms) return false; last[k] = n; return true; };   // 같은 소리가 겹쳐 쏟아지지 않게
+  function env(vol, dur, delay, attack) {          // 부드럽게 올라갔다가 사라지는 크기
+    const g = ac.createGain(), t = ac.currentTime + (delay || 0);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + (attack || 0.006)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    g.connect(out); return [g, t];
+  }
+  function tone(type, f0, f1, dur, vol, delay, attack) {          // 맑은 음
+    const [g, t] = env(vol, dur, delay, attack), o = ac.createOscillator();
+    o.type = type; o.frequency.setValueAtTime(f0, t); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    o.connect(g); o.start(t); o.stop(t + dur + 0.04);
+  }
+  function hiss(ftype, f0, f1, q, dur, vol, delay, attack) {      // 바람 소리 (걸러 낸 잡음)
+    const [g, t] = env(vol, dur, delay, attack), s = ac.createBufferSource(), f = ac.createBiquadFilter();
+    s.buffer = nbuf; s.loop = true; f.type = ftype; f.Q.value = q;
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    s.connect(f); f.connect(g); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.04);
+  }
+  const safe = fn => (...a) => { if (!on()) return; try { fn(...a); } catch (e) {} };
+  return {
+    init,
+    tap:    safe(() => { if (lim('tap', 50)) tone('triangle', 600, 470, 0.05, 0.24); }),                                  // 단추
+    card:   safe(() => { if (lim('card', 90)) tone('sine', 500, 420, 0.1, 0.2); }),                                      // 이야기 카드 넘기기
+    hit:    safe(() => { if (!lim('hit', 70)) return; hiss('lowpass', 1400, 450, 0.6, 0.07, 0.26); tone('sine', 140, 85, 0.09, 0.36); }),
+    crit:   safe(() => { if (!lim('crit', 70)) return; hiss('bandpass', 3000, 1300, 1.2, 0.09, 0.28); tone('sine', 170, 80, 0.13, 0.42); tone('triangle', 1245, 1568, 0.12, 0.12, 0.012); }),
+    skill:  safe(fx => {                                                                                                 // 스킬: 갈래마다 다른 바람 소리
+      if (!lim('sk' + fx, 120)) return;
+      if (fx === 'slash') { hiss('bandpass', 2600, 520, 1.4, 0.2, 0.9, 0, 0.02); tone('sine', 180, 110, 0.1, 0.16, 0.05); }
+      else if (fx === 'ring') { hiss('bandpass', 520, 2300, 1.2, 0.3, 0.85, 0, 0.05); tone('sine', 880, 1320, 0.26, 0.14, 0.03, 0.05); }
+      else if (fx === 'flash') { hiss('highpass', 1800, 4000, 0.7, 0.5, 0.13, 0, 0.12); [392, 587, 784].forEach((f, i) => tone('sine', f, f, 0.55, 0.13 - i * 0.03, i * 0.03, 0.09)); }
+      else { hiss('bandpass', 2800, 320, 1, 0.34, 0.32, 0, 0.02); tone('sine', 110, 55, 0.4, 0.45); tone('triangle', 1568, 1046, 0.4, 0.08, 0.05); }
+    }),
+    coin:   safe(() => { if (lim('coin', 150)) { tone('sine', 1760, 1760, 0.07, 0.17); tone('sine', 2637, 2637, 0.11, 0.11, 0.035); } }),
+    unlock: safe(() => { if (lim('unlock', 400)) [784, 988, 1175].forEach((f, i) => tone('triangle', f, f, 0.5, 0.2, i * 0.09, 0.01)); }),
+    clear:  safe(() => { if (lim('clear', 400)) [523, 659, 784, 1047].forEach((f, i) => tone('sine', f, f, 0.42, 0.22, i * 0.08, 0.01)); }),
+    boss:   safe(() => { tone('sine', 72, 40, 0.9, 0.8, 0, 0.01); hiss('lowpass', 300, 80, 0.5, 0.7, 0.35, 0, 0.01); tone('sine', 72, 40, 0.8, 0.55, 0.45, 0.01); }),   // 낮은 북 두 번
+    down:   safe(() => { tone('sine', 120, 45, 0.5, 0.6, 0, 0.008); hiss('lowpass', 500, 120, 0.5, 0.35, 0.28); }),
+  };
+})();
+
 /* ===================================================================== 화면 위에 얹는 것 (HUD) */
+/* 몇 번 때리면 쓰러지는가: 강화가 눈에 보이게 하는 숫자 */
+const stageHp  = st => Math.round(baseHp(st) * (MONSTERS[st - 1].mult.hp || 1));
+const stageAtk = st => Math.max(1, Math.round(baseHp(st) * TUNE.MON_ATK_RATIO * (MONSTERS[st - 1].mult.atk || 1) * (st === 10 ? TUNE.BOSS_ATK_MULT : 1)));
+const hitsFor  = (st, atk) => Math.ceil(stageHp(st) / atk);
+const NUM_WORD = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열'];
+const beon = n => n <= 10 ? NUM_WORD[n] + ' 번' : n + '번';
 const UP_INFO = {
   atk:  { name:'공격력',      cur:() => fmt(kAtk()),  next:() => fmt(kAtk() + TUNE.UP.atk.step) },
   hp:   { name:'체력',        cur:() => fmt(kMax()),  next:() => fmt(kMax() + TUNE.UP.hp.step) },
   crit: { name:'치명타 확률', cur:() => Math.round(kCrit() * 100) + '%', next:() => Math.round((kCrit() + TUNE.UP.crit.step) * 100) + '%' },
 };
+function upHint(key) {                 // 다음 단계가 무엇을 바꾸는가. [글, 지금 바로 좋아지는가]
+  const st = S.stage, nm = MONSTERS[st - 1].short;
+  if (key === 'atk') {
+    const h = hitsFor(st, kAtk());
+    if (h <= 1) return [nm + ' 한 번에 잡는다', false];
+    for (let n = 1; n <= 300; n++) if (hitsFor(st, kAtk() + TUNE.UP.atk.step * n) < h) {
+      const h2 = hitsFor(st, kAtk() + TUNE.UP.atk.step * n);
+      return [(n === 1 ? '올리면 ' : n + '번 더 올리면 ') + nm + ' ' + beon(h2) + '에 잡는다', n === 1];
+    }
+    return ['', false];
+  }
+  if (key === 'hp') {
+    const a = stageAtk(st), n = Math.ceil(kMax() / a), n2 = Math.ceil((kMax() + TUNE.UP.hp.step) / a);
+    return [nm + '에게 ' + n + '대 버틴다' + (n2 > n ? ' → ' + n2 + '대' : ''), n2 > n];
+  }
+  return ['치명타 한 대 ' + fmt(Math.round(kAtk() * TUNE.CRIT_MULT)), false];
+}
 const setText = (el, t) => { if (el.textContent !== t) el.textContent = t; };
-const LOG_TAG = { a:'알림', g:'골드', b:'전투', d:'길', l:'전리품' };
+const setHtml = (el, t) => { if (el.innerHTML !== t) el.innerHTML = t; };
+const LOG_TAG = { a:'알림', g:'골드', b:'전투', d:'길', l:'전리품', j:'일지', c:'꾸밈' };
+function updateDots() {                // 새것이 있으면 단추에 작은 점을 찍는다
+  const cb = document.querySelector('.mBtn[data-open="cos"]'); if (!cb) return;
+  cb.classList.toggle('nw', Object.keys(S.cosNew || {}).length > 0);
+  $('bMore').classList.toggle('nw', !!S.jrNew); $('bJournal').classList.toggle('nw', !!S.jrNew);
+}
 function refreshHud() {
   if (!cv) return;
+  if (R.faceG !== S.gender) setHeroFace();                 // 얼굴 그림은 늘 저장된 기사를 따른다
   const hr = clamp(R.k.hp / kMax(), 0, 1);
   $('hpFill').style.width = hr * 100 + '%'; $('hpFill').classList.toggle('low', hr < 0.3);
   setText($('hpTxt'), fmt(Math.ceil(R.k.hp)) + ' / ' + fmt(kMax()));
   setText($('goldTxt'), fmt(S.gold)); setText($('lootTxt'), fmt(lootTotal()));
+  const atk = kAtk(), dv = $('dmgVal');                    // 한 대: 바뀌면 톡 튄다
+  if (R.lastAtk !== atk) {
+    setText(dv, fmt(atk));
+    if (R.lastAtk != null) { dv.classList.remove('pop'); void dv.offsetWidth; dv.classList.add('pop'); }
+    R.lastAtk = atk;
+  }
   const boss = S.stage === 10;
   setText($('pillName'), stageLabel(S.stage));
   setText($('pillProg'), boss ? '보스' : R.progress + '/' + TUNE.KILLS_TO_CLEAR);
@@ -1197,8 +1488,9 @@ function refreshSkills() {            // 다시 쓰기까지 남은 시간: 둥�
     } else if (cdEl.textContent !== '') { cdEl.style.background = 'none'; cdEl.textContent = ''; }
   }
 }
-/* 스킬 단추 자리: 오른쪽 아래 모서리의 큰 단추 하나를 가운데 두고 나머지를 부채꼴로 두른다 [크기, 오른쪽, 아래] */
-const SKILL_POS = [[136, 20, 20], [112, 202, 32], [112, 152, 152], [112, 32, 202]];
+/* 스킬 단추 자리: 오른쪽 아래 모서리의 큰 단추 하나를 가운데 두고 나머지를 부채꼴로 두른다 [크기, 오른쪽, 아래].
+   누르는 것은 화면 옆 끝에서 46칸(폭 320짜리 작은 휴대폰에서도 16px) 넘게 띄운다 */
+const SKILL_POS = [[136, 46, 20], [112, 226, 32], [112, 176, 152], [112, 58, 204]];
 function buildSkills() {
   const box = $('skills'); if (!box) return; box.innerHTML = '';
   SKILLS.forEach((sk, i) => {
@@ -1214,98 +1506,138 @@ function buildSkills() {
 function buy(key) {
   if (key === 'crit' && S.up.crit >= critMaxLv) return false;
   const p = upPrice(key); if (S.gold < p) return false;
-  S.gold -= p; S.up[key]++;
+  const h0 = hitsFor(S.stage, kAtk());
+  S.gold -= p; S.up[key]++; Snd.tap();
   if (key === 'hp') R.k.hp = Math.min(kMax(), R.k.hp + TUNE.UP.hp.step);
-  refreshHud(); return true;
+  if (key === 'atk') {                                     // 공격력을 올려서 한 번 덜 때려도 되면 알려 준다
+    const h1 = hitsFor(S.stage, kAtk());
+    if (h1 < h0) { const msg = '이제 ' + josa(MONSTERS[S.stage - 1].short, '을', '를') + ' ' + beon(h1) + '에 잡는다'; toast(msg); addLog(msg, 'a'); }
+  }
+  checkUnlocks(); refreshHud(); return true;
+}
+
+/* ===================================================================== 꾸밈을 얻는 길 */
+const isArt = grp => grp.key === 'head' || grp.key === 'armor';
+function checkUnlocks(silent) {        // 새로 열린 꾸밈이 있으면 알린다. 처음부터 있는 것은 조용히 적어 둔다
+  const g = S.gender, fresh = [];
+  for (const grp of COS_GROUPS) {
+    if (grp.key === 'weapon') continue;
+    for (const it of grp.list) {
+      if (isArt(grp) && !hasArt(it, g)) continue;
+      const key = grp.key + ':' + it.id + (isArt(grp) ? ':' + g : ''), inf = cosInfo(grp, it, g);
+      if (S.got[key] || !condDone(inf.how)) continue;
+      S.got[key] = 1;
+      if (!condOf(inf.how).free) fresh.push([grp, inf]);
+    }
+  }
+  if (!fresh.length || silent) return;
+  for (const [grp, inf] of fresh) { addLog(josa(inf.name, '을', '를') + ' 얻었다', 'c'); S.cosNew[grp.key] = 1; }
+  toast(fresh.length === 1 ? '꾸밈을 얻었다: ' + fresh[0][1].name : '꾸밈 ' + fresh.length + '개를 얻었다');
+  Snd.unlock(); updateDots();
+}
+function fixCos() {                    // 잠긴 것이나 그 기사에게 없는 것을 입고 있으면 기본으로 돌린다
+  const g = S.gender;
+  for (const grp of COS_GROUPS) {
+    if (grp.key === 'weapon') { S.cos.weapon = 'basic'; continue; }
+    const it = grp.list.find(c => c.id === S.cos[grp.key]);
+    if (!it || (isArt(grp) && !hasArt(it, g)) || !isOpen(cosInfo(grp, it, g).how)) { S.cos[grp.key] = grp.base; knightSprite = null; }
+  }
 }
 
 /* ===================================================================== 아래에서 올라오는 판 */
-const SHEETS = { up:['강화', buildUp], cos:['꾸미기', buildCos], dex:['도감 · ' + ZONE_NAME, buildDex], set:['설정', buildSet], stage:['스테이지', buildStage] };
+const SHEETS = { up:['강화', buildUp], cos:['꾸미기', buildCos], dex:['도감 · ' + ZONE_NAME, buildDex], set:['설정', buildSet], stage:['스테이지', buildStage], journal:['일지', buildJournal] };
 function openSheet(kind) {
   R.sheet = kind; $('sheetTitle').textContent = SHEETS[kind][0];
   $('sheetBody').innerHTML = ''; $('sheetBody').scrollTop = 0; SHEETS[kind][1]($('sheetBody'));
   $('sheetWrap').classList.remove('hidden');
 }
 function closeSheet() { R.sheet = null; $('sheetWrap').classList.add('hidden'); }
+function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
 function buildUp(box) {
+  box.appendChild(el('div', '', '')).id = 'upHead';
   for (const key of ['atk', 'hp', 'crit']) {
-    const b = document.createElement('button'); b.className = 'up'; b.dataset.k = key;
-    b.innerHTML = '<span class="un"></span><span class="ue"></span><span class="upp"></span>';
+    const b = el('button', 'up', '<span class="un"></span><span class="ue"></span><span class="upp"></span>'); b.dataset.k = key;
     let h1 = 0, h2 = 0;                               // 누르고 있으면 계속 산다
     const stop = () => { clearTimeout(h1); clearInterval(h2); };
     b.addEventListener('pointerdown', e => { e.preventDefault(); stop(); buy(key); h1 = setTimeout(() => { h2 = setInterval(() => { if (!buy(key) || R.sheet !== 'up') stop(); }, 90); }, 420); });
     for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, stop);
     box.appendChild(b);
   }
-  const n = document.createElement('div'); n.className = 'note';
-  n.textContent = '골드로 기사를 강하게 만듭니다. 누르고 있으면 계속 삽니다. 치명타는 ' + TUNE.CRIT_MULT + '배로 들어갑니다.';
-  box.appendChild(n); refreshUp();
+  box.appendChild(el('div', 'note', '골드로 기사를 강하게 만듭니다. 누르고 있으면 계속 삽니다. 치명타는 ' + TUNE.CRIT_MULT + '배로 들어갑니다.'));
+  refreshUp();
 }
 function refreshUp() {
+  const st = S.stage, m = MONSTERS[st - 1], h = hitsFor(st, kAtk()), head = $('upHead');
+  if (head) setHtml(head, escapeHtml(m.name) + ' · ' + beon(h) + ' 때리면 쓰러진다<small>' + stageLabel(st) + ' · 체력 ' + fmt(stageHp(st)) + ' · 한 대 ' + fmt(kAtk()) + '</small>');
   document.querySelectorAll('#sheetBody .up').forEach(b => {
-    const key = b.dataset.k, inf = UP_INFO[key], maxed = key === 'crit' && S.up.crit >= critMaxLv;
-    const a = inf.name + '<small>' + S.up[key] + '단계</small>'; if (b.children[0].innerHTML !== a) b.children[0].innerHTML = a;
-    setText(b.children[1], maxed ? inf.cur() + ' (끝)' : inf.cur() + ' → ' + inf.next());
-    const p = maxed ? '끝' : '<span class="coin"></span>' + fmt(upPrice(key)); if (b.children[2].innerHTML !== p) b.children[2].innerHTML = p;
+    const key = b.dataset.k, inf = UP_INFO[key], maxed = key === 'crit' && S.up.crit >= critMaxLv, hint = upHint(key);
+    setHtml(b.children[0], inf.name + '<small>' + S.up[key] + '단계</small>');
+    setHtml(b.children[1], (maxed ? inf.cur() + ' (끝)' : inf.cur() + ' → ' + inf.next()) + '<small' + (hint[1] && !maxed ? ' class="go"' : '') + '>' + escapeHtml(hint[0]) + '</small>');
+    setHtml(b.children[2], maxed ? '끝' : '<span class="coin"></span>' + fmt(upPrice(key)));
     b.classList.toggle('no', maxed || S.gold < upPrice(key));
   });
 }
 /* 꾸미기 판: 위에는 살아 움직이는 큰 미리보기, 아래에는 갈래(탭)와 네모 카드. 누르면 바로 입는다. 모습만 바뀌고 능력치는 그대로다 */
 function buildCos(box) {
-  box.innerHTML = '<canvas id="cosPrev" width="1704" height="1080"></canvas><div id="cosTabs"></div><div id="cosGrid"></div>' +
+  loadAllLayers(S.gender);                                 // 이 창을 열 때 비로소 다른 머리와 옷 그림을 불러온다
+  box.innerHTML = '<canvas id="cosPrev" width="1616" height="960"></canvas><div id="cosLine"></div><div id="cosTabs"></div><div id="cosGrid"></div>' +
     '<div class="note">모습만 바뀝니다. 꾸미기는 능력치를 바꾸지 않습니다.</div>';
   for (const grp of COS_GROUPS) {
-    const b = document.createElement('button'); b.className = 'cTab'; b.dataset.k = grp.key; b.textContent = grp.title;
+    const b = el('button', 'cTab', grp.title); b.dataset.k = grp.key;
     b.onclick = () => { R.cosTab = grp.key; buildCosGrid(); };
     $('cosTabs').appendChild(b);
   }
   buildCosGrid();
 }
-function drawThumb(c, layers, crop) {      // 겹 그림에서 잘라 낸 작은 그림
+function drawThumb(c, layers, crop) {      // 겹 그림에서 잘라 낸 작은 그림. crop은 1024 그림 기준
   const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); g.imageSmoothingQuality = 'high';
-  const k = Math.min(c.width / crop[2], c.height / crop[3]), w = crop[2] * k, h = crop[3] * k;
+  const s = Math.min(c.width / crop[2], c.height / crop[3]), w = crop[2] * s, h = crop[3] * s;
   for (const l of layers) if (l) {                       // {cut:그림} 은 그 모양만큼 파낸다 (옷 그림에서 머리가 놓일 자리)
+    const im = l.cut || l, k = im.k;
     g.globalCompositeOperation = l.cut ? 'destination-out' : 'source-over';
-    g.drawImage((l.cut || l).c, crop[0], crop[1], crop[2], crop[3], (c.width - w) / 2, c.height - h, w, h);
+    g.drawImage(im.c, crop[0] * k, crop[1] * k, crop[2] * k, crop[3] * k, (c.width - w) / 2, c.height - h, w, h);
   }
   g.globalCompositeOperation = 'source-over';
 }
 function buildCosGrid() {
   const box = $('cosGrid'); if (!box) return; box.innerHTML = '';
-  const grp = COS_GROUPS.find(x => x.key === R.cosTab) || COS_GROUPS[0], g = S.gender, fr = KNIGHT_FRAME[g];
-  document.querySelectorAll('.cTab').forEach(t => t.classList.toggle('sel', t.dataset.k === grp.key));
-  const art = grp.key === 'head' || grp.key === 'armor', got = k => { const im = knightImgs[k]; return im && im !== 'none' ? im : null; };
-  const cur = art ? pickArt(grp.list, S.cos[grp.key], g).id : grp.key === 'weapon' ? 'basic' : S.cos[grp.key];
+  const grp = COS_GROUPS.find(x => x.key === R.cosTab) || COS_GROUPS[0], g = S.gender, fr = KNIGHT_FRAME[g], art = isArt(grp), weapon = grp.key === 'weapon';
+  if (S.cosNew[grp.key]) { delete S.cosNew[grp.key]; updateDots(); }      // 이 갈래를 열었으니 새것 표시를 지운다
+  document.querySelectorAll('.cTab').forEach(t => { t.classList.toggle('sel', t.dataset.k === grp.key); t.classList.toggle('nw', !!S.cosNew[t.dataset.k]); });
+  const cur = art ? pickArt(grp.list, S.cos[grp.key], g).id : weapon ? 'basic' : S.cos[grp.key];
+  let line = weapon ? '<b>무기</b>무기는 옷과 함께 바뀝니다.' : '';
   for (const it of grp.list) {
     if (art && !hasArt(it, g)) continue;                    // 남자와 여자는 목록이 따로다
-    const open = it.ok(S) && grp.key !== 'weapon', b = document.createElement('button'), nm = art ? nameOf(it, g) : it.name;
-    b.className = 'cCard' + (cur === it.id ? ' sel' : '') + (open || grp.key === 'weapon' ? '' : ' lock');
-    const state = grp.key === 'weapon' ? it.how : !it.ok(S) ? it.how : cur === it.id ? '쓰는 중' : it.how;
-    b.innerHTML = (art || grp.key === 'weapon' ? '<canvas width="520" height="428"></canvas>' :
+    const inf = cosInfo(grp, it, g), open = weapon || isOpen(inf.how), b = el('button', 'cCard' + (cur === it.id ? ' sel' : '') + (open ? '' : ' lock'));
+    const keys = art ? layerKeys(grp.key, it, g).filter(e => e[1]).map(e => e[0]) : [], ready = keys.every(k => knightImgs[k] && knightImgs[k] !== 'wait');
+    const state = weapon ? it.how : !open ? condText(inf.how) : cur === it.id ? '쓰는 중' : '얻음';
+    b.innerHTML = (art || weapon ? '<canvas width="520" height="428"></canvas>' + (ready ? '' : '<div class="ld">불러오는 중</div>') :
       '<div class="big">' + (it.color ? '<span class="dot" style="background:' + it.color + '"></span>' : grp.key === 'title' ? (it.text || '칭호 없음') : it.name) + '</div>') +
-      '<div class="cn">' + nm + '</div><div class="ch">' + state + '</div>';
+      (open ? '' : '<span class="lk">' + icon('lock') + '</span>') + '<div class="cn">' + inf.name + '</div><div class="ch">' + state + '</div>';
+    if (cur === it.id && !weapon) line = '<b>' + inf.name + '</b>' + escapeHtml(inf.text || grp.desc || '');
     const cv2 = b.querySelector('canvas');
-    if (cv2) {
-      if (grp.key === 'head') drawThumb(cv2, [got('back-' + it.id + '-' + g), got('head-' + it.id + '-' + g)], g === 'f' ? [262, 24, 690, 568] : [330, 24, 450, 450]);
-      else if (grp.key === 'armor') drawThumb(cv2, [got('armor-' + it.id + '-' + g), got('head-basic-' + g) && { cut:got('head-basic-' + g) }, got('front-' + it.id + '-' + g)], g === 'f' ? [fr[0], 392, fr[2] - fr[0], fr[3] - 392] : [fr[0], 330, fr[2] - fr[0], fr[3] - 330]);
-      else { const o = pickArt(ARMORS, S.cos.armor, g), im = got('armor-' + o.id + '-' + g); if (im) drawThumb(cv2, [im], [g === 'f' ? 190 : 150, 560, 500, 412]); }
+    if (cv2 && ready) {
+      if (grp.key === 'head') drawThumb(cv2, [layerOf('back-' + it.id + '-' + g), layerOf('head-' + it.id + '-' + g)], g === 'f' ? [262, 24, 690, 568] : [330, 24, 450, 450]);
+      else if (grp.key === 'armor') drawThumb(cv2, [layerOf('armor-' + it.id + '-' + g), layerOf('head-basic-' + g) && { cut:layerOf('head-basic-' + g) }, layerOf('front-' + it.id + '-' + g)], g === 'f' ? [fr[0], 392, fr[2] - fr[0], fr[3] - 392] : [fr[0], 330, fr[2] - fr[0], fr[3] - 330]);
+      else { const im = layerOf('armor-' + pickArt(ARMORS, S.cos.armor, g).id + '-' + g); if (im) drawThumb(cv2, [im], [g === 'f' ? 190 : 150, 560, 500, 412]); }
     }
     b.onclick = () => {
-      if (grp.key === 'weapon') { toast('무기는 옷과 함께 바뀝니다'); return; }
-      if (!it.ok(S)) { toast('잠김 · ' + it.how); return; }
+      if (weapon) { toast('무기는 옷과 함께 바뀝니다'); return; }
+      if (!isOpen(inf.how)) { toast('잠김 · ' + condText(inf.how)); return; }
       S.cos[grp.key] = it.id; knightSprite = null; buildCosGrid(); refreshHud(); save();
     };
     box.appendChild(b);
   }
+  setHtml($('cosLine'), line);
 }
 function drawCosPreview(t) {
   const c = $('cosPrev'); if (!c) return;
-  const g = c.getContext('2d'), sp = getKnightSprite(), sc = 1.75, W = 852, H = 540;
+  const g = c.getContext('2d'), sp = getKnightSprite(), sc = 1.62, W = 808, H = 480;
   g.setTransform(2, 0, 0, 2, 0, 0);
-  g.drawImage(bg, 24, 640, W, H, 0, 0, W, H);
-  const cx = W / 2 + (sp.ax - 0.5) * sp.w * sc * 0.5, fy = 492;
-  g.save(); g.translate(cx + (sp.lantern[0] - sp.ax) * sp.w * sc, fy - 20); g.scale(1, 0.6); glow(g, 0, 0, 330, lanternColor(), 0.34); g.restore();
-  drawShadow(g, cx, fy, sp.bw * sc * 0.62, 26, 0.6);
+  g.drawImage(bg, 46, 660, W, H, 0, 0, W, H);
+  const cx = W / 2 + (sp.ax - 0.5) * sp.w * sc * 0.5, fy = 438;
+  g.save(); g.translate(cx + (sp.lantern[0] - sp.ax) * sp.w * sc, fy - 20); g.scale(1, 0.6); glow(g, 0, 0, 310, lanternColor(), 0.34); g.restore();
+  drawShadow(g, cx, fy, sp.bw * sc * 0.62, 24, 0.6);
   if (S.cos.foot !== 'none') for (let i = 0; i < 7; i++) {
     const q = (t * 0.8 + i / 7) % 1;
     drawPart(g, { kind:S.cos.foot, x:cx + Math.sin(i * 2.4) * 90, y:fy + 4 - q * (S.cos.foot === 'leaf' ? 50 : 110), t:q, life:1, r:i });
@@ -1314,105 +1646,168 @@ function drawCosPreview(t) {
   const tt = titleText();
   outlined(g, S.name, 28, 40, 30, '#ece2c6', 'left'); if (tt) outlined(g, tt, 28, 78, 24, '#e8b25a', 'left');
 }
-function buildDex(box) {
+function buildDex(box) {               // 아직 잡지 못한 것은 그림을 불러오지 않는다
   MONSTERS.forEach((m, i) => {
-    const st = i + 1, n = S.kills[st] || 0, seen = n > 0, d = document.createElement('div');
-    d.className = 'dex' + (seen ? '' : ' un');
-    d.innerHTML = '<div class="pic"><img alt="" src="art/monsters/' + encodeURIComponent(m.file) + '.png"></div><div>' +
+    const st = i + 1, n = S.kills[st] || 0, seen = n > 0;
+    box.appendChild(el('div', 'dex' + (seen ? '' : ' un'), (seen ? '<div class="pic"><img alt="" src="' + assetUrl(monPath(st)) + '"></div>' : '<div class="pic q">?</div>') + '<div>' +
       '<div class="dn"><small>' + ZONE + '-' + st + (m.boss ? ' 보스' : '') + '</small>' + (seen ? m.name : '???') + '</div>' +
       '<div class="dt">' + (seen ? m.trait : '아직 잡지 못했다.') + '</div>' +
-      '<div class="dl">' + (seen ? '전리품: ' + m.loot + ' ' + (S.loot[st] || 0) + '개 · 잡은 수 ' + fmt(n) : '전리품: ???') + '</div></div>';
-    box.appendChild(d);
+      '<div class="dl">' + (seen ? '전리품: ' + m.loot + ' ' + (S.loot[st] || 0) + '개 · 잡은 수 ' + fmt(n) : '전리품: ???') + '</div></div>'));
   });
 }
 function buildStage(box) {
-  const tg = document.createElement('button'); tg.className = 'toggle' + (S.auto ? ' on' : '');
-  tg.innerHTML = '<span>자동 진행</span><b>' + (S.auto ? '켬' : '끔') + '</b>';
+  const tg = el('button', 'toggle' + (S.auto ? ' on' : ''), '<span>자동 진행</span><b>' + (S.auto ? '켬' : '끔') + '</b>');
   tg.onclick = () => { S.auto = !S.auto; if (S.auto && R.progress >= TUNE.KILLS_TO_CLEAR && S.stage < 10) R.advanceT = 0.3; openSheet('stage'); };
   box.appendChild(tg);
-  const n = document.createElement('div'); n.className = 'note'; n.textContent = '켜면 열 마리를 잡고 다음 길로 넘어갑니다. 끄면 이 길에 머뭅니다.'; box.appendChild(n);
-  const h = document.createElement('div'); h.className = 'sec'; h.textContent = ZONE + '구역 · ' + ZONE_NAME; box.appendChild(h);
-  const grid = document.createElement('div'); grid.className = 'grid'; box.appendChild(grid);
+  box.appendChild(el('div', 'note', '켜면 열 마리를 잡고 다음 길로 넘어갑니다. 끄면 이 길에 머뭅니다.'));
+  box.appendChild(el('div', 'sec', ZONE + '구역 · ' + ZONE_NAME));
+  const grid = box.appendChild(el('div', 'grid'));
   MONSTERS.forEach((m, i) => {
-    const st = i + 1, open = st <= S.maxStage, b = document.createElement('button');
-    b.className = 'opt' + (st === S.stage ? ' sel' : '') + (open ? '' : ' lock');
+    const st = i + 1, open = st <= S.maxStage, b = el('button', 'opt' + (st === S.stage ? ' sel' : '') + (open ? '' : ' lock'));
     b.innerHTML = (open ? '' : icon('lock')) + '<span><div class="on">' + ZONE + '-' + st + ' ' + (open ? m.short : '???') + '</div><div class="oh">' +
       (st === S.stage ? '지금 여기' : open ? (m.boss ? '우두머리 · 30초' : '갈 수 있음') : ZONE + '-' + (st - 1) + '을 깨면 열림') + '</div></span>';
     b.onclick = () => { if (!open) { toast(ZONE + '-' + (st - 1) + '을 깨면 열립니다'); return; } closeSheet(); if (st !== S.stage) gotoStage(st); };
     grid.appendChild(b);
   });
 }
+/* 일지: 길을 처음 깰 때마다 한 줄씩 적힌다. 새 글이 위에 온다. 본 장면은 여기서 다시 볼 수 있다 */
+const journalOpen = n => n < 10 ? S.maxStage > n : !!S.bossDone;
+function newJournal() { addLog('새 글이 적혔다', 'j'); S.jrNew = true; updateDots(); }
+function buildJournal(box) {
+  if (S.jrNew) { S.jrNew = false; updateDots(); save(); }
+  const open = TXT.일지.filter(j => journalOpen(j.스테이지)).sort((a, b) => b.스테이지 - a.스테이지), shut = TXT.일지.filter(j => !journalOpen(j.스테이지));
+  if (!open.length) box.appendChild(el('div', 'note', '길을 처음 깰 때마다 한 줄씩 적힙니다.'));
+  for (const j of open) box.appendChild(el('div', 'jr', '<div class="jh">' + stageLabel(j.스테이지) + '</div><div class="jt">' + escapeHtml(fill(j.글)) + '</div>'));
+  for (const j of shut) box.appendChild(el('div', 'jr un', '<div class="jh">' + ZONE + '-' + j.스테이지 + '</div><div class="jt">아직 쓰지 않았다</div>'));
+  box.appendChild(el('div', 'sec', '장면'));
+  const grid = box.appendChild(el('div', 'grid'));
+  for (const id of Object.keys(SCENES)) {
+    const sc = SCENES[id], seen = id === '여는장면' || !!S.scenes[id], b = el('button', 'opt' + (seen ? '' : ' lock'));
+    b.innerHTML = (seen ? '' : icon('lock')) + '<span><div class="on">' + (seen ? sc.제목 : '???') + '</div><div class="oh">' + (seen ? '다시 보기' : sc.언제) + '</div></span>';
+    b.onclick = () => { if (!seen) { toast(sc.언제 + ' 열립니다'); return; } closeSheet(); playScene(id); };
+    grid.appendChild(b);
+  }
+}
+function addToggle(box, label, on, note, fn) {
+  const tg = el('button', 'toggle' + (on ? ' on' : ''), '<span>' + label + '</span><b>' + (on ? '켬' : '끔') + '</b>');
+  tg.onclick = () => { fn(); save(); openSheet('set'); };
+  box.appendChild(tg); box.appendChild(el('div', 'note gap', note));
+}
 function buildSet(box) {
   box.innerHTML = '<div class="note" style="font-size:32px;color:var(--cream)">' + (S.gender === 'f' ? '여자 기사' : '남자 기사') + ' · ' + escapeHtml(S.name) + '</div>' +
-    '<div class="note">게임은 몇 초마다 저절로 저장됩니다.</div><div style="height:26px"></div>';
-  const tg = document.createElement('button'); tg.className = 'toggle' + (S.shake ? ' on' : '');
-  tg.innerHTML = '<span>화면 흔들림</span><b>' + (S.shake ? '켬' : '끔') + '</b>';
-  tg.onclick = () => { S.shake = !S.shake; save(); openSheet('set'); };
-  box.appendChild(tg);
-  const n2 = document.createElement('div'); n2.className = 'note'; n2.textContent = '치명타와 우두머리 싸움에서 화면이 살짝 흔들리고 잠깐 멈춥니다.'; box.appendChild(n2);
-  const tg2 = document.createElement('button'); tg2.className = 'toggle' + (S.cutin !== false ? ' on' : ''); tg2.style.marginTop = '16px';
-  tg2.innerHTML = '<span>스킬 연출</span><b>' + (S.cutin !== false ? '켬' : '끔') + '</b>';
-  tg2.onclick = () => { S.cutin = S.cutin === false; save(); openSheet('set'); };
-  box.appendChild(tg2);
-  const n3 = document.createElement('div'); n3.className = 'note'; n3.textContent = '기억의 일격을 쓸 때 눈매가 화면을 스쳐 지나갑니다.'; box.appendChild(n3);
-  const gap = document.createElement('div'); gap.style.height = '26px'; box.appendChild(gap);
-  const b = document.createElement('button'); b.className = 'btn'; b.textContent = '처음부터'; b.style.width = '100%';
+    '<div class="note gap">게임은 몇 초마다 저절로 저장됩니다.</div>';
+  addToggle(box, '소리', S.sound !== false, '때리는 소리와 알림 소리를 작게 냅니다. 음악은 없습니다.', () => { S.sound = S.sound === false; Snd.init(); });
+  addToggle(box, '화면 흔들림', !!S.shake, '치명타와 우두머리 싸움에서 화면이 살짝 흔들리고 잠깐 멈춥니다.', () => { S.shake = !S.shake; });
+  addToggle(box, '스킬 연출', S.cutin !== false, '기억의 일격을 쓸 때 눈매가 화면을 스쳐 지나갑니다.', () => { S.cutin = S.cutin === false; });
+  const again = el('button', 'btn wide', '여는 장면 다시 보기'); again.onclick = () => { closeSheet(); playScene('여는장면'); };
+  box.appendChild(again); box.appendChild(el('div', 'note gap', '다른 장면은 일지에서 다시 볼 수 있습니다.'));
+  addToggle(box, '꾸밈 모두 열기 (시험용)', !!S.openAll, '켜면 모든 꾸밈을 입어 볼 수 있습니다. 끄면 아직 얻지 못한 것은 벗겨집니다.', () => { S.openAll = !S.openAll; fixCos(); });
+  const b = el('button', 'btn wide', '처음부터');
   b.onclick = () => showCard('<h3>처음부터</h3><p>모은 것이 모두 사라집니다.</p><p>정말 처음부터 할까요?</p>', [{ text:'아니요', acc:true }, { text:'네, 지웁니다', fn:resetAll }]);
   box.appendChild(b);
 }
 
+/* ===================================================================== 이야기 카드 */
+/* 들판을 어둡게 덮고 카드를 한 장씩 보여 준다. 그동안 게임은 멈춘다. 화면 아무 곳이나 누르면 다음 장으로 넘어간다 */
+const fill = s => s.replace(/\{이름\}/g, S.name).replace(/\{형\}/g, S.gender === 'f' ? '누나' : '형').replace(/\{아저씨\}/g, S.gender === 'f' ? '누나' : '아저씨');
+const SCENES = { '여는장면':TXT.여는장면 }; for (const sc of TXT.장면) SCENES[sc.id] = sc;
+let story = null;
+function sceneGift(id) {               // 그 장면을 보면 얻는 꾸밈의 이름 (지금 기사 것)
+  for (const grp of COS_GROUPS) if (grp.kind) for (const it of grp.list) if (hasArt(it, S.gender)) { const inf = cosInfo(grp, it, S.gender); if (inf.how.indexOf(id + ' 장면') === 0) return inf.name; }
+  return '';
+}
+function queueScene(id, wait) { if (!R.sceneQ.some(q => q.id === id)) R.sceneQ.push({ id, t:wait || 0 }); }
+function queueDueScenes(wait) {        // 볼 때가 됐는데 아직 못 본 장면을 줄 세운다. 예전 저장도 다음에 길을 깰 때 여기서 걸린다
+  if (S.maxStage > 3 && !S.scenes['밥상']) queueScene('밥상', wait);          // 1-3을 처음 깼을 때
+  if (S.bossDone && !S.scenes['첫조각']) queueScene('첫조각', wait);          // 고블린 왕을 처음 쓰러뜨렸을 때
+}
+function playScene(id, onEnd) {
+  const sc = SCENES[id];
+  if (!sc || story) { if (onEnd) onEnd(); return; }
+  story = { id, cards:sc.카드, i:-1, onEnd, t:0 };
+  R.hold = true; closeSheet();
+  const intro = id === '여는장면'; if (intro) needHero(S.gender);
+  $('story').classList.toggle('intro', intro);
+  $('stBg').style.backgroundImage = intro ? 'url("' + assetUrl(heroPath(S.gender)) + '")' : 'none';   // 여는 장면에만 얼굴 그림을 아주 어둡게 깐다
+  setText($('stName'), sc.제목 || ''); $('story').classList.remove('hidden');
+  nextCard();
+}
+function nextCard() {
+  if (!story) return;
+  if (++story.i >= story.cards.length) return endScene();
+  const c = story.cards[story.i], box = $('stCard');
+  box.className = c.제목카드 ? 'title' : c.얻음 ? 'gift' : c.강조 ? 'big' : c.작게 ? 'small' : c.말하는이 ? 'say' : '';
+  setText($('stWho'), c.말하는이 ? fill(c.말하는이) : '');
+  setText($('stText'), c.말하는이 ? '“' + fill(c.글) + '”' : fill(c.글));
+  setText($('stSub'), c.얻음 ? sceneGift(story.id) : '');
+  setText($('stCount'), (story.i + 1) + ' / ' + story.cards.length);
+  $('stHint').classList.toggle('hidden', story.i > 0);
+  box.style.animation = 'none'; void box.offsetWidth; box.style.animation = '';        // 장마다 스르륵 나타나게
+  story.t = performance.now();
+}
+function endScene() {                  // 끝까지 봤거나 건너뛰었다. 어느 쪽이든 본 것으로 적는다
+  if (!story) return;
+  const st = story; story = null; $('story').classList.add('hidden'); R.hold = false;
+  S.scenes[st.id] = 1; if (st.id === '여는장면') S.introDone = true;
+  checkUnlocks(); save(); refreshHud();
+  if (st.onEnd) st.onEnd();
+}
+
 /* ===================================================================== 카드와 시작 화면 */
-function showCard(html, buttons) {
+function showCard(html, buttons) {     // 가운데 뜨는 물음 카드 (브라우저의 알림 창은 쓰지 않는다)
   $('cardBox').innerHTML = html + '<div class="btns"></div>';
   const row = $('cardBox').querySelector('.btns');
   for (const b of buttons) {
-    const el = document.createElement('button'); el.className = 'btn' + (b.acc ? ' acc' : ''); el.textContent = b.text;
-    el.onclick = () => { $('modal').classList.add('hidden'); if (b.fn) b.fn(); };
-    row.appendChild(el);
+    const e = el('button', 'btn' + (b.acc ? ' acc' : ''), b.text);
+    e.onclick = () => { $('modal').classList.add('hidden'); if (b.fn) b.fn(); };
+    row.appendChild(e);
   }
   $('modal').classList.remove('hidden');
-}
-function showStory() {
-  const call = S.gender === 'f' ? '누나!' : '형!';
-  showCard('<h3>기억 조각</h3><p>첫 번째 기억 조각을 되찾았다.</p><p>미로가 달려와 안긴다.</p><p>“' + call + '”</p><p class="small">2구역은 나중에 열립니다.</p>',
-    [{ text:'계속하기', acc:true }]);
 }
 function resetAll() {
   try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
   S = freshSave(); knightSprite = null; R.mons = []; R.floats = []; R.parts = []; R.fx = []; R.banner = null; R.cut = null; R.pend = null; R.progress = 0; R.log = []; R.logDirty = true;
+  R.sceneQ = []; R.hold = false; R.lastAtk = null; story = null; $('story').classList.add('hidden');
   for (const sk of SKILLS) R.cd[sk.id] = 0;
   R.k.x = FW / 2; R.k.y = 900; R.k.dead = false; R.k.target = null;
-  closeSheet(); buildSkills(); openStart();
+  closeSheet(); checkUnlocks(true); updateDots(); buildSkills(); openStart();
 }
-const escapeHtml = s => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
 let startGender = 'm';
 function drawStartPreviews() {
+  $('start').style.setProperty('--hero', 'url("' + assetUrl(heroPath(startGender)) + '")');   // 고른 기사의 얼굴을 뒤에 깐다
   document.querySelectorAll('.gBtn').forEach(b => {
     const c = b.querySelector('canvas'), g = c.getContext('2d'), a = knightArt(b.dataset.g, BASIC_LOOK), h = 270 * a.hMul, w = h * a.aspect;
     g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, 260, 330);
+    b.classList.toggle('sel', b.dataset.g === startGender);
+    if (a.pending) return;
     const x0 = 130 - w / 2, y0 = 312 - h;
     drawShadow(g, x0 + a.ax * w, 306, 80, 18, 0.6);
     const t = mk(w * 2, h * 2); a.paint(t.getContext('2d'), t.width, t.height);
     g.imageSmoothingQuality = 'high'; g.drawImage(t, x0, y0, w, h);
     glow(g, x0 + a.lantern[0] * w, y0 + a.lantern[1] * h, 56, '#f0983c', 0.5);
-    b.classList.toggle('sel', b.dataset.g === startGender);
   });
 }
 function redrawStatic() { if (!$('start').classList.contains('hidden')) drawStartPreviews(); }
 function openStart() {
   R.paused = true; startGender = S.gender; $('nameIn').value = S.name || '루';
+  loadLook('m', BASIC_LOOK); loadLook('f', BASIC_LOOK);
   $('start').classList.remove('hidden'); drawStartPreviews();
 }
 function startGame() {
-  S.gender = startGender; S.name = ($('nameIn').value || '').trim().slice(0, 8) || '루'; S.started = true; setHeroFace();
-  knightSprite = null; $('start').classList.add('hidden'); R.paused = false;
-  R.k.hp = kMax(); buildSkills(); addLog(ZONE_NAME + '에 들어섰다', 'd'); gotoStage(S.stage); save();
+  Snd.init();
+  S.gender = startGender; S.name = ($('nameIn').value || '').trim().slice(0, 8) || '루'; S.started = true;
+  setHeroFace(); fixCos(); checkUnlocks(true); knightSprite = null; $('start').classList.add('hidden'); save();
+  if (!S.introDone) playScene('여는장면', beginGame); else beginGame();      // 새 게임은 여는 장면부터
+}
+function beginGame() {
+  R.paused = false; R.k.hp = kMax(); buildSkills(); addLog(ZONE_NAME + '에 들어섰다', 'd'); gotoStage(S.stage); save();
 }
 
 /* 쉬는 동안 모은 골드: 최대 30분어치 */
 function offlineReward(sec) {
-  if (!S.started || sec < 60) return;
+  if (!S.started || sec < 60 || R.hold) return;
   const g = Math.floor(Math.min(sec, TUNE.OFFLINE_CAP_MIN * 60) / TUNE.OFFLINE_SEC_PER_KILL) * goldOf(Math.min(S.stage, 9));
   if (g <= 0) return;
   S.gold += g; save(); addLog('쉬는 동안 +' + fmt(g) + ' 골드', 'g'); refreshHud();
@@ -1420,11 +1815,13 @@ function offlineReward(sec) {
 }
 
 /* ===================================================================== 시작 */
-function fit() {
-  const s = Math.min(innerWidth / 900, innerHeight / 1600);
+function fit() {                       // 화면(바깥 틀이 안전 영역만큼 줄여 준 크기)에 9:16 판을 맞춘다
+  const a = $('app'), w = a.clientWidth || innerWidth, h = a.clientHeight || innerHeight;
+  const s = Math.min(w / 900, h / 1600);
   $('stage').style.transform = 'translate(-50%,-50%) scale(' + s + ')';
   viewQ = clamp(s * (window.devicePixelRatio || 1), 1, 1.6);
-  cv.width = Math.round(FW * viewQ); cv.height = Math.round(FH * viewQ);
+  const cw = Math.round(FW * viewQ), ch = Math.round(FH * viewQ);
+  if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 }
 let lastT = 0;
@@ -1432,10 +1829,14 @@ function frame(t) {
   requestAnimationFrame(frame);
   const p0 = performance.now(), dt = Math.min(0.1, Math.max(0, (t - lastT) / 1000)); lastT = t;      // 탭이 가려졌다 돌아와도 튀지 않게
   R.frameN++;
-  if (!R.paused) {
+  if (!R.paused && !R.hold) {                              // 이야기 카드가 떠 있는 동안(hold)은 들판이 멈춘다
     if (R.stop > 0) R.stop -= dt; else for (let i = 0; i < SPEED; i++) update(dt);   // 짧은 멈춤(히트 스톱)
     R.saveT += dt; if (R.saveT > TUNE.SAVE_EVERY) { R.saveT = 0; save(); }
     R.uiT += dt; if (R.uiT > 0.12) { R.uiT = 0; refreshHud(); if (!R.low) drawMini(); }
+    if (R.sceneQ.length && !R.hold && !R.sheet && $('modal').classList.contains('hidden')) {        // 기다리던 장면: 열린 창이 없을 때 시작한다
+      const q = R.sceneQ[0]; q.t -= dt;
+      if (q.t <= 0) { R.sceneQ.shift(); playScene(q.id); }
+    }
   }
   $('face').classList.toggle('hit', R.k.flash > 0 && !R.k.dead); $('face').classList.toggle('down', R.k.dead);   // 맞으면 테가 붉게, 쓰러지면 잿빛
   if (R.low && R.frameN % 10) return;                                         // 절전: 그림은 드물게만 그린다
@@ -1447,16 +1848,17 @@ function frame(t) {
 function init() {
   cv = $('cv'); ctx = cv.getContext('2d');
   document.querySelectorAll('[data-ic]').forEach(e => { e.outerHTML = icon(e.dataset.ic); });
-  load(); bg = makeBackground(); fg = makeCanopy(); fit(); addEventListener('resize', fit);
-  for (const k of ['m', 'f']) { const im = heroImgs[k]; im.eyeY = HERO_EYES[k]; im.onload = () => { im.ok = true; }; im.src = 'art/ui/' + encodeURIComponent('영웅-얼굴' + (k === 'f' ? '-여' : '')) + '.png'; }
-  setHeroFace();
-  loadKnightImages(); for (let i = 1; i <= 10; i++) loadMonster(i);
-  buildSkills();
+  load(); fixCos();
+  const away = (Date.now() - (S.last || Date.now())) / 1000;
+  bg = makeBackground(); fg = makeCanopy(); fit(); addEventListener('resize', fit);
+  try { if (window.ResizeObserver) new ResizeObserver(fit).observe($('app')); } catch (e) {}
+  setHeroFace(); buildSkills();
 
+  // 소리는 화면을 처음 누른 뒤에 켠다. 단추를 누르면 작게 톡 소리가 난다
+  document.addEventListener('pointerdown', e => { Snd.init(); if (e.target && e.target.closest && e.target.closest('button')) Snd.tap(); }, true);
   $('stagePill').onclick = () => openSheet('stage');
   document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openSheet(b.dataset.open));
   $('bMore').onclick = () => { $('menu2').classList.toggle('hidden'); $('bMore').classList.toggle('on', !$('menu2').classList.contains('hidden')); };
-  $('bJournal').onclick = () => showCard('<h3>일지</h3><p>준비 중입니다.</p><p class="small">길을 처음 깰 때마다 한 줄씩 열립니다.</p>', [{ text:'닫기', acc:true }]);
   $('bLow').onclick = () => { R.low = true; $('lowOv').classList.remove('hidden'); };
   $('lowOv').onclick = () => { R.low = false; $('lowOv').classList.add('hidden'); };
   $('autoSk').onclick = () => { S.autoSkill = !S.autoSkill; refreshHud(); };
@@ -1465,7 +1867,13 @@ function init() {
   $('hintUp').onclick = () => openSheet('up');
   $('hintGoal').onclick = () => openSheet('stage');
   $('sheetClose').onclick = closeSheet;
-  $('sheetWrap').addEventListener('pointerdown', e => { if (e.target === $('sheetWrap')) closeSheet(); });
+  $('sheetWrap').addEventListener('click', e => { if (e.target === $('sheetWrap')) closeSheet(); });
+  $('story').addEventListener('click', e => {               // 이야기 카드: 아무 곳이나 누르면 다음 장 (손을 뗄 때 넘긴다. 밑에 있는 단추가 같이 눌리지 않게)
+    if (!story || (e.target.closest && e.target.closest('#stSkip'))) return;
+    if (performance.now() - story.t < 260) return;         // 너무 빨리 두 번 눌려서 한 장을 건너뛰지 않게
+    Snd.card(); nextCard();
+  });
+  $('stSkip').onclick = endScene;
   document.querySelectorAll('.gBtn').forEach(b => b.onclick = () => { startGender = b.dataset.g; drawStartPreviews(); });
   $('goBtn').onclick = startGame;
   $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
@@ -1479,9 +1887,9 @@ function init() {
   addEventListener('pagehide', () => { if (S.started) save(); });
 
   if (DEBUG) {
-    window.__g = { get S() { return S; }, R, TUNE, buy, gotoStage, setMaxStage, openSheet };
+    window.__g = { get S() { return S; }, R, TUNE, buy, gotoStage, setMaxStage, openSheet, checkUnlocks, playScene, skipStory:endScene, Snd, castSkill, SKILLS, get story() { return story; }, knightImgs, monSprites };
     addEventListener('keydown', e => {
-      if (e.target === $('nameIn') || R.paused) return;
+      if (e.target === $('nameIn') || R.paused || R.hold) return;
       if (e.key === 'n' || e.key === 'N') {             // 스테이지 넘기기
         if (S.stage === 10) { const b = R.mons.find(m => m.def.boss && !m.dead); if (b) { b.hp = 0; killMonster(b); } }
         else { S.kills[S.stage] = S.kills[S.stage] || 1; setMaxStage(S.stage + 1); gotoStage(S.stage + 1); }
@@ -1491,9 +1899,10 @@ function init() {
   }
 
   if (S.started) {
-    const away = (Date.now() - (S.last || Date.now())) / 1000;
-    R.paused = false; R.k.hp = kMax(); addLog('다시 길에 섰다', 'd'); gotoStage(S.stage); offlineReward(away);
-  } else openStart();
+    checkUnlocks(); updateDots();                          // 예전 저장이면 그동안 채운 꾸밈을 여기서 한꺼번에 알려 준다
+    const go = () => { R.paused = false; R.k.hp = kMax(); addLog('다시 길에 섰다', 'd'); gotoStage(S.stage); offlineReward(away); };
+    if (!S.introDone) { R.paused = true; playScene('여는장면', go); } else go();     // 여는 장면을 보다가 나갔으면 이어서 보여 준다
+  } else { checkUnlocks(true); openStart(); }
   refreshHud();
   requestAnimationFrame(t => { lastT = t; frame(t); });
 }
