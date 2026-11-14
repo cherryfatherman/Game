@@ -3,7 +3,7 @@
 
   python3 tools/cutout.py 입력.png 출력.png [--flip]
 
-- 가장자리와 이어진 종이색만 지운다. 몸 안의 밝은 부분(배, 이빨)은 남긴다.
+- 가장자리와 이어진 종이색, 그리고 다리 사이처럼 갇힌 순백 덩어리를 지운다. 몸 안의 밝은 부분(배, 이빨)은 남긴다.
 - 발밑의 푸른 안개는 반투명으로 남긴다.
 - --flip 을 주면 좌우를 뒤집는다(오른쪽을 보는 그림을 왼쪽으로).
 """
@@ -13,6 +13,8 @@ import numpy as np
 
 LOW, HIGH = 14, 70   # 종이색에서 이만큼 다르면 반투명 시작 / 완전 불투명
 NEAR = 26            # 틈새를 따라 들어갈 때 종이로 보는 한계
+POCKET = 10          # 갇힌 틈에서 종이로 보는 한계(거의 순백만)
+POCKET_AREA = 60     # 이 넓이(픽셀)보다 큰 갇힌 흰 덩어리만 지운다
 
 
 def cutout(src, dst, flip=False, size=1024):
@@ -48,6 +50,22 @@ def cutout(src, dst, flip=False, size=1024):
             if near.getpixel((x, y)) == 255:
                 ImageDraw.floodfill(near, (x, y), 128)
     bg = np.asarray(near.point(lambda v: 255 if v == 128 else 0).filter(ImageFilter.MaxFilter(3))) > 0
+    # 다리 사이, 팔과 몸 사이처럼 사방이 막힌 곳에 갇힌 종이색도 지운다.
+    # 눈의 반짝임이나 이빨 같은 작은 흰 점은 남기려고, 일정 넓이가 넘는 덩어리만 지운다.
+    pocket = Image.fromarray(np.where((dist < POCKET) & ~bg, 255, 0).astype(np.uint8)).copy()
+    holes = np.zeros(dist.shape, bool)
+    while True:
+        left = np.argwhere(np.asarray(pocket) == 255)
+        if not len(left):
+            break
+        y0, x0 = left[0]
+        ImageDraw.floodfill(pocket, (int(x0), int(y0)), 128)
+        comp = np.asarray(pocket) == 128
+        if comp.sum() >= POCKET_AREA:
+            holes |= comp
+        pocket = Image.fromarray(np.where(comp, 0, np.asarray(pocket)).astype(np.uint8)).copy()
+    if holes.any():
+        bg = bg | (np.asarray(Image.fromarray((holes * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))) > 0)
     alpha = np.full(dist.shape, 255.0)
     soft = np.clip((dist - LOW) / (HIGH - LOW), 0, 1) * 255
     alpha[bg] = soft[bg]
