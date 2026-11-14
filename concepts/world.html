@@ -1,0 +1,213 @@
+<title>기사키우기 세계관</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* 구성: 밤에 잠긴 왕국을 아래(고향)에서 위(밤의 뿌리)로 오르는 한 줄기 길. 봉화가 켜진 곳만 따뜻한 색이 된다. 한 가지 밤 분위기로 고정한 디자인. */
+:root {
+  color-scheme: dark;
+  --night: #10131f;        /* 바탕: 해가 뜨지 않는 하늘 */
+  --slate: #1a2033;        /* 면: 꺼진 땅 */
+  --slate-hi: #262e47;     /* 면 테두리·구분선 */
+  --mist: #8d97b5;         /* 흐린 글자 */
+  --moon: #e4e8f4;         /* 본문 글자 */
+  --beacon: #f2a93b;       /* 봉화 불빛: 켜진 것에만 쓴다 */
+  --beacon-soft: #3a2a14;  /* 봉화 불빛이 닿은 면 */
+  --blood: #c8504a;        /* 보스 표시 */
+  --display: "Gowun Batang", "Nanum Myeongjo", "Batang", serif;
+  --body: "Gowun Dodum", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--night); color: var(--moon); font-family: var(--body); font-size: 15px; line-height: 1.65; }
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; line-height: 1.25; }
+h2 { font-size: 21px; }
+h3 { font-size: 18px; }
+p { margin: 0; max-width: 34em; }
+.eyebrow { font-size: 12px; letter-spacing: 0.14em; color: var(--mist); }
+section { display: flex; flex-direction: column; gap: 14px; }
+.lead { font-family: var(--display); font-size: 17px; color: var(--moon); }
+.dim { color: var(--mist); }
+
+.names { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.name { background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 6px; padding: 12px 14px; min-width: 0; }
+.name b { font-family: var(--display); font-size: 17px; display: block; }
+.name span { font-size: 13px; color: var(--mist); }
+.name.pick { border-color: var(--beacon); background: var(--beacon-soft); }
+.name.pick em { font-style: normal; font-size: 11px; color: var(--beacon); letter-spacing: 0.1em; }
+
+.rule { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.rule div { background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 4px; text-align: center; padding: 6px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.rule .b { border-color: var(--blood); color: var(--blood); font-weight: 700; }
+ul.plain { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; max-width: 36em; }
+
+.mapbox { background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 8px; padding: 8px; }
+svg.map { width: 100%; height: auto; display: block; max-width: 520px; margin: 0 auto; }
+.map .road { fill: none; stroke: var(--slate-hi); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 2 9; }
+.map .node { cursor: pointer; }
+.map .node circle { fill: var(--night); stroke: var(--mist); stroke-width: 1.5; }
+.map .node text { fill: var(--mist); font-family: var(--body); font-size: 10.5px; text-anchor: middle; }
+.map .node .n { font-size: 11px; font-weight: 700; }
+.map .node.lit circle { fill: var(--beacon); stroke: var(--beacon); }
+.map .node.lit .n { fill: var(--night); }
+.map .node.lit text.l { fill: var(--beacon); }
+.map .node.now circle { stroke: var(--moon); stroke-width: 2.5; }
+.map .node.now text { fill: var(--moon); }
+.map .node:focus-visible circle { stroke: var(--beacon); stroke-width: 3; }
+.map .deco { fill: none; stroke: var(--slate-hi); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; color: var(--mist); }
+button { font: inherit; color: var(--moon); background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--mist); }
+button:focus-visible, .stage.boss:focus-visible { outline: 2px solid var(--beacon); outline-offset: 2px; }
+
+.chapter { border-top: 1px solid var(--slate-hi); padding-top: 22px; scroll-margin-top: 16px; }
+.chapter header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.chapter .num { font-family: var(--display); font-size: 34px; line-height: 1; color: var(--mist); font-variant-numeric: tabular-nums; }
+.chapter .state { font-size: 12px; letter-spacing: 0.08em; color: var(--mist); margin-left: auto; }
+.chapter.lit .num, .chapter.lit .state { color: var(--beacon); }
+.chapter.now .num, .chapter.now .state { color: var(--moon); }
+.stages { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 6px; }
+.stage { background: var(--slate); border: 1px solid var(--slate-hi); border-radius: 5px; padding: 7px 10px; min-width: 0; display: flex; flex-direction: column; text-align: left; }
+.stage i { font-style: normal; font-size: 11px; color: var(--mist); font-variant-numeric: tabular-nums; }
+.stage b { font-weight: 400; font-size: 14px; overflow-wrap: anywhere; }
+.stage.boss { border-color: var(--blood); color: var(--moon); font: inherit; }
+.stage.boss i { color: var(--blood); }
+.stage.boss b { font-family: var(--display); font-weight: 700; }
+.chapter.lit .stage.boss { border-color: var(--beacon); background: var(--beacon-soft); }
+.chapter.lit .stage.boss i { color: var(--beacon); }
+.chapter.locked .stages, .chapter.locked p { opacity: 0.45; }
+.stage.boss[disabled] { cursor: default; }
+.spare { font-size: 14px; color: var(--mist); max-width: 40em; }
+@media (prefers-reduced-motion: no-preference) {
+  .map .node.lit circle { animation: flicker 2.6s ease-in-out infinite; }
+  @keyframes flicker { 50% { fill: #ffc56a; } }
+}
+</style>
+
+<div class="wrap">
+  <section>
+    <div class="eyebrow">세계관 초안 · 2D 키우기 게임</div>
+    <h1>해가 뜨지 않는 왕국에서, 수습기사 한 명이 봉화 열 개를 다시 켠다</h1>
+    <p class="lead">아스텔 왕국에는 길을 따라 열 개의 봉화가 서 있었다. 봉화가 켜져 있는 동안은 밤이 되어도 괴물이 길을 넘보지 못했다.</p>
+    <p>어느 날 밤의 왕이 봉화를 하나씩 꺼뜨렸고, 그날부터 아침이 오지 않았다. 사람들은 이때를 긴 밤이라고 부른다. 왕국을 지키던 새벽 기사단은 왕성에서 마지막으로 싸우다 쓰러졌다.</p>
+    <p>주인공은 그 기사단에 막 들어갔던 수습기사다. 녹슨 갑옷 한 벌과 서약의 검만 들고 고향 숲에서 출발해, 봉화를 지키는 괴물을 쓰러뜨리고 불을 다시 붙이며 왕성 아래 밤의 뿌리까지 간다.</p>
+  </section>
+
+  <section>
+    <h2>이름 후보</h2>
+    <div class="names">
+      <div class="name pick"><em>추천</em><b>녹슨 기사 키우기</b><span>녹슨 갑옷이 강화할수록 빛나는 모습으로 바뀐다. 성장이 눈에 보이고, 이름이 덜 흔하다.</span></div>
+      <div class="name"><b>기사키우기</b><span>짧고 외우기 쉽다. 흔한 조합이라 검색에서 묻히기 쉽고, 같은 이름이 있는지 확인이 필요하다.</span></div>
+      <div class="name"><b>봉화기사 키우기</b><span>세계관과 바로 이어진다. 봉화라는 말이 조금 낯설 수 있다.</span></div>
+      <div class="name"><b>긴 밤의 기사</b><span>분위기는 가장 좋다. 키우기 게임이라는 점이 이름에서 드러나지 않는다.</span></div>
+      <div class="name"><b>마지막 수습기사</b><span>주인공이 누구인지 바로 전한다. 이야기 게임처럼 들릴 수 있다.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>진행 규칙</h2>
+    <div class="rule" aria-hidden="true">
+      <div>1-1</div><div>1-2</div><div>1-3</div><div>1-4</div><div>1-5</div><div>1-6</div><div>1-7</div><div>1-8</div><div>1-9</div><div class="b">1-10</div>
+    </div>
+    <ul class="plain">
+      <li>구역마다 스테이지가 10개다. 1번부터 9번까지는 몬스터가 한 종씩 나오고, 10번은 보스다.</li>
+      <li>보스를 쓰러뜨리면 그 구역의 봉화가 켜지고 다음 구역의 1번 스테이지가 열린다.</li>
+      <li>한 번 열린 스테이지는 언제든 자유롭게 오갈 수 있다. 골드나 재료가 필요하면 앞 구역으로 돌아가 사냥한다.</li>
+      <li>전체는 10구역 100스테이지, 몬스터 90종과 보스 10종이다.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>왕국 지도</h2>
+    <p class="dim">아래 고향 숲에서 출발해 위쪽 밤의 뿌리까지 올라간다. 구역을 누르면 설명으로 이동한다. 각 구역의 보스 칸을 누르면 봉화가 켜지는 모습을 볼 수 있다.</p>
+    <div class="mapbox"><svg class="map" id="map" viewBox="0 0 360 430" role="group" aria-label="아스텔 왕국 지도"></svg></div>
+    <div class="status"><span id="statusText"></span><button id="reset" type="button">처음부터 다시 보기</button></div>
+  </section>
+
+  <div id="chapters" style="display:flex;flex-direction:column;gap:28px"></div>
+
+  <section>
+    <h2>예비 명단</h2>
+    <p class="spare" id="spare"></p>
+    <p class="dim">예비 몬스터는 색만 바꾼 변종, 이벤트 던전, 나중에 추가할 구역에 쓴다.</p>
+  </section>
+</div>
+
+<script id="world" type="application/json">
+{
+ "chapters": [
+  {"name":"이슬숲 길","lore":"수습기사가 자란 마을 뒤편의 숲이다. 첫 봉화가 꺼지자 벌레와 짐승이 몸집을 불렸고, 고블린 무리가 길목을 차지했다.",
+   "mobs":["달팽이","슬라임","말벌 떼","거대 사마귀","독버섯","멧돼지","늑대","고블린","홉고블린"],"boss":"고블린 왕","bossNote":"꺼진 봉화대를 왕좌로 삼았다"},
+  {"name":"옛 왕도 수로","lore":"성벽 아래로 숨어드는 버려진 물길이다. 큰길이 막힌 뒤로는 이곳이 왕도로 가는 유일한 길이 되었다.",
+   "mobs":["거대 쥐","거머리","거대 두꺼비","거대 게","흡혈 박쥐","거대 지네","웨어랫","촌촌","상자 괴물"],"boss":"수로의 촉수","bossNote":"물길 전체를 몸으로 막고 있다"},
+  {"name":"잠 못 드는 묘지","lore":"긴 밤 첫해에 죽은 사람들이 묻힌 곳이다. 아침이 오지 않아 아무도 잠들지 못하고 밤마다 일어나 걷는다.",
+   "mobs":["좀비","해골 병사","해골 궁수","해골 개","구울","유령","도깨비불","밴시","레이스"],"boss":"듀라한","bossNote":"제 목을 들고 묘지를 순찰하는 목 없는 기사"},
+  {"name":"무너진 은광","lore":"기사단의 검을 벼리던 은이 나던 광산이다. 광부들이 떠난 갱도를 굴 파는 것들이 넓혀 놓았다.",
+   "mobs":["코볼트","그렘린","거대 거미","거대 전갈","리자드맨","트롤","오우거","돌 골렘","바실리스크"],"boss":"미노타우로스","bossNote":"갱도를 미궁으로 바꿔 놓았다"},
+  {"name":"바람고개","lore":"산맥을 넘는 고갯길이다. 봉화가 꺼진 뒤로 날개 달린 것들이 하늘을 차지하고 지나는 사람을 사냥한다.",
+   "mobs":["오크","오크 주술사","하피","켄타우로스","그리핀","사이클롭스","만티코어","키메라","와이번"],"boss":"타이탄","bossNote":"사슬이 풀린 옛 거인"},
+  {"name":"달빛 숲","lore":"밤이 길어지자 요정들이 제멋대로 자란 숲이다. 아름답지만 이곳의 장난은 목숨을 건다.",
+   "mobs":["픽시","임프","레드캡","맨드레이크","버섯 괴물","드라이어드","켈피","유니콘","트리언트"],"boss":"나방 여왕","bossNote":"봉화 불빛을 먹고 자랐다"},
+  {"name":"가라앉은 항구","lore":"밀물이 들어온 뒤 물러가지 않아 잠겨 버린 항구 도시다. 동쪽으로 가는 배는 여기서만 뜬다.",
+   "mobs":["식인 물고기","가시복어","머맨","인어","세이렌","상어","라미아","시 서펀트","히드라"],"boss":"크라켄","bossNote":"마지막 배의 돛대를 쥐고 있다"},
+  {"name":"안개 너머 땅","lore":"배를 타고 안개를 건너면 닿는 동쪽 나라다. 긴 밤은 이곳에서 다른 이름의 괴물들을 낳았다.",
+   "mobs":["도깨비","갓파","강시","처녀귀신","텐구","구미호","오니","불가사리","저승사자"],"boss":"이무기","bossNote":"용이 되지 못한 큰 뱀"},
+  {"name":"검은 성","lore":"아스텔의 옛 왕성이다. 새벽 기사단이 마지막으로 싸운 곳이고, 쓰러진 기사들이 아직 성을 지키고 있다.",
+   "mobs":["살아 있는 검","살아 있는 갑옷","가고일","호문쿨루스","마녀","늑대인간","뱀파이어","철 골렘","죽음의 기사"],"boss":"리치","bossNote":"밤의 왕에게 넘어간 옛 궁정 마법사"},
+  {"name":"밤의 뿌리","lore":"왕성 아래로 뚫린 깊은 구멍이다. 긴 밤이 시작된 곳이고, 마지막 봉화가 여기 묻혀 있다.",
+   "mobs":["섀도","헬하운드","나이트메어","불의 정령","서큐버스","데빌","케르베로스","데몬","드래곤"],"boss":"밤의 왕","bossNote":"봉화를 꺼뜨린 장본인"}
+ ],
+ "spare": ["민달팽이","거대 박쥐","독사","까마귀 떼","그루터기 괴물","식인 식물","가시덤불 괴물","고블린 궁수","고블린 경비병","다이어울프","늪거북","말미잘 괴물","독안개","진흙 골렘","물의 정령","해골 마법사","미라","허수아비","묘지기","와이트","블랙독","노움","땅의 정령","코카트리스","에틴","수정 골렘","히포그리프","사티로스","거인","바람의 정령","스핑크스","레프러콘","보가트","스프리건","푸카","페가수스","거대 나방","거대 문어","나가","누켈라비","웜","살아 있는 가면","살점 골렘","증기 골렘","흑마법사","웨어베어","망령 기사","바게스트","두억시니","어둑시니","그슨대","떠도는 눈알","인큐버스","메두사","드레이크","그림 리퍼"]
+}
+</script>
+<script>
+const W = JSON.parse(document.getElementById('world').textContent);
+const POS = [[62,392],[172,372],[286,340],[296,268],[196,246],[84,226],[62,150],[164,120],[266,98],[298,34]];
+const NS = 'http://www.w3.org/2000/svg';
+let lit = 0; // 켜진 봉화 수
+const el = (tag, attrs = {}, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; return e; };
+
+function buildMap() {
+  const svg = document.getElementById('map');
+  let d = `M ${POS[0][0]} ${POS[0][1]}`;
+  for (let i = 1; i < POS.length; i++) { const [x0, y0] = POS[i - 1], [x1, y1] = POS[i]; d += ` Q ${(x0 + x1) / 2 + (y1 - y0) * 0.2} ${(y0 + y1) / 2 - (x1 - x0) * 0.2} ${x1} ${y1}`; }
+  // 산맥(바람고개 옆)과 물결(항구 옆): 지도 위 지형 표시
+  svg.append(el('path', { class: 'deco', d: 'M118 262 l14 -22 l12 16 l12 -24 l16 30' }), el('path', { class: 'deco', d: 'M228 262 l10 -16 l10 14' }));
+  for (const y of [150, 162, 174]) svg.append(el('path', { class: 'deco', d: `M100 ${y} q7 -6 14 0 t14 0 t14 0` }));
+  svg.append(el('path', { class: 'deco', d: 'M20 410 q8 -26 16 0 M30 414 q9 -30 18 0 M96 418 q8 -24 16 0' }));
+  svg.append(el('path', { class: 'road', d }));
+  W.chapters.forEach((c, i) => {
+    const g = el('g', { class: 'node', tabindex: 0, role: 'link', 'aria-label': `${i + 1}구역 ${c.name}`, 'data-i': i });
+    g.append(el('circle', { cx: POS[i][0], cy: POS[i][1], r: 12 }), el('text', { class: 'n', x: POS[i][0], y: POS[i][1] + 4 }, i + 1), el('text', { class: 'l', x: POS[i][0], y: POS[i][1] + 27 }, c.name));
+    const go = () => document.getElementById('c' + (i + 1)).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    g.addEventListener('click', go); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    svg.append(g);
+  });
+}
+function buildChapters() {
+  const box = document.getElementById('chapters');
+  W.chapters.forEach((c, i) => {
+    const n = i + 1, s = document.createElement('section');
+    s.className = 'chapter'; s.id = 'c' + n;
+    s.innerHTML = `<header><span class="num">${String(n).padStart(2, '0')}</span><h3>${c.name}</h3><span class="state"></span></header><p>${c.lore}</p>
+      <div class="stages">${c.mobs.map((m, k) => `<div class="stage"><i>${n}-${k + 1}</i><b>${m}</b></div>`).join('')}
+      <button type="button" class="stage boss" id="boss${n}"><i>${n}-10 · 보스</i><b>${c.boss}</b><i>${c.bossNote}</i></button></div>`;
+    s.querySelector('.boss').addEventListener('click', () => { if (lit === i) { lit = n; paint(); } });
+    box.append(s);
+  });
+  document.getElementById('spare').textContent = W.spare.join(', ');
+}
+function paint() {
+  document.querySelectorAll('.map .node').forEach((g, i) => { g.classList.toggle('lit', i < lit); g.classList.toggle('now', i === lit); });
+  document.querySelectorAll('.chapter').forEach((s, i) => {
+    s.classList.toggle('lit', i < lit); s.classList.toggle('now', i === lit); s.classList.toggle('locked', i > lit);
+    s.querySelector('.state').textContent = i < lit ? '봉화 켜짐 · 자유롭게 오갈 수 있음' : i === lit ? '지금 도전 중 · 보스 칸을 눌러 봉화 켜기' : `${i}구역 보스를 잡으면 열림`;
+    s.querySelector('.boss').disabled = i !== lit;
+  });
+  document.getElementById('statusText').textContent = lit === 10 ? '봉화 10개가 모두 켜졌다. 긴 밤이 끝난다.' : `켜진 봉화 ${lit}개 · 지금 갈 수 있는 곳은 1구역부터 ${lit + 1}구역까지`;
+}
+document.getElementById('reset').addEventListener('click', () => { lit = 0; paint(); });
+buildMap(); buildChapters(); paint();
+</script>
