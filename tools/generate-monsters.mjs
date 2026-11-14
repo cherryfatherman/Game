@@ -12,7 +12,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'art', 'monsters');
-const MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';
+const MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-nano-banana-2.1';
 const KEY = process.env.GEMINI_API_KEY;
 const WAIT_MS = Number(process.env.GEMINI_WAIT_MS || 4000); // 주문 사이 쉬는 시간
 
