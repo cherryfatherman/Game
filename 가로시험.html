@@ -25,8 +25,9 @@ let weapon = 0;
 
 // 발판: x, y(윗면), 그림, 그림 안에서 윗면이 있는 y, 딛는 폭
 // 그림 두 벌: 가 = 기사 그림체로 통일, 나 = 몬스터 그림체(유화풍)로 통일. 왼쪽 아래 단추로 바꾼다.
-let SET = '나';
-const TOP = { 가: { ground: 36, mid: 36, small: 28, log: 52 }, 나: { ground: 34, mid: 66, small: 44, log: 80 } };   // 딛는 자리는 풀 끝이 아니라 윗면 안쪽이다
+let SET = '다';
+const TOP = { 가: { ground: 36, mid: 36, small: 28, log: 52 }, 나: { ground: 34, mid: 66, small: 44, log: 80 },
+  다: { ground: 30, mid: 34, small: 36, log: 44 } };   // 딛는 자리는 풀 끝이 아니라 윗면 안쪽이다
 const PLATS = [
   { x: 520,  y: 560, img: 'mid',  w: 600 },
   { x: 1250, y: 420, img: 'small', w: 250 },
@@ -38,7 +39,11 @@ const PLATS = [
 const FLOORS = [{ x: 0, y: GROUND, w: WORLD }].concat(PLATS.map(p => ({ x: p.x + 20, y: p.y, w: p.w - 40 })));
 
 // 기사 인형(1024 그림 기준 좌표)
-const K = { s: 0.31, cx: 575, feet: 929, hipL: [520, 716], hipR: [640, 716], hand: [707, 690], neck: [560, 440], swordLen: 600, grip: 100, rest: -0.405 };
+const K0 = { face: -1, hipY: 716, leg: 213,  s: 0.31, cx: 575, feet: 929, hipL: [520, 716], hipR: [640, 716], hand: [707, 690], neck: [560, 440], swordLen: 600, grip: 100, rest: -0.405 };
+// 다: 기준 그림체의 기사. 오른쪽을 보고 선 그림이라 face 가 1이다.
+const K다 = { face: 1, s: 0.31, cx: 440, feet: 960, hipL: [440, 745], hipR: [545, 745], hipY: 745, leg: 215, hand: [372, 720], neck: [500, 495], swordLen: 600, grip: 100, rest: -0.405 };
+const KS = { 가: K0, 나: K0, 다: K다 };
+let K = K다;
 const knight = { x: 300, y: GROUND, floor: 0, dir: 1, state: 'walk', t: 0, atk: 0, jump: null, target: null };
 
 const mobs = [];
@@ -121,8 +126,9 @@ function drawPlats() {
   const T = TOP[SET];
   for (const p of PLATS) { const im = IMG[SET + p.img]; ctx.drawImage(im, p.x + (p.w - im.width) / 2 - cam, p.y - T[p.img]); }
   const g = IMG[SET + 'ground'], gw = g.width; if (!gw) return;
-  ctx.fillStyle = '#0d0b08'; ctx.fillRect(0, GROUND + 70, W, H);
   for (let x = -((cam) % gw) - gw; x < W + gw; x += gw) ctx.drawImage(g, x, GROUND - T.ground);
+  const fy = GROUND - T.ground + g.height - 34, fg = ctx.createLinearGradient(0, fy - 30, 0, fy + 10);   // 땅 그림의 들쭉날쭉한 아래쪽을 어둠으로 덮는다
+  fg.addColorStop(0, 'rgba(10,9,7,0)'); fg.addColorStop(1, 'rgba(10,9,7,1)'); ctx.fillStyle = fg; ctx.fillRect(0, fy - 30, W, 40); ctx.fillStyle = 'rgb(10,9,7)'; ctx.fillRect(0, fy + 10, W, H);
 }
 function shadow(x, y, r) {                                                  // 발이 닿는 자리의 그림자: 가운데가 짙다
   const g = ctx.createRadialGradient(x, y, 2, x, y, r); g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -147,6 +153,7 @@ function part(key, pivot, ang) {
   ctx.save(); ctx.translate(pivot[0], pivot[1]); ctx.rotate(ang); ctx.translate(-pivot[0], -pivot[1]); ctx.drawImage(im, 0, 0); ctx.restore();
 }
 function drawKnight() {
+  K = KS[SET];
   const k = knight, t = k.t, walking = k.state === 'walk', air = !!k.jump;
   let leg = 0, bob = Math.sin(t * 2.4) * 3, lean = 0, sword = K.rest + Math.sin(t * 2.4) * 0.03, head = Math.sin(t * 2.4 + 0.6) * 0.02;
   if (walking) { leg = Math.sin(t * 13) * 0.42; bob = Math.abs(Math.sin(t * 13)) * 5; lean = 0.05; sword = K.rest + Math.sin(t * 13) * 0.1; head = Math.sin(t * 13) * 0.03; }
@@ -157,17 +164,17 @@ function drawKnight() {
     if (p > 0.75) sword = K.rest - 1.15 + ((p - 0.75) / 0.25) * 1.15;
     lean = p < 0.45 ? -0.07 : 0.16; leg = 0.2; bob = p < 0.45 ? -6 : 6;
   }
-  const drop = air ? 0 : 213 * (1 - Math.cos(leg));                       // 다리 길이 213(그림 기준)
+  const drop = air ? 0 : K.leg * (1 - Math.cos(leg));                       // 다리 길이 213(그림 기준)
   const x = k.x - cam;
   shadow(x, air ? FLOORS[k.jump.to].y : k.y, 50);
-  ctx.save(); ctx.translate(x, k.y); ctx.scale(-k.dir * K.s, K.s); ctx.translate(-K.cx, -K.feet + drop);   // 그림은 왼쪽을 본다
+  ctx.save(); ctx.translate(x, k.y); ctx.scale(k.dir * K.face * K.s, K.s); ctx.translate(-K.cx, -K.feet + drop);   // 그림은 왼쪽을 본다
   part('legL', K.hipL, leg); part('legR', K.hipR, -leg);
-  ctx.save(); ctx.translate(K.cx, 716 + bob); ctx.rotate(-lean); ctx.translate(-K.cx, -716);
+  ctx.save(); ctx.translate(K.cx, K.hipY + bob); ctx.rotate(K.face * lean); ctx.translate(-K.cx, -K.hipY);
   ctx.drawImage(IMG[SET + 'body'], 0, 0);
   const sw = IMG['w' + weapon];
   if (sw && sw.width) {
     const h = sw.height * K.swordLen / sw.width;
-    ctx.save(); ctx.translate(K.hand[0], K.hand[1]); ctx.rotate(-sword); ctx.drawImage(sw, -(K.swordLen - K.grip), -h / 2, K.swordLen, h); ctx.restore();
+    ctx.save(); ctx.translate(K.hand[0], K.hand[1]); ctx.scale(-K.face, 1); ctx.rotate(-sword); ctx.drawImage(sw, -(K.swordLen - K.grip), -h / 2, K.swordLen, h); ctx.restore();
   }
   ctx.drawImage(IMG[SET + 'hand'], 0, 0);
   part('head', K.neck, head);
@@ -203,7 +210,7 @@ function drawHud() {
   say('무기: ' + WEAPONS[weapon].replace(/(의|던)/g, '$1 ').replace('있던 ', '있던 '), W - 30, 24, '#f4ead0', 'right');
   ctx.font = '24px sans-serif'; say('화면을 누르면 무기가 바뀝니다 · 시험판', W - 30, 70, '#cfd8c4', 'right');
   ctx.fillStyle = 'rgba(12,18,14,0.82)'; ctx.strokeStyle = '#e8d9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(24, H - 96, 470, 72, 16); ctx.fill(); ctx.stroke();
-  ctx.font = 'bold 30px sans-serif'; ctx.textBaseline = 'middle'; say(SET === '가' ? '가 · 기사 그림체로 통일 ⇄' : '나 · 몬스터 그림체로 통일 ⇄', 259, H - 60, '#f4ead0', 'center'); ctx.textBaseline = 'top';
+  ctx.font = 'bold 30px sans-serif'; ctx.textBaseline = 'middle'; say({ 가: '가 · 처음 기사 그림체 ⇄', 나: '나 · 처음 유화풍 ⇄', 다: '다 · 기준 그림체 ⇄' }[SET], 259, H - 60, '#f4ead0', 'center'); ctx.textBaseline = 'top';
   ctx.font = 'bold 40px sans-serif';
   for (const n of nums) { ctx.globalAlpha = 1 - n.t / 0.8; say(String(n.v), n.x - cam, n.y - n.t * 70, '#fff', 'center'); } ctx.globalAlpha = 1;
 }
@@ -219,12 +226,14 @@ function frame(now) {
 }
 cv.addEventListener('pointerdown', e => {
   const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H;
-  if (x < 510 && y > H - 110) SET = SET === '가' ? '나' : '가'; else weapon = (weapon + 1) % WEAPONS.length;
+  if (x < 510 && y > H - 110) SET = { 다: '나', 나: '가', 가: '다' }[SET]; else weapon = (weapon + 1) % WEAPONS.length;
 });
 Promise.all([
   load('bg', 'art/맵/1-1-먼배경.jpg'),
   load('가ground', 'art/맵/1구역-땅.png'), load('가mid', 'art/맵/1구역-발판-중.png'), load('가small', 'art/맵/1구역-발판-소.png'), load('가log', 'art/맵/1구역-통나무.png'),
   load('나ground', 'art/맵/1구역-나-땅.png'), load('나mid', 'art/맵/1구역-나-발판-중.png'), load('나small', 'art/맵/1구역-나-발판-소.png'), load('나log', 'art/맵/1구역-나-통나무.png'),
+  load('다ground', 'art/맵/1구역-다-땅.png'), load('다mid', 'art/맵/1구역-다-발판-중.png'), load('다small', 'art/맵/1구역-다-발판-소.png'), load('다log', 'art/맵/1구역-다-통나무.png'), load('다mob', 'art/맵/다람쥐-다.png'),
+  load('다body', 'art/knight/인형/남-다-몸통.png'), load('다legL', 'art/knight/인형/남-다-왼다리.png'), load('다legR', 'art/knight/인형/남-다-오른다리.png'), load('다hand', 'art/knight/인형/남-다-손.png'), load('다head', 'art/knight/인형/남-다-머리.png'),
   load('가mob', 'art/맵/다람쥐-가.png'), load('나mob', 'art/맵/다람쥐-나.png'),
   load('가body', 'art/knight/인형/남-몸통.png'), load('가legL', 'art/knight/인형/남-왼다리.png'), load('가legR', 'art/knight/인형/남-오른다리.png'), load('가hand', 'art/knight/인형/남-손.png'), load('가head', 'art/knight/인형/남-머리.png'),
   load('나body', 'art/knight/인형/남-나-몸통.png'), load('나legL', 'art/knight/인형/남-나-왼다리.png'), load('나legR', 'art/knight/인형/남-나-오른다리.png'), load('나hand', 'art/knight/인형/남-나-손.png'), load('나head', 'art/knight/인형/남-나-머리.png'),

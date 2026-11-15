@@ -94,9 +94,11 @@ def 발판_나():
 
 def 몬스터(src, dst, 키=300):
     """몬스터 그림을 여백 없이 잘라 키를 맞춘다(발이 그림 맨 아래)."""
-    if src.endswith('원본.png'):
+    if '원본' in src:
         from cutout import cutout
-        tmp = os.path.join(ROOT, 'art/시안/그림체/_tmp.png'); cutout(src, tmp, size=1024, pockets=False); im = Image.open(tmp).copy(); os.remove(tmp)
+        tmp = os.path.join(ROOT, 'art/시안/그림체/_tmp.png'); raw = Image.open(src).convert('RGB'); n = max(raw.size)
+        sq = Image.new('RGB', (n, n), (255, 255, 255)); sq.paste(raw, ((n - raw.width) // 2, (n - raw.height) // 2)); sq.save(tmp)   # 정사각형으로 맞춰 찌그러지지 않게
+        cutout(tmp, tmp, size=1024, pockets=False); im = Image.open(tmp).copy(); os.remove(tmp)
     else:
         im = Image.open(src).convert('RGBA')
     im = im.crop(im.getbbox()); im = im.resize((int(im.width * 키 / im.height), 키), Image.LANCZOS); im.save(dst); print(os.path.basename(dst), im.size)
@@ -124,7 +126,40 @@ def 인형_나(g='남'):
     print('인형 나', g)
 
 
+def 발판_다():
+    """기준 그림(art/기준/화면-기준.png)에 맞춰 뽑은 발판."""
+    m = importlib.import_module('무기자르기')
+    for p, size in m.split(os.path.join(ROOT, 'art/맵/원본/1구역-발판-다.png'), os.path.join(ROOT, 'art/맵'),
+                           ['1구역-다-땅', '1구역-다-발판-중', '1구역-다-발판-소', '1구역-다-통나무']):
+        im = Image.open(p); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS); im.save(p)
+        importlib.import_module('무기모두자르기').흰틈지우기(p, 6)
+        print(os.path.basename(p), im.size, '윗면', 윗면(im))
+
+
+def 인형_다(g='남'):
+    """기준 그림체의 기사(검 없이 선 그림)를 몸통, 두 다리, 손, 머리로 나눈다. 좌표는 1024 기준."""
+    from cutout import cutout
+    from PIL import ImageFilter
+    out = os.path.join(ROOT, 'art/knight/인형'); tmp = os.path.join(out, '_t.png')
+    cutout(os.path.join(ROOT, 'art/knight/원본/기사-유화-%s.png' % g), tmp, size=1024, pockets=True)
+    im = Image.open(tmp).copy(); os.remove(tmp)
+    a = np.asarray(im).copy()
+    a[..., 3] = np.asarray(Image.fromarray(a[..., 3]).filter(ImageFilter.MinFilter(5)))      # 흰 테를 깎는다
+    blob = a[185:220, 345:375]; blob[blob[..., :3].min(axis=2) > 200] = 0                    # 머리카락에 묻은 흰 얼룩
+    yy, xx = np.mgrid[0:1024, 0:1024]
+    def save(name, mask):
+        b = a.copy(); b[~mask] = 0; Image.fromarray(b, 'RGBA').save(os.path.join(out, '%s-다-%s.png' % (g, name)))
+    leg = yy > 738
+    save('몸통', (yy >= 470) & (yy < 760)); save('왼다리', leg & (xx < 497)); save('오른다리', leg & (xx >= 497))
+    save('머리', yy < 500)
+    hand = Image.new('L', (1024, 1024), 0); ImageDraw.Draw(hand).polygon([(338, 690), (402, 684), (408, 742), (350, 752)], fill=255)
+    save('손', np.asarray(hand) > 0)
+    print('인형 다', g)
+
+
 if __name__ == '__main__':
+    발판_다(); 인형_다('남')
+    몬스터(os.path.join(ROOT, 'art/monsters/원본/1-01-냄비다람쥐-유화.png'), os.path.join(ROOT, 'art/맵/다람쥐-다.png'))
     먼배경(); 발판(); 인형('남')
     발판_나(); 인형_나('남')
     몬스터(os.path.join(ROOT, 'art/monsters/1-01-냄비다람쥐.png'), os.path.join(ROOT, 'art/맵/다람쥐-나.png'))
