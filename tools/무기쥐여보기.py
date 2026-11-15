@@ -27,10 +27,12 @@ ROOT = 도감.ROOT
 }
 
 
-def 바탕(g):
+def 바탕(g, 그림=None):
     M = 모양[g]
     base = Image.new('RGBA', (1024, 1024), (0, 0, 0, 0))
-    for p in M['겹']:
+    if 그림 is not None:
+        base.alpha_composite(그림)                    # 겹 대신 통짜 그림(1024)을 쓴다
+    for p in ([] if 그림 is not None else M['겹']):
         base.alpha_composite(Image.open(os.path.join(ROOT, 'art/knight/%s.png' % p)))
     a = np.asarray(base).astype(np.float32)
     tip, pom = M['tip'], M['pom']; L = math.hypot(pom[0] - tip[0], pom[1] - tip[1])

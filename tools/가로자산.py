@@ -63,5 +63,59 @@ def 인형(g='남'):
     print('인형', g)
 
 
+def 윗면(im):
+    """발판 그림에서 딛는 윗면의 y(폭의 55% 넘게 차는 첫 줄)."""
+    a = np.asarray(im)[..., 3] > 128
+    for y in range(a.shape[0]):
+        if a[y].sum() > a.shape[1] * 0.55:
+            return y
+    return 0
+
+
+def 발판_나():
+    """배경 그림체(유화풍)로 뽑은 발판."""
+    m = importlib.import_module('무기자르기')
+    for p, size in m.split(os.path.join(ROOT, 'art/맵/원본/1구역-발판-나.png'), os.path.join(ROOT, 'art/맵'),
+                           ['1구역-나-땅', '1구역-나-발판-중', '1구역-나-발판-소', '1구역-나-통나무']):
+        im = Image.open(p); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS); im.save(p)
+        importlib.import_module('무기모두자르기').흰틈지우기(p, 6)          # 늘어진 뿌리 사이의 흰 배경
+        print(os.path.basename(p), im.size, '윗면', 윗면(im))
+
+
+def 몬스터(src, dst, 키=300):
+    """몬스터 그림을 여백 없이 잘라 키를 맞춘다(발이 그림 맨 아래)."""
+    if src.endswith('원본.png'):
+        from cutout import cutout
+        tmp = os.path.join(ROOT, 'art/시안/그림체/_tmp.png'); cutout(src, tmp, size=1024, pockets=False); im = Image.open(tmp).copy(); os.remove(tmp)
+    else:
+        im = Image.open(src).convert('RGBA')
+    im = im.crop(im.getbbox()); im = im.resize((int(im.width * 키 / im.height), 키), Image.LANCZOS); im.save(dst); print(os.path.basename(dst), im.size)
+
+
+def 인형_나(g='남'):
+    """몬스터 그림체로 다시 그린 기사(통짜 그림)를 같은 자리에서 나눈다."""
+    from cutout import cutout
+    쥠 = importlib.import_module('무기쥐여보기'); M = 쥠.모양[g]
+    tmp = os.path.join(ROOT, 'art/시안/그림체/_k.png'); cutout(os.path.join(ROOT, 'art/시안/그림체/기사-몬스터풍-원본.png'), tmp, size=1024, pockets=False)
+    whole = Image.open(tmp).copy(); os.remove(tmp)
+    w = np.asarray(whole).copy(); box = w[500:660, 640:700]                    # 팔과 몸 사이에 갇힌 흰 배경
+    box[box[..., :3].min(axis=2) > 232] = 0; whole = Image.fromarray(w, 'RGBA')
+    saved = M['굵기']; M['굵기'] = 28; base, body, hand, _, _ = 쥠.바탕(g, 그림=whole); M['굵기'] = saved
+    a = np.asarray(body).copy(); yy, xx = np.mgrid[0:1024, 0:1024]
+    leg = (yy > 706) & (xx > 455) & (xx < 705)
+    out = os.path.join(ROOT, 'art/knight/인형')
+    def save(name, arr, mask):
+        b = arr.copy(); b[~mask] = 0; Image.fromarray(b, 'RGBA').save(os.path.join(out, '%s-나-%s.png' % (g, name)))
+    save('몸통', a, ~leg | (yy < 724)); save('왼다리', a, leg & (xx < 578)); save('오른다리', a, leg & (xx >= 578))
+    save('손', np.asarray(base).copy(), np.asarray(hand) > 0)
+    from PIL import ImageFilter
+    hm = Image.open(os.path.join(ROOT, 'art/knight/머리/기본-%s.png' % g)).getchannel('A').filter(ImageFilter.MaxFilter(9))
+    save('머리', np.asarray(whole).copy(), np.asarray(hm) > 60)
+    print('인형 나', g)
+
+
 if __name__ == '__main__':
     먼배경(); 발판(); 인형('남')
+    발판_나(); 인형_나('남')
+    몬스터(os.path.join(ROOT, 'art/monsters/1-01-냄비다람쥐.png'), os.path.join(ROOT, 'art/맵/다람쥐-나.png'))
+    몬스터(os.path.join(ROOT, 'art/시안/그림체/다람쥐-기사풍-원본.png'), os.path.join(ROOT, 'art/맵/다람쥐-가.png'))
