@@ -23,9 +23,36 @@ SHEETS = {
     6: (['달밤의칼', '가시덩굴검', '수정검', '폭풍의검'], [(1420, 276)]),
     7: (['얼음검', '불꽃검', '등불검', '기사단장의검'], []),
     8: (['용비늘검', '깊은바다검', '별빛검', '해와달의검'], []),
-    9: (['돌에박혀있던검', '잊혀진기사단의검', '마녀의검', '되찾은이름의검'], []),
+    9: (['돌에박혀있던검', '잊혀진기사단의검', '마녀의검', '되찾은이름의검'],
+        [(1400, 1184), (1440, 1176), (1568, 1156), (1652, 1228), (1184, 1356), (1392, 1368), (1572, 1400)]),   # 마녀의 검 덩굴 사이
     10: (['새벽의검', '오로라검', '모래시계검', '기억의검'], []),
 }
+
+# 덩굴처럼 가는 선이 얽혀서 작은 흰 배경 조각이 많이 남는 무기. 무기 안에 순백으로 칠한 곳이 없을 때만 적는다.
+흰틈 = ['마녀의검']
+
+
+def 흰틈지우기(path, 최소=24):
+    import numpy as np
+    from PIL import Image
+    import importlib
+    m = importlib.import_module('무기자르기')
+    a = np.asarray(Image.open(path)).copy()
+    white = (a[..., 3] > 120) & (a[..., :3].min(axis=2) >= 238)
+    kill = np.zeros(white.shape, bool)
+    from PIL import ImageFilter
+    sat = a[..., :3].max(axis=2).astype(int) - a[..., :3].min(axis=2)
+    for area, c in m.덩어리(white, 최소):
+        ring = (np.asarray(Image.fromarray((c * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(9))) > 0) & ~c & (a[..., 3] > 200)
+        if ring.sum() and sat[ring].mean() > 45:
+            continue                                   # 보석이나 눈 안의 반짝임: 둘레가 색으로 칠해져 있다
+        kill |= c
+    grow = np.asarray(Image.fromarray((kill * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5))) > 0
+    d = 255 - a[..., :3].min(axis=2).astype(np.float32)
+    soft = np.clip((d - 14) / 56, 0, 1) * 255
+    a[..., 3] = np.where(grow, np.minimum(a[..., 3], soft), a[..., 3]).astype(np.uint8)
+    Image.fromarray(a, 'RGBA').save(path)
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == '--한장':          # 메모리를 아끼려고 한 장씩 따로 돌린다
@@ -34,6 +61,8 @@ if __name__ == '__main__':
         m = importlib.import_module('무기자르기')
         n = int(sys.argv[2]); names, holes = SHEETS[n]
         for p, size in m.split(os.path.join(ROOT, 'art/무기/원본/%02d.png' % n), os.path.join(ROOT, 'art/무기'), names, 구멍=holes):
+            if os.path.basename(p)[:-4] in 흰틈:
+                흰틈지우기(p)
             print(os.path.basename(p), size)
     else:
         for n in ([int(a) for a in sys.argv[1:]] or sorted(SHEETS)):
