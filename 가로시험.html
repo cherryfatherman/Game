@@ -26,7 +26,7 @@ let weapon = 0;
 // 발판: x, y(윗면), 그림, 그림 안에서 윗면이 있는 y, 딛는 폭
 // 그림 두 벌: 가 = 기사 그림체로 통일, 나 = 몬스터 그림체(유화풍)로 통일. 왼쪽 아래 단추로 바꾼다.
 let SET = '나';
-const TOP = { 가: { ground: 28, mid: 28, small: 20, log: 46 }, 나: { ground: 18, mid: 43, small: 23, log: 60 } };
+const TOP = { 가: { ground: 36, mid: 36, small: 28, log: 52 }, 나: { ground: 34, mid: 66, small: 44, log: 80 } };   // 딛는 자리는 풀 끝이 아니라 윗면 안쪽이다
 const PLATS = [
   { x: 520,  y: 560, img: 'mid',  w: 600 },
   { x: 1250, y: 420, img: 'small', w: 250 },
@@ -121,16 +121,19 @@ function drawPlats() {
   const T = TOP[SET];
   for (const p of PLATS) { const im = IMG[SET + p.img]; ctx.drawImage(im, p.x + (p.w - im.width) / 2 - cam, p.y - T[p.img]); }
   const g = IMG[SET + 'ground'], gw = g.width; if (!gw) return;
-  ctx.fillStyle = '#0d0b08'; ctx.fillRect(0, GROUND - T.ground + g.height - 40, W, H);
+  ctx.fillStyle = '#0d0b08'; ctx.fillRect(0, GROUND + 70, W, H);
   for (let x = -((cam) % gw) - gw; x < W + gw; x += gw) ctx.drawImage(g, x, GROUND - T.ground);
 }
-function shadow(x, y, r) { ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(x, y + 4, r, r * 0.22, 0, 0, 7); ctx.fill(); }
+function shadow(x, y, r) {                                                  // 발이 닿는 자리의 그림자: 가운데가 짙다
+  const g = ctx.createRadialGradient(x, y, 2, x, y, r); g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.save(); ctx.translate(0, y); ctx.scale(1, 0.26); ctx.translate(0, -y); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
+}
 
 function drawMob(m) {
-  const im = IMG[SET + 'mob'], s = 0.48, bob = m.wait > 0 ? 0 : Math.abs(Math.sin(m.t * 9)) * 9, sq = m.wait > 0 ? 1 + Math.sin(m.t * 3) * 0.02 : 1 + Math.sin(m.t * 18) * 0.04;
+  const im = IMG[SET + 'mob'], s = 0.48, bob = 0, sway = m.wait > 0 ? 0 : Math.sin(m.t * 9) * 0.07, sq = m.wait > 0 ? 1 + Math.sin(m.t * 3) * 0.02 : 1 + Math.sin(m.t * 18) * 0.04;
   const x = m.x - cam; if (x < -200 || x > W + 200) return;
-  shadow(x, m.y, 42 - bob * 0.8);
-  ctx.save(); ctx.translate(x, m.y - bob);
+  shadow(x, m.y, 46);
+  ctx.save(); ctx.translate(x, m.y); ctx.rotate(sway);        // 발밑을 축으로 좌우로 기운다
   if (m.dead) { ctx.globalAlpha = Math.max(0, 1 - m.dead * 2); ctx.translate(0, -m.dead * 80); ctx.rotate(m.dead * 2 * -m.dir); }
   ctx.scale(m.dir > 0 ? -s : s, s / sq * (m.hit > 0 ? 0.9 : 1));          // 그림은 왼쪽을 본다
   if (m.hit > 0) ctx.filter = 'brightness(2.2)';
@@ -146,7 +149,7 @@ function part(key, pivot, ang) {
 function drawKnight() {
   const k = knight, t = k.t, walking = k.state === 'walk', air = !!k.jump;
   let leg = 0, bob = Math.sin(t * 2.4) * 3, lean = 0, sword = K.rest + Math.sin(t * 2.4) * 0.03, head = Math.sin(t * 2.4 + 0.6) * 0.02;
-  if (walking) { leg = Math.sin(t * 13) * 0.42; bob = Math.abs(Math.sin(t * 13)) * -9; lean = 0.05; sword = K.rest + Math.sin(t * 13) * 0.1; head = Math.sin(t * 13) * 0.03; }
+  if (walking) { leg = Math.sin(t * 13) * 0.42; bob = Math.abs(Math.sin(t * 13)) * 5; lean = 0.05; sword = K.rest + Math.sin(t * 13) * 0.1; head = Math.sin(t * 13) * 0.03; }
   if (air) { leg = 0.5; lean = 0.08; sword = K.rest + 0.9; head = -0.06; bob = 0; }
   if (k.atk > 0) {
     const p = 1 - k.atk / 0.42;                                             // 0→1
@@ -154,9 +157,10 @@ function drawKnight() {
     if (p > 0.75) sword = K.rest - 1.15 + ((p - 0.75) / 0.25) * 1.15;
     lean = p < 0.45 ? -0.07 : 0.16; leg = 0.2; bob = p < 0.45 ? -6 : 6;
   }
+  const drop = air ? 0 : 213 * (1 - Math.cos(leg));                       // 다리 길이 213(그림 기준)
   const x = k.x - cam;
   shadow(x, air ? FLOORS[k.jump.to].y : k.y, 50);
-  ctx.save(); ctx.translate(x, k.y); ctx.scale(-k.dir * K.s, K.s); ctx.translate(-K.cx, -K.feet);   // 그림은 왼쪽을 본다
+  ctx.save(); ctx.translate(x, k.y); ctx.scale(-k.dir * K.s, K.s); ctx.translate(-K.cx, -K.feet + drop);   // 그림은 왼쪽을 본다
   part('legL', K.hipL, leg); part('legR', K.hipR, -leg);
   ctx.save(); ctx.translate(K.cx, 716 + bob); ctx.rotate(-lean); ctx.translate(-K.cx, -716);
   ctx.drawImage(IMG[SET + 'body'], 0, 0);
