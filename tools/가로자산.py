@@ -24,11 +24,23 @@ def 먼배경():
     im.save(os.path.join(ROOT, 'art/맵/1-1-먼배경.jpg'), quality=86); print('먼배경', im.size)
 
 
+def 색맞춤(im):
+    """밝은 만화 색의 발판을 먼 배경의 색(어두운 청록 숲)에 맞춘다: 채도를 낮추고, 숲 그늘 색을 입히고, 아래로 갈수록 어둡게."""
+    a = np.asarray(im.convert('RGBA')).astype(np.float32); rgb = a[..., :3]
+    grey = rgb.mean(axis=2, keepdims=True)
+    rgb = grey + (rgb - grey) * 0.58                         # 채도
+    rgb = rgb * np.array([0.74, 0.86, 0.80]) * 0.86          # 숲 그늘 색
+    h = a.shape[0]; fall = np.linspace(1.06, 0.62, h)[:, None, None]   # 윗면은 빛을 받고 아래는 그늘
+    a[..., :3] = np.clip(rgb * fall, 0, 255)
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
 def 발판():
     m = importlib.import_module('무기자르기')
     for p, size in m.split(os.path.join(ROOT, 'art/맵/원본/1구역-발판.png'), os.path.join(ROOT, 'art/맵'),
                            ['1구역-땅', '1구역-발판-중', '1구역-발판-소', '1구역-통나무']):
-        im = Image.open(p); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS); im.save(p); print(os.path.basename(p), im.size)
+        im = Image.open(p); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS)
+        im = 색맞춤(im); im.save(p); print(os.path.basename(p), im.size)
 
 
 def 인형(g='남'):

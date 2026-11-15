@@ -112,13 +112,13 @@ function drawBack() {
     else ctx.drawImage(bg, x, 0, bw + 1, H);
     ctx.restore();
   }
-  ctx.fillStyle = 'rgba(8,16,12,0.18)'; ctx.fillRect(0, 0, W, H);          // 먼 배경을 한 톤 눌러 앞쪽이 살게 한다
+            // 먼 배경을 한 톤 눌러 앞쪽이 살게 한다
 }
 function drawPlats() {
   for (const p of PLATS) { const im = IMG[p.img]; ctx.drawImage(im, p.x - cam, p.y - p.top); }
   const g = IMG.ground, gw = g.width; if (!gw) return;
   for (let x = -((cam) % gw) - gw; x < W + gw; x += gw) ctx.drawImage(g, x, GROUND - 44);
-  ctx.fillStyle = '#1b130c'; ctx.fillRect(0, GROUND - 44 + g.height - 2, W, H);
+  ctx.fillStyle = '#0d0b08'; ctx.fillRect(0, GROUND - 44 + g.height - 2, W, H);
 }
 function shadow(x, y, r) { ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.ellipse(x, y + 4, r, r * 0.22, 0, 0, 7); ctx.fill(); }
 
@@ -170,6 +170,23 @@ function drawKnight() {
     ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, 122, -0.9, 0.8); ctx.stroke(); ctx.restore();
   }
 }
+// 장면 전체에 같은 빛을 입힌다: 숲 그늘 색을 곱하고, 위에서 내려오는 아침 햇살을 더하고, 가장자리를 어둡게.
+let LIGHT = null;
+function drawLight() {
+  if (!LIGHT) {
+    LIGHT = document.createElement('canvas'); LIGHT.width = W; LIGHT.height = H; const c = LIGHT.getContext('2d');
+    const g = c.createRadialGradient(W * 0.55, -80, 60, W * 0.55, 200, 1000);
+    g.addColorStop(0, 'rgba(255,236,190,0.30)'); g.addColorStop(0.5, 'rgba(255,230,180,0.10)'); g.addColorStop(1, 'rgba(255,230,180,0)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+  }
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = 'rgb(206,224,214)'; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'screen'; ctx.drawImage(LIGHT, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, W * 0.72);
+  v.addColorStop(0, 'rgba(4,10,8,0)'); v.addColorStop(1, 'rgba(4,10,8,0.55)'); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
 function drawHud() {
   ctx.font = 'bold 34px sans-serif'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round';
   const say = (s, x, y, c, a) => { ctx.textAlign = a || 'left'; ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText(s, x, y); ctx.fillStyle = c; ctx.fillText(s, x, y); };
@@ -186,6 +203,7 @@ function frame(now) {
   drawBack(); drawPlats();
   const all = mobs.map(m => ({ y: m.y, f: () => drawMob(m) })).concat([{ y: knight.jump ? 9999 : knight.y + 1, f: drawKnight }]).sort((a, b) => a.y - b.y);
   for (const a of all) a.f();
+  drawLight();
   drawHud();
   requestAnimationFrame(frame);
 }
