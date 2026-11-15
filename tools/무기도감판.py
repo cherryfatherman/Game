@@ -30,7 +30,6 @@ def 칸(d, sh, x, y, S, n, grade, name, f, fs):
         im = Image.open(p)
         r = im.rotate(-45, expand=True, resample=Image.BICUBIC); r = r.crop(r.getbbox()); r.thumbnail((S - 26, S - 26), Image.LANCZOS)
         sh.alpha_composite(r, (x + S // 2 - r.width // 2, y + S // 2 - r.height // 2))
-    d.text((x + 12, y + 8), str(n), font=fs, fill=c)
     d.text((x + S // 2, y + S + 20), name, font=f, fill=c, anchor='mm')
 
 
@@ -48,5 +47,22 @@ def main(out):
     sh.convert('RGB').save(out); print(out, sh.size)
 
 
+def 길게(out):
+    """무기를 한 자루씩 가로로 길게 늘어놓은 그림(두 줄 × 스무 칸)."""
+    rows = 목록(); W = 860; H = 200; f = ImageFont.truetype(FONT, 24)
+    sh = Image.new('RGBA', (2 * W + 60, 20 * H + 40), (22, 26, 30, 255)); d = ImageDraw.Draw(sh)
+    for i, (n, g, name) in enumerate(rows):
+        x = 20 + (i // 20) * (W + 20); y = 20 + (i % 20) * H; c = COL[g]
+        d.rounded_rectangle([x, y + 4, x + W, y + H - 4], 14, fill=(c[0] // 9 + 22, c[1] // 9 + 24, c[2] // 9 + 26, 255), outline=c, width=2)
+        d.text((x + 18, y + H // 2 - 16), g, font=f, fill=c, anchor='lm')
+        d.text((x + 18, y + H // 2 + 16), name, font=f, fill=(236, 232, 220), anchor='lm')
+        p = os.path.join(ROOT, 'art/무기', name.replace(' ', '') + '.png')
+        if os.path.exists(p):
+            im = Image.open(p); im.thumbnail((W - 250, H - 12), Image.LANCZOS)
+            sh.alpha_composite(im, (x + 225 + (W - 250 - im.width) // 2, y + H // 2 - im.height // 2))
+    sh.convert('RGB').save(out); print(out, sh.size)
+
+
 if __name__ == '__main__':
     main(sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'art/무기/도감판.png'))
+    길게(os.path.join(ROOT, 'art/무기/한자루씩.png'))
