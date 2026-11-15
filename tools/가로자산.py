@@ -72,12 +72,22 @@ def 윗면(im):
     return 0
 
 
+def 윗빛(im):
+    """유화풍 발판이 어두운 배경에 묻히지 않게: 전체를 조금 밝히고, 딛는 윗면에 아침 햇살을 얹는다."""
+    a = np.asarray(im.convert('RGBA')).astype(np.float32); top = 윗면(im); h = a.shape[0]
+    y = np.arange(h)[:, None, None]
+    lift = 1.22 + 0.55 * np.clip(1 - np.abs(y - top - 6) / 34.0, 0, 1)        # 윗면 둘레가 가장 밝다
+    a[..., :3] = np.clip(a[..., :3] * lift * np.array([1.04, 1.03, 0.90]), 0, 255)
+    return Image.fromarray(a.astype(np.uint8), 'RGBA')
+
+
 def 발판_나():
     """배경 그림체(유화풍)로 뽑은 발판."""
     m = importlib.import_module('무기자르기')
     for p, size in m.split(os.path.join(ROOT, 'art/맵/원본/1구역-발판-나.png'), os.path.join(ROOT, 'art/맵'),
                            ['1구역-나-땅', '1구역-나-발판-중', '1구역-나-발판-소', '1구역-나-통나무']):
-        im = Image.open(p); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS); im.save(p)
+        im = Image.open(p); im = im.resize((im.width // 2, im.height // 2), Image.LANCZOS)
+        im = 윗빛(im); im.save(p)
         importlib.import_module('무기모두자르기').흰틈지우기(p, 6)          # 늘어진 뿌리 사이의 흰 배경
         print(os.path.basename(p), im.size, '윗면', 윗면(im))
 
