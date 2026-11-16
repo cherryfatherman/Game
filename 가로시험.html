@@ -22,6 +22,7 @@ function load(key, src) { const im = new Image(); im.src = src; IMG[key] = im; r
 // 무기: 도감 순서 가운데 몇 자루. 화면을 누르면 다음 무기로 바뀐다.
 const WEAPONS = ['목검', '녹슨검', '경비대의칼', '달밤의칼', '레이피어', '은검', '폭풍의검', '불꽃검', '기사단장의검', '마녀의검', '기억의검'];
 let weapon = 0;
+let stars = 0;          // 모은 별(0~7). 별이 늘수록 깜빡이가 밝아진다. 시험판에서는 오른쪽 아래 단추로 바꿔 본다.
 
 // 발판: x, y(윗면), 그림, 그림 안에서 윗면이 있는 y, 딛는 폭
 // 그림 두 벌: 가 = 기사 그림체로 통일, 나 = 몬스터 그림체(유화풍)로 통일. 왼쪽 아래 단추로 바꾼다.
@@ -39,9 +40,9 @@ const PLATS = [
 const FLOORS = [{ x: 0, y: GROUND, w: WORLD }].concat(PLATS.map(p => ({ x: p.x + 20, y: p.y, w: p.w - 40 })));
 
 // 기사 인형(1024 그림 기준 좌표)
-const K0 = { face: -1, hipY: 716, leg: 213,  s: 0.31, cx: 575, feet: 929, hipL: [520, 716], hipR: [640, 716], hand: [707, 690], neck: [560, 440], swordLen: 600, grip: 100, rest: -0.405 };
+const K0 = { face: -1, hipY: 716, leg: 213,  s: 0.31, cx: 575, feet: 929, hipL: [520, 716], hipR: [640, 716], hand: [707, 690], neck: [560, 440], swordLen: 600, grip: 100, rest: -0.405, lamp: [662, 668] };
 // 다: 기준 그림체의 기사. 오른쪽을 보고 선 그림이라 face 가 1이다.
-const K다 = { face: 1, s: 0.31, cx: 440, feet: 960, hipL: [440, 745], hipR: [545, 745], hipY: 745, leg: 215, hand: [372, 720], neck: [500, 495], swordLen: 600, grip: 100, rest: -0.405 };
+const K다 = { face: 1, s: 0.31, cx: 440, feet: 960, hipL: [440, 745], hipR: [545, 745], hipY: 745, leg: 215, hand: [372, 720], neck: [500, 495], swordLen: 600, grip: 100, rest: -0.405, lamp: [424, 692] };
 const KS = { 가: K0, 나: K0, 다: K다 };
 let K = K다;
 const knight = { x: 300, y: GROUND, floor: 0, dir: 1, state: 'walk', t: 0, atk: 0, jump: null, target: null };
@@ -53,6 +54,7 @@ function spawn(floor) {
 }
 function fill() { for (let i = 0; i < FLOORS.length; i++) { const want = i === 0 ? 7 : 2; while (mobs.filter(m => m.floor === i && !m.dead).length < want) spawn(i); } }
 
+const mist = [];        // 쓰러질 때 흩어지는 검은 안개
 const nums = [];        // 떠오르는 피해 숫자
 let cam = 0, last = 0, kills = 0;
 
@@ -88,7 +90,7 @@ function update(dt) {
         for (const m of mobs) if (!m.dead && m.floor === knight.floor && (m.x - knight.x) * knight.dir > -30 && Math.abs(m.x - knight.x) < 175) {
           const dmg = 8 + weapon * 6 + Math.floor(Math.random() * 5); m.hp -= 1 + Math.floor(weapon / 3); m.hit = 0.18;
           nums.push({ x: m.x + (Math.random() - 0.5) * 50, y: m.y - 150 - Math.random() * 30, v: dmg, t: 0 });
-          if (m.hp <= 0) { m.dead = 0.001; kills++; }
+          if (m.hp <= 0) { m.dead = 0.001; kills++; for (let i = 0; i < 9; i++) mist.push({ x: m.x + (Math.random() - 0.5) * 70, y: m.y - 20 - Math.random() * 110, vx: (Math.random() - 0.5) * 70, vy: -30 - Math.random() * 60, r: 22 + Math.random() * 30, t: 0, life: 0.7 + Math.random() * 0.5 }); }
         }
       }
       if (knight.atk <= 0) knight.state = 'walk';
@@ -106,6 +108,8 @@ function update(dt) {
   }
   knight.x = Math.max(60, Math.min(WORLD - 60, knight.x));
   cam += (Math.max(0, Math.min(WORLD - W, knight.x - W * 0.42)) - cam) * Math.min(1, dt * 4);
+  for (const q of mist) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.r += 26 * dt; }
+  for (let i = mist.length - 1; i >= 0; i--) if (mist[i].t > mist[i].life) mist.splice(i, 1);
   for (const n of nums) n.t += dt;
   while (nums.length && nums[0].t > 0.8) nums.shift();
 }
@@ -135,12 +139,40 @@ function shadow(x, y, r) {                                                  // �
   ctx.save(); ctx.translate(0, y); ctx.scale(1, 0.26); ctx.translate(0, -y); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
 }
 
+// 검은 무늬: 망각수에게 물든 표시. 그림을 다시 뽑지 않고, 몬스터 그림 위에 코드로 얹는다(그림의 모양 안쪽에만 칠해진다).
+const STAIN = {};
+function stained(key, level) {
+  const id = key + level; if (STAIN[id]) return STAIN[id];
+  const im = IMG[key], c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d');
+  g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-atop';
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const u = Math.max(im.width, im.height) / 100;                            // 그림 크기에 맞춘 단위
+  const sh = g.createLinearGradient(0, im.height * 0.35, 0, im.height);    // 아래쪽이 조금 어둡게 물든다
+  sh.addColorStop(0, 'rgba(12,8,18,0)'); sh.addColorStop(1, 'rgba(12,8,18,' + (0.16 + level * 0.07) + ')'); g.fillStyle = sh; g.fillRect(0, 0, im.width, im.height);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  const vein = (x, y, a, w, n) => {
+    for (let i = 0; i < n && w > 0.3; i++) {
+      const len = (5 + rnd() * 6) * u, nx = x + Math.cos(a) * len, ny = y + Math.sin(a) * len, mx = (x + nx) / 2 + (rnd() - 0.5) * 5 * u, my = (y + ny) / 2 + (rnd() - 0.5) * 5 * u;
+      g.strokeStyle = 'rgba(14,10,22,0.78)'; g.lineWidth = w * u; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(mx, my, nx, ny); g.stroke();
+      if (rnd() < 0.45) vein(nx, ny, a + (rnd() < 0.5 ? -1 : 1) * (0.6 + rnd() * 0.5), w * 0.6, n - i - 1);
+      x = nx; y = ny; a += (rnd() - 0.5) * 0.9; w *= 0.8;
+    }
+  };
+  for (let i = 0; i < 2 + level * 2; i++) vein(im.width * (0.2 + rnd() * 0.6), im.height * (0.55 + rnd() * 0.45), -Math.PI / 2 + (rnd() - 0.5) * 1.4, 1.5 + rnd(), 6);
+  return STAIN[id] = c;
+}
+function drawMist() {
+  for (const q of mist) {
+    const a = (1 - q.t / q.life) * 0.5, x = q.x - cam, g = ctx.createRadialGradient(x, q.y, 0, x, q.y, q.r);
+    g.addColorStop(0, 'rgba(14,10,22,' + a + ')'); g.addColorStop(1, 'rgba(14,10,22,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, q.y, q.r, 0, 7); ctx.fill();
+  }
+}
 function drawMob(m) {
-  const im = IMG[SET + 'mob'], s = 0.48, bob = 0, sway = m.wait > 0 ? 0 : Math.sin(m.t * 9) * 0.07, sq = m.wait > 0 ? 1 + Math.sin(m.t * 3) * 0.02 : 1 + Math.sin(m.t * 18) * 0.04;
+  const im = stained(SET + 'mob', 1), s = 0.48, bob = 0, sway = m.wait > 0 ? 0 : Math.sin(m.t * 9) * 0.07, sq = m.wait > 0 ? 1 + Math.sin(m.t * 3) * 0.02 : 1 + Math.sin(m.t * 18) * 0.04;
   const x = m.x - cam; if (x < -200 || x > W + 200) return;
   shadow(x, m.y, 46);
   ctx.save(); ctx.translate(x, m.y); ctx.rotate(sway);        // 발밑을 축으로 좌우로 기운다
-  if (m.dead) { ctx.globalAlpha = Math.max(0, 1 - m.dead * 2); ctx.translate(0, -m.dead * 80); ctx.rotate(m.dead * 2 * -m.dir); }
+  if (m.dead) { ctx.globalAlpha = Math.max(0, 1 - m.dead * 2.4); ctx.translate(0, m.dead * 14); ctx.rotate(m.dead * 0.9 * -m.dir); }   // 주저앉으며 흐려지고, 검은 무늬는 안개로 흩어진다
   ctx.scale(m.dir > 0 ? -s : s, s / sq * (m.hit > 0 ? 0.9 : 1));          // 그림은 왼쪽을 본다
   if (m.hit > 0) ctx.filter = 'brightness(2.2)';
   ctx.drawImage(im, -im.width / 2, -im.height);
@@ -151,6 +183,32 @@ function part(key, pivot, ang) {
   const im = IMG[SET + key];
   if (!ang) { ctx.drawImage(im, 0, 0); return; }
   ctx.save(); ctx.translate(pivot[0], pivot[1]); ctx.rotate(ang); ctx.translate(-pivot[0], -pivot[1]); ctx.drawImage(im, 0, 0); ctx.restore();
+}
+// 등불: 기사 그림에 그려 넣지 않는다. 코드로 그려 허리에 달고, 걸을 때 흔들리고, 별을 모을수록 불빛이 커진다.
+const LAMP = { x: 0, y: 0, on: false };
+function drawLantern(hx, hy, ang, t) {
+  const iron = '#2f271f', lit = 0.5 + stars / 14;
+  ctx.save(); ctx.translate(hx, hy); ctx.rotate(ang); ctx.scale(0.62, 0.62); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = iron; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 22); ctx.stroke();           // 허리끈에 건 고리
+  ctx.beginPath(); ctx.arc(0, 33, 11, 0, 7); ctx.stroke();
+  ctx.fillStyle = iron; ctx.beginPath(); ctx.moveTo(-36, 64); ctx.quadraticCurveTo(-8, 40, 0, 42); ctx.quadraticCurveTo(8, 40, 36, 64); ctx.closePath(); ctx.fill();   // 뚜껑
+  const g = ctx.createRadialGradient(0, 104, 3, 0, 104, 50);                                                                // 유리 안의 불빛
+  g.addColorStop(0, '#fff6d0'); g.addColorStop(0.35 + lit * 0.2, '#ffbb5a'); g.addColorStop(1, '#6b3d18');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(-29, 64, 58, 78, 7); ctx.fill();
+  const f = 1 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23) * 0.05, fh = (20 + stars * 3.2) * f;                              // 깜빡이
+  ctx.fillStyle = '#fffbe6'; ctx.beginPath(); ctx.moveTo(0, 118); ctx.quadraticCurveTo(-11 - stars, 112, 0, 118 - fh); ctx.quadraticCurveTo(11 + stars, 112, 0, 118); ctx.fill();
+  ctx.strokeStyle = iron; ctx.lineWidth = 6; ctx.beginPath(); ctx.roundRect(-29, 64, 58, 78, 7); ctx.stroke();            // 쇠 테와 살
+  ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(-10, 64); ctx.lineTo(-10, 142); ctx.moveTo(10, 64); ctx.lineTo(10, 142); ctx.stroke();
+  ctx.fillStyle = iron; ctx.beginPath(); ctx.roundRect(-35, 140, 70, 13, 4); ctx.fill();                                    // 바닥
+  const p = ctx.getTransform().transformPoint(new DOMPoint(0, 104)); LAMP.x = p.x; LAMP.y = p.y; LAMP.on = true;
+  ctx.restore();
+}
+function drawLampGlow() {                 // 장면의 빛을 다 입힌 뒤에 더한다. 별 하나마다 한 단계 커진다
+  if (!LAMP.on) return; LAMP.on = false;
+  const t = knight.t, fl = 1 + Math.sin(t * 9) * 0.05 + Math.sin(t * 23) * 0.03, r = (64 + stars * 24) * fl, a = 0.30 + stars * 0.035;
+  const g = ctx.createRadialGradient(LAMP.x, LAMP.y, 0, LAMP.x, LAMP.y, r);
+  g.addColorStop(0, 'rgba(255,214,140,' + a + ')'); g.addColorStop(0.4, 'rgba(255,170,80,' + a * 0.45 + ')'); g.addColorStop(1, 'rgba(255,150,60,0)');
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(LAMP.x, LAMP.y, r, 0, 7); ctx.fill(); ctx.restore();
 }
 function drawKnight() {
   K = KS[SET];
@@ -171,6 +229,7 @@ function drawKnight() {
   part('legL', K.hipL, leg); part('legR', K.hipR, -leg);
   ctx.save(); ctx.translate(K.cx, K.hipY + bob); ctx.rotate(K.face * lean); ctx.translate(-K.cx, -K.hipY);
   ctx.drawImage(IMG[SET + 'body'], 0, 0);
+  if (K.lamp) drawLantern(K.lamp[0], K.lamp[1], (walking ? Math.sin(t * 13 - 0.9) * 0.3 : air ? 0.35 : Math.sin(t * 2.4) * 0.05) - K.face * lean, t);
   const sw = IMG['w' + weapon];
   if (sw && sw.width) {
     const h = sw.height * K.swordLen / sw.width;
@@ -207,6 +266,9 @@ function drawHud() {
   const say = (s, x, y, c, a) => { ctx.textAlign = a || 'left'; ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText(s, x, y); ctx.fillStyle = c; ctx.fillText(s, x, y); };
   say('1-1 숲 들머리', 30, 24, '#f4ead0');
   say('잡은 수 ' + kills, 30, 70, '#ffd27a');
+  say('별 ' + '★'.repeat(stars) + '☆'.repeat(7 - stars), 30, 116, '#ffe9a8');
+  ctx.fillStyle = 'rgba(12,18,14,0.82)'; ctx.strokeStyle = '#e8d9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(W - 414, H - 96, 390, 72, 16); ctx.fill(); ctx.stroke();
+  ctx.font = 'bold 30px sans-serif'; ctx.textBaseline = 'middle'; say('깜빡이 · 별 ' + stars + '/7 ⇄', W - 219, H - 60, '#ffe9a8', 'center'); ctx.textBaseline = 'top'; ctx.font = 'bold 34px sans-serif';
   say('무기: ' + WEAPONS[weapon].replace(/(의|던)/g, '$1 ').replace('있던 ', '있던 '), W - 30, 24, '#f4ead0', 'right');
   ctx.font = '24px sans-serif'; say('화면을 누르면 무기가 바뀝니다 · 시험판', W - 30, 70, '#cfd8c4', 'right');
   ctx.fillStyle = 'rgba(12,18,14,0.82)'; ctx.strokeStyle = '#e8d9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(24, H - 96, 470, 72, 16); ctx.fill(); ctx.stroke();
@@ -220,13 +282,16 @@ function frame(now) {
   drawBack(); drawPlats();
   const all = mobs.map(m => ({ y: m.y, f: () => drawMob(m) })).concat([{ y: knight.jump ? 9999 : knight.y + 1, f: drawKnight }]).sort((a, b) => a.y - b.y);
   for (const a of all) a.f();
+  drawMist();
   drawLight();
+  drawLampGlow();
   drawHud();
   requestAnimationFrame(frame);
 }
 cv.addEventListener('pointerdown', e => {
   const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H;
-  if (x < 510 && y > H - 110) SET = { 다: '나', 나: '가', 가: '다' }[SET]; else weapon = (weapon + 1) % WEAPONS.length;
+  if (x > W - 430 && y > H - 110) stars = (stars + 1) % 8;
+  else if (x < 510 && y > H - 110) SET = { 다: '나', 나: '가', 가: '다' }[SET]; else weapon = (weapon + 1) % WEAPONS.length;
 });
 Promise.all([
   load('bg', 'art/맵/1-1-먼배경.jpg'),
