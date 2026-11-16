@@ -1,6 +1,6 @@
 {
- "style": "Detailed realistic dark-fantasy creature illustration. Fine pen and ink linework with cross-hatching defines the form and shadow; grounded believable anatomy with real weight, weathered skin, dirt, moss and old scars; small deep-set eyes; genuinely frightening and menacing, never cute, no exaggerated cartoon proportions, no gore. Over the ink, a restrained hand-painted color wash in muted earth browns, moss greens, bone and misty blue-grey, under soft natural daylight: only a slight touch, about one part in ten, of the gentle warmth of classic hand-drawn animation film art in the color and light, never in the creature's design. Full body, single creature, facing left, three-quarter view, thin drifting mist and a soft shadow at its feet, plain pale off-white background, square image, no text, no border, no signature, no saturated or neon colors",
- "reference": "art/기준/1구역-보스.jpg",
+ "style": "Fairy-tale storybook oil painting of a single fantasy creature for a 2D game. No outlines at all: no ink lines, no cross-hatching, no dark contour, not a comic or anime drawing. Forms are defined only by colour, light and visible soft oil brushstrokes, with a matte hand-painted surface. Grounded, believable anatomy with real weight; fur, bark, hide and metal textures painted, not drawn. Frightening but never gory or gross, never cute, no exaggerated cartoon proportions. Muted warm earthy palette of moss green, earth brown, stone grey-blue and faded bone; no saturated or neon colours. Soft warm daylight from the upper left with a gentle rim light so the figure reads clearly; no glossy highlights, no bloom, no glowing effects. Full body, single creature, facing left, three-quarter view, whole body inside the frame without touching the edges. Flat plain white background, no ground, no shadow, no mist, no scenery, no text, no border, no signature. Square image. Match the painting style, colours and light of the attached reference image exactly. An original design, not based on any existing character.",
+ "reference": "art/기준/화면-기준.png",
  "size": "square",
  "monsters": [
   {
@@ -567,5 +567,7 @@
    "group": "물·숲",
    "en": "a mushroom creature with a wide spotted cap, vacant far-apart eyes, stubby legs and drifting spores"
   }
- ]
+ ],
+ "style_old_pen": "Detailed realistic dark-fantasy creature illustration. Fine pen and ink linework with cross-hatching defines the form and shadow; grounded believable anatomy with real weight, weathered skin, dirt, moss and old scars; small deep-set eyes; genuinely frightening and menacing, never cute, no exaggerated cartoon proportions, no gore. Over the ink, a restrained hand-painted color wash in muted earth browns, moss greens, bone and misty blue-grey, under soft natural daylight: only a slight touch, about one part in ten, of the gentle warmth of classic hand-drawn animation film art in the color and light, never in the creature's design. Full body, single creature, facing left, three-quarter view, thin drifting mist and a soft shadow at its feet, plain pale off-white background, square image, no text, no border, no signature, no saturated or neon colors",
+ "설명": "style 은 2026-11-16에 선 없는 동화 유화풍으로 바꿨다. 예전 펜화 문구는 style_old_pen 에 남겨 두었다. 그림은 gemini-nano-banana-2.1, 2K로 뽑고, 늘 reference 그림을 함께 올린다. 제미나이에는 빼기 문구 칸이 없으므로 빼야 할 것은 문장 안에 no ... 로 적는다. monsters 목록은 이전 명단이라 몬스터 도감에 맞춰 다시 써야 한다."
 }
