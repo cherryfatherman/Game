@@ -83,6 +83,13 @@ def cutout(src, dst, keep=(), flip=False, holes=(), paper=None):
     soft = np.clip((dist - LOW) / (HIGH - LOW), 0, 1)
     alpha = np.where(bg, 0.0, np.where(near, soft, 1.0))
 
+    # 떨어져 나온 먼지: 본체와 이어지지 않은 작은 점은 지운다
+    labd, nd_ = nd.label(alpha > 0)
+    if nd_ > 1:
+        szd = nd.sum(np.ones_like(labd), labd, np.arange(1, nd_ + 1))
+        dust = np.isin(labd, np.where(szd < 60 * k * k)[0] + 1)
+        alpha[dust] = 0
+
     # 테두리 색 고치기: 테두리 띠에서, 안쪽보다 밝은(=흰 기운이 묻은) 점은 가장 가까운 안쪽 색으로 바꾼다
     solid = alpha >= 0.999
     inner = nd.binary_erosion(solid, iterations=max(2, round(BAND * k)))
