@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>잊혀진 기사 키우기 · 휘두르는 움직임 시험</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0c120c; overflow: hidden; }
+  canvas { display: block; margin: 0 auto; width: 100vw; height: 56.25vw; max-height: 100vh; max-width: 177.78vh; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1600" height="900"></canvas>
+<script>
+// 무기를 휘두르는 몬스터의 움직임 시험: 풍차지기.
+// 왼쪽(가): 치켜든 자세로 굳힌 통짜 그림을 기울이기만 한다.
+// 오른쪽(나): 몸, 팔, 무기를 나눠 어깨를 축으로 돌린다. 준비(길게) → 내리침(아주 짧게) → 멈춤 → 되돌아옴.
+const W = 1600, H = 900, G = 770, D = 'art/시안/시험세트/움직임/';
+const cv = document.getElementById('c'), ctx = cv.getContext('2d'), IMG = {};
+function load(k, s) { const im = new Image(); im.src = D + s; IMG[k] = im; return new Promise(r => { im.onload = r; im.onerror = r; }); }
+const LOOP = 2.7, T = { antic: 0.9, strike: 1.4, hit: 1.5, hold: 1.62, back: 2.15 };
+const lerp = (a, b, t) => a + (b - a) * t, cl = t => Math.max(0, Math.min(1, t));
+const easeOut = t => 1 - (1 - t) ** 3, easeIn = t => t * t * t, rad = d => d * Math.PI / 180;
+const backOut = t => { const c = 1.9; return 1 + (c + 1) * (t - 1) ** 3 + c * (t - 1) ** 2; };   // 살짝 지나쳤다 돌아온다
+
+// 한 순간의 자세: 팔 각도(a), 팔에 대한 무기 각도(w), 몸 기울기(lean), 앞으로 내딛는 거리(step), 눌림(sq)
+const IDLE = { a: -62, w: 104, lean: 0, step: 0, sq: 1 }, UP = { a: 128, w: 44, lean: 7, step: 14, sq: 1.04 }, DOWN = { a: -28, w: 12, lean: -11, step: -46, sq: 0.94 };
+function mix(p, q, t) { const o = {}; for (const k in p) o[k] = lerp(p[k], q[k], t); return o; }
+function pose(t) {
+  const breathe = Math.sin(t * 2.6) * 1.5;
+  let p;
+  if (t < T.antic) p = IDLE;
+  else if (t < T.strike) p = mix(IDLE, UP, easeOut(cl((t - T.antic) / (T.strike - T.antic))));
+  else if (t < T.hit) p = mix(UP, DOWN, easeIn(cl((t - T.strike) / (T.hit - T.strike))));
+  else if (t < T.hold) p = DOWN;
+  else if (t < T.back) p = mix(DOWN, IDLE, backOut(cl((t - T.hold) / (T.back - T.hold))));
+  else p = IDLE;
+  return Object.assign({}, p, { a: p.a + breathe, bob: Math.sin(t * 2.6) * 2 });
+}
+const BODY_H = 340, SH = { x: -34, y: -214 }, ARM = 190, WPN = 330;       // 어깨 자리(발 기준), 팔 길이, 무기 길이
+
+function drawArm(a, dark) {                                                   // 팔 그림: 어깨가 오른쪽 끝, 주먹이 왼쪽 끝
+  const im = IMG.arm, h = im.height * ARM / im.width;
+  ctx.save(); ctx.rotate(rad(a)); if (dark) ctx.filter = 'brightness(0.72)'; ctx.drawImage(im, -ARM + 16, -h / 2, ARM, h); ctx.restore();
+}
+function drawWeapon(a, w) {                                                   // 무기 그림: 손잡이가 오른쪽 끝
+  const im = IMG.wpn, h = im.height * WPN / im.width;
+  ctx.save(); ctx.rotate(rad(a)); ctx.translate(-ARM + 44, 0); ctx.rotate(rad(w)); ctx.drawImage(im, -WPN + 46, -h / 2, WPN, h); ctx.restore();
+}
+function drawParts(p) {                                                       // 발밑이 원점. 왼쪽을 본다
+  const b = IMG.body, bw = b.width * BODY_H / b.height;
+  ctx.save(); ctx.translate(p.step, 0); ctx.rotate(rad(p.lean)); ctx.scale(1 / p.sq, p.sq);
+  ctx.save(); ctx.translate(SH.x + 58, SH.y + 6 + (p.bob || 0)); drawArm(p.a + 14, true); ctx.restore();     // 뒤쪽 팔
+  ctx.drawImage(b, -bw / 2, -BODY_H + (p.bob || 0), bw, BODY_H);
+  ctx.save(); ctx.translate(SH.x, SH.y + (p.bob || 0)); drawWeapon(p.a, p.w); drawArm(p.a, false); ctx.restore();
+  ctx.restore();
+}
+function tip(p) {                                                             // 무기 끝이 화면에서 어디 있는지(베는 자국에 쓴다)
+  const a = rad(p.a), d = rad(p.a + p.w), L = rad(p.lean);
+  let x = SH.x - Math.cos(a) * (ARM - 44) - Math.cos(d) * (WPN - 60), y = SH.y - Math.sin(a) * (ARM - 44) - Math.sin(d) * (WPN - 60);
+  return [p.step + x * Math.cos(L) - y * Math.sin(L), x * Math.sin(L) + y * Math.cos(L)];
+}
+function shadow(x, r) { const g = ctx.createRadialGradient(x, G + 2, 2, x, G + 2, r); g.addColorStop(0, 'rgba(0,0,0,0.38)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.save(); ctx.translate(0, G + 2); ctx.scale(1, 0.22); ctx.translate(0, -(G + 2)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, G + 2, r, 0, 7); ctx.fill(); ctx.restore(); }
+function knight(x, t, hitAt) {
+  const k = IMG.knight, h = 190, w = k.width * h / k.height, since = t - hitAt, hit = since > 0 && since < 0.32;
+  const push = hit ? -Math.sin(since / 0.32 * Math.PI) * 26 : 0;
+  shadow(x + push, 52);
+  ctx.save(); ctx.translate(x + push, G + 5); if (hit) { ctx.rotate(rad(-9 * Math.sin(since / 0.32 * Math.PI))); if (since < 0.09) ctx.filter = 'brightness(2.3)'; }
+  ctx.drawImage(k, -w / 2, -h, w, h); ctx.restore();
+}
+function dust(x, since) {
+  if (since < 0 || since > 0.5) return; const p = since / 0.5;
+  ctx.save(); ctx.globalAlpha = (1 - p) * 0.55; ctx.fillStyle = '#e9e3c9';
+  for (let i = 0; i < 9; i++) { const dir = i % 2 ? 1 : -1, d = (20 + i * 13) * easeOut(p) * dir, r = 14 - i + p * 10; ctx.beginPath(); ctx.arc(x + d, G - 4 - Math.sin(p * 3.1) * (10 + i * 3), r, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function label(s, x, sub) {
+  ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+  ctx.font = 'bold 34px sans-serif'; ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(s, x, 62); ctx.fillStyle = '#fff3cf'; ctx.fillText(s, x, 62);
+  ctx.font = '24px sans-serif'; ctx.lineWidth = 6; ctx.strokeText(sub, x, 100); ctx.fillStyle = '#f1efe2'; ctx.fillText(sub, x, 100);
+}
+function draw(time) {
+  const t = time % LOOP, p = pose(t), sinceHit = t - T.hit;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(IMG.bg, 0, 0, W, H); ctx.fillStyle = 'rgba(245,248,240,0.2)'; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(IMG.ground, 0, G - 26); ctx.fillStyle = 'rgb(58,38,24)'; ctx.fillRect(0, G - 26 + IMG.ground.height - 3, W, H);
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(W / 2 - 2, 0, 4, H);
+  label('가 · 통짜 그림 기울이기', 400, '치켜든 자세 그대로 몸 전체가 기운다'); label('나 · 부품을 나눠 돌리기', 1200, '준비(길게) → 내리침(짧게) → 멈춤 → 되돌아옴');
+
+  // 가: 같은 박자로, 통짜 그림을 발밑 축으로 기울인다
+  knight(170, t, T.hit);
+  const wl = t < T.antic ? 0 : t < T.strike ? lerp(0, 9, easeOut((t - T.antic) / 0.5)) : t < T.hit ? lerp(9, -24, easeIn((t - T.strike) / 0.1)) : t < T.hold ? -24 : t < T.back ? lerp(-24, 0, backOut((t - T.hold) / (T.back - T.hold))) : 0;
+  shadow(560, 110);
+  ctx.save(); ctx.translate(560, G + 6); ctx.rotate(rad(wl)); ctx.translate(wl < 0 ? wl * 1.6 : 0, Math.sin(t * 2.6) * 2); drawParts(Object.assign({}, UP, { lean: 0, step: 0, sq: 1, bob: 0 })); ctx.restore();
+  dust(330, sinceHit);
+
+  // 나: 부품
+  const shake = sinceHit > 0 && sinceHit < 0.16 ? Math.sin(sinceHit * 110) * 7 * (1 - sinceHit / 0.16) : 0;
+  ctx.save(); ctx.beginPath(); ctx.rect(W / 2 + 2, 0, W / 2, H); ctx.clip(); ctx.translate(0, shake);
+  knight(930, t, T.hit);
+  shadow(1290 + p.step, 110);
+  ctx.save(); ctx.translate(1290, G + 6); drawParts(p);
+  if (t > T.strike - 0.02 && t < T.hold + 0.1) {                              // 베는 자국: 내리치는 동안 무기 끝이 지나간 길
+    ctx.lineCap = 'round'; const fade = t < T.hit ? 1 : 1 - (t - T.hit) / (T.hold + 0.1 - T.hit);
+    for (const [wd, col, al] of [[26, '#fff8e0', 0.5], [10, '#ffffff', 0.85]]) {
+      ctx.strokeStyle = col; ctx.globalAlpha = al * fade; ctx.lineWidth = wd; ctx.beginPath();
+      for (let i = 0; i <= 14; i++) { const q = mix(UP, DOWN, easeIn(cl((i / 14) * cl((t - T.strike) / (T.hit - T.strike))))); const [x, y] = tip(q); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+  dust(985, sinceHit);
+  if (sinceHit > 0 && sinceHit < 0.7) { ctx.globalAlpha = 1 - sinceHit / 0.7; ctx.font = 'bold 46px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText('128', 930, 520 - sinceHit * 80); ctx.fillStyle = '#fff'; ctx.fillText('128', 930, 520 - sinceHit * 80); ctx.globalAlpha = 1; }
+  ctx.restore();
+}
+window.__draw = draw;
+Promise.all([load('bg', '배경.jpg'), load('ground', '땅.png'), load('body', '풍차지기-몸.png'), load('arm', '풍차지기-팔.png'), load('wpn', '풍차지기-날개.png'), load('knight', '기사.png')]).then(() => {
+  window.__ready = true;
+  if (!location.search.includes('still')) { const t0 = performance.now(); (function f(now) { draw((now - t0) / 1000); requestAnimationFrame(f); })(t0); }
+});
+</script>
+</body>
+</html>
