@@ -26,9 +26,9 @@ let stars = 0;          // 모은 별(0~7). 별이 늘수록 깜빡이가 밝아
 
 // 발판: x, y(윗면), 그림, 그림 안에서 윗면이 있는 y, 딛는 폭
 // 그림 두 벌: 가 = 기사 그림체로 통일, 나 = 몬스터 그림체(유화풍)로 통일. 왼쪽 아래 단추로 바꾼다.
-let SET = '다';
+let SET = '라';
 const TOP = { 가: { ground: 36, mid: 36, small: 28, log: 52 }, 나: { ground: 34, mid: 66, small: 44, log: 80 },
-  다: { ground: 30, mid: 34, small: 36, log: 44 } };   // 딛는 자리는 풀 끝이 아니라 윗면 안쪽이다
+  다: { ground: 30, mid: 34, small: 36, log: 44 }, 라: { ground: 30, mid: 34, small: 36, log: 44 } };   // 딛는 자리는 풀 끝이 아니라 윗면 안쪽이다
 const PLATS = [
   { x: 520,  y: 560, img: 'mid',  w: 600 },
   { x: 1250, y: 420, img: 'small', w: 250 },
@@ -43,7 +43,9 @@ const FLOORS = [{ x: 0, y: GROUND, w: WORLD }].concat(PLATS.map(p => ({ x: p.x +
 const K0 = { face: -1, hipY: 716, leg: 213,  s: 0.31, cx: 575, feet: 929, hipL: [520, 716], hipR: [640, 716], hand: [707, 690], neck: [560, 440], swordLen: 600, grip: 100, rest: -0.405, lamp: [662, 668] };
 // 다: 기준 그림체의 기사. 오른쪽을 보고 선 그림이라 face 가 1이다.
 const K다 = { face: 1, s: 0.31, cx: 440, feet: 960, hipL: [440, 745], hipR: [545, 745], hipY: 745, leg: 215, hand: [372, 720], neck: [500, 495], swordLen: 600, grip: 100, rest: -0.405, lamp: [424, 692] };
-const KS = { 가: K0, 나: K0, 다: K다 };
+// 라: 2026-11-18 시험 세트의 기사(밝은 살빛, 방향 없는 빛). 왼쪽을 보고 선 그림.
+const K라 = { face: -1, s: 0.31, cx: 578, feet: 927, hipL: [498, 742], hipR: [662, 742], hipY: 742, leg: 185, hand: [703, 694], neck: [572, 458], swordLen: 600, grip: 100, rest: -0.405, lamp: [640, 668] };
+const KS = { 가: K0, 나: K0, 다: K다, 라: K라 };
 let K = K다;
 const knight = { x: 300, y: GROUND, floor: 0, dir: 1, state: 'walk', t: 0, atk: 0, jump: null, target: null };
 
@@ -115,7 +117,7 @@ function update(dt) {
 }
 
 function drawBack() {
-  const bg = IMG.bg; if (!bg.width) { ctx.fillStyle = '#16241a'; ctx.fillRect(0, 0, W, H); return; }
+  const bg = SET === '라' ? IMG.bg라 : IMG.bg; if (!bg.width) { ctx.fillStyle = '#16241a'; ctx.fillRect(0, 0, W, H); return; }
   const bw = bg.width * (H / bg.height), off = (cam * 0.25) % (bw * 2);
   for (let i = -1; i < 4; i++) {                                           // 그림과 뒤집은 그림을 번갈아 이어 붙인다
     const x = i * bw - off; if (x > W || x + bw < 0) continue;
@@ -125,6 +127,18 @@ function drawBack() {
     ctx.restore();
   }
             // 먼 배경을 한 톤 눌러 앞쪽이 살게 한다
+  const md = IMG.mid라;                                                    // 가운데 겹: 큰 나무와 덤불. 먼 배경보다 빨리, 발판보다 느리게 흐른다
+  if (SET === '라' && md && md.width) {
+    const mw = md.width * (H / md.height), mo = (cam * 0.5) % (mw * 2);
+    for (let i = -1; i < 4; i++) {
+      const x = i * mw - mo; if (x > W || x + mw < 0) continue;
+      ctx.save();
+      if (((i % 2) + 2) % 2 === 1) { ctx.translate(x + mw, 0); ctx.scale(-1, 1); ctx.drawImage(md, 0, 0, mw + 1, H); }
+      else ctx.drawImage(md, x, 0, mw + 1, H);
+      ctx.restore();
+    }
+    ctx.fillStyle = 'rgba(18,30,24,0.28)'; ctx.fillRect(0, 0, W, H);       // 뒤쪽 두 겹을 한 톤 눌러 발판과 캐릭터가 살게 한다
+  }
 }
 function drawPlats() {
   const T = TOP[SET];
@@ -272,7 +286,7 @@ function drawHud() {
   say('무기: ' + WEAPONS[weapon].replace(/(의|던)/g, '$1 ').replace('있던 ', '있던 '), W - 30, 24, '#f4ead0', 'right');
   ctx.font = '24px sans-serif'; say('화면을 누르면 무기가 바뀝니다 · 시험판', W - 30, 70, '#cfd8c4', 'right');
   ctx.fillStyle = 'rgba(12,18,14,0.82)'; ctx.strokeStyle = '#e8d9a8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(24, H - 96, 470, 72, 16); ctx.fill(); ctx.stroke();
-  ctx.font = 'bold 30px sans-serif'; ctx.textBaseline = 'middle'; say({ 가: '가 · 처음 기사 그림체 ⇄', 나: '나 · 처음 유화풍 ⇄', 다: '다 · 기준 그림체 ⇄' }[SET], 259, H - 60, '#f4ead0', 'center'); ctx.textBaseline = 'top';
+  ctx.font = 'bold 30px sans-serif'; ctx.textBaseline = 'middle'; say({ 가: '가 · 처음 기사 그림체 ⇄', 나: '나 · 처음 유화풍 ⇄', 다: '다 · 기준 그림체 ⇄', 라: '라 · 새 시험 세트 ⇄' }[SET], 259, H - 60, '#f4ead0', 'center'); ctx.textBaseline = 'top';
   ctx.font = 'bold 40px sans-serif';
   for (const n of nums) { ctx.globalAlpha = 1 - n.t / 0.8; say(String(n.v), n.x - cam, n.y - n.t * 70, '#fff', 'center'); } ctx.globalAlpha = 1;
 }
@@ -291,7 +305,7 @@ function frame(now) {
 cv.addEventListener('pointerdown', e => {
   const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H;
   if (x > W - 430 && y > H - 110) stars = (stars + 1) % 8;
-  else if (x < 510 && y > H - 110) SET = { 다: '나', 나: '가', 가: '다' }[SET]; else weapon = (weapon + 1) % WEAPONS.length;
+  else if (x < 510 && y > H - 110) SET = { 라: '다', 다: '나', 나: '가', 가: '라' }[SET]; else weapon = (weapon + 1) % WEAPONS.length;
 });
 Promise.all([
   load('bg', 'art/맵/1-1-먼배경.jpg'),
@@ -299,6 +313,9 @@ Promise.all([
   load('나ground', 'art/맵/1구역-나-땅.png'), load('나mid', 'art/맵/1구역-나-발판-중.png'), load('나small', 'art/맵/1구역-나-발판-소.png'), load('나log', 'art/맵/1구역-나-통나무.png'),
   load('다ground', 'art/맵/1구역-다-땅.png'), load('다mid', 'art/맵/1구역-다-발판-중.png'), load('다small', 'art/맵/1구역-다-발판-소.png'), load('다log', 'art/맵/1구역-다-통나무.png'), load('다mob', 'art/맵/다람쥐-다.png'),
   load('다body', 'art/knight/인형/남-다-몸통.png'), load('다legL', 'art/knight/인형/남-다-왼다리.png'), load('다legR', 'art/knight/인형/남-다-오른다리.png'), load('다hand', 'art/knight/인형/남-다-손.png'), load('다head', 'art/knight/인형/남-다-머리.png'),
+  load('bg라', 'art/시안/시험세트/가로/먼배경.jpg'), load('mid라', 'art/시안/시험세트/가로/가운데겹.png'), load('라mob', 'art/시안/시험세트/가로/다람쥐.png'),
+  load('라ground', 'art/시안/시험세트/가로/발판-땅.png'), load('라mid', 'art/시안/시험세트/가로/발판-발판-중.png'), load('라small', 'art/시안/시험세트/가로/발판-발판-소.png'), load('라log', 'art/시안/시험세트/가로/발판-통나무.png'),
+  load('라body', 'art/시안/시험세트/가로/기사-몸통.png'), load('라legL', 'art/시안/시험세트/가로/기사-왼다리.png'), load('라legR', 'art/시안/시험세트/가로/기사-오른다리.png'), load('라hand', 'art/시안/시험세트/가로/기사-손.png'), load('라head', 'art/시안/시험세트/가로/기사-머리.png'),
   load('가mob', 'art/맵/다람쥐-가.png'), load('나mob', 'art/맵/다람쥐-나.png'),
   load('가body', 'art/knight/인형/남-몸통.png'), load('가legL', 'art/knight/인형/남-왼다리.png'), load('가legR', 'art/knight/인형/남-오른다리.png'), load('가hand', 'art/knight/인형/남-손.png'), load('가head', 'art/knight/인형/남-머리.png'),
   load('나body', 'art/knight/인형/남-나-몸통.png'), load('나legL', 'art/knight/인형/남-나-왼다리.png'), load('나legR', 'art/knight/인형/남-나-오른다리.png'), load('나hand', 'art/knight/인형/남-나-손.png'), load('나head', 'art/knight/인형/남-나-머리.png'),

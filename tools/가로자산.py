@@ -157,7 +157,31 @@ def 인형_다(g='남'):
     print('인형 다', g)
 
 
+def 시험세트_라():
+    """2026-11-18 시험 세트: 밝은 살빛·고른 빛의 새 기사(검 없이 선 그림)를 인형으로 나누고, 새 다람쥐·먼 배경·가운데 겹을 가로 시험판용으로 만든다.
+    확정 전이라 art/시안/시험세트/가로/ 에 둔다. 좌표는 1024 기준."""
+    from cutout2 import cutout
+    src = os.path.join(ROOT, 'art/시안/시험세트'); out = os.path.join(src, '가로'); os.makedirs(out, exist_ok=True)
+    tmp = os.path.join(out, '_t.png')
+    cutout(os.path.join(src, '기사-남-4-검없이.png'), tmp, keep=[(850, 560, 1350, 760)], holes=[(790, 1350, 860, 1460)])
+    im = Image.open(tmp).resize((1024, 1024), Image.LANCZOS); os.remove(tmp)
+    a = np.asarray(im).copy(); yy, xx = np.mgrid[0:1024, 0:1024]
+    def save(name, mask):
+        b = a.copy(); b[~mask] = 0; Image.fromarray(b, 'RGBA').save(os.path.join(out, '기사-%s.png' % name))
+    leg = yy > 805
+    save('몸통', (yy >= 440) & (yy < 824)); save('왼다리', leg & (xx < 583)); save('오른다리', leg & (xx >= 583))
+    save('머리', yy < 458)
+    hand = Image.new('L', (1024, 1024), 0); ImageDraw.Draw(hand).polygon([(662, 658), (744, 658), (744, 732), (662, 732)], fill=255)
+    save('손', np.asarray(hand) > 0)
+    print('기사 발끝 y', int(np.where(a[..., 3] > 128)[0].max()))
+    m = Image.open(os.path.join(src, '누끼/1-01-냄비다람쥐-2.png')); m = m.crop(m.getbbox()); m = m.resize((int(m.width * 300 / m.height), 300), Image.LANCZOS); m.save(os.path.join(out, '다람쥐.png'))
+    b = Image.open(os.path.join(src, '1-1-먼배경.png')).convert('RGB'); b = b.resize((1600, int(b.height * 1600 / b.width)), Image.LANCZOS); b.save(os.path.join(out, '먼배경.jpg'), quality=88)
+    g = Image.open(os.path.join(src, '누끼/1-1-가운데겹.png')); g = g.resize((1600, int(g.height * 1600 / g.width)), Image.LANCZOS); g.save(os.path.join(out, '가운데겹.png'))
+    print('시험세트 라', b.size, g.size, m.size)
+
+
 if __name__ == '__main__':
+    if '라' in sys.argv: 시험세트_라(); sys.exit()
     발판_다(); 인형_다('남')
     몬스터(os.path.join(ROOT, 'art/monsters/원본/1-01-냄비다람쥐-유화.png'), os.path.join(ROOT, 'art/맵/다람쥐-다.png'))
     먼배경(); 발판(); 인형('남')
