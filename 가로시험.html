@@ -250,7 +250,7 @@ function drawKnight() {
     ctx.save(); ctx.translate(K.hand[0], K.hand[1]); ctx.scale(-K.face, 1); ctx.rotate(-sword); ctx.drawImage(sw, -(K.swordLen - K.grip), -h / 2, K.swordLen, h); ctx.restore();
   }
   ctx.drawImage(IMG[SET + 'hand'], 0, 0);
-  part('head', K.neck, head);
+  part(k.dir * K.face < 0 && IMG[SET + 'headR'] ? 'headR' : 'head', K.neck, head);   // 뒤집어 쓸 때는 눈 색을 맞바꾼 머리를 써서, 어느 쪽을 봐도 왼눈이 하늘색이다
   ctx.restore(); ctx.restore();
   if (k.atk > 0 && k.atk < 0.22) {                                          // 베는 자국
     ctx.save(); ctx.translate(x + k.dir * 60, k.y - 95); ctx.scale(k.dir, 1); ctx.globalAlpha = k.atk / 0.22 * 0.85;
@@ -315,7 +315,7 @@ Promise.all([
   load('다body', 'art/knight/인형/남-다-몸통.png'), load('다legL', 'art/knight/인형/남-다-왼다리.png'), load('다legR', 'art/knight/인형/남-다-오른다리.png'), load('다hand', 'art/knight/인형/남-다-손.png'), load('다head', 'art/knight/인형/남-다-머리.png'),
   load('bg라', 'art/시안/시험세트/가로/먼배경.jpg'), load('mid라', 'art/시안/시험세트/가로/가운데겹.png'), load('라mob', 'art/시안/시험세트/가로/다람쥐.png'),
   load('라ground', 'art/시안/시험세트/가로/발판-땅.png'), load('라mid', 'art/시안/시험세트/가로/발판-발판-중.png'), load('라small', 'art/시안/시험세트/가로/발판-발판-소.png'), load('라log', 'art/시안/시험세트/가로/발판-통나무.png'),
-  load('라body', 'art/시안/시험세트/가로/기사-몸통.png'), load('라legL', 'art/시안/시험세트/가로/기사-왼다리.png'), load('라legR', 'art/시안/시험세트/가로/기사-오른다리.png'), load('라hand', 'art/시안/시험세트/가로/기사-손.png'), load('라head', 'art/시안/시험세트/가로/기사-머리.png'),
+  load('라body', 'art/시안/시험세트/가로/기사-몸통.png'), load('라legL', 'art/시안/시험세트/가로/기사-왼다리.png'), load('라legR', 'art/시안/시험세트/가로/기사-오른다리.png'), load('라hand', 'art/시안/시험세트/가로/기사-손.png'), load('라head', 'art/시안/시험세트/가로/기사-머리.png'), load('라headR', 'art/시안/시험세트/가로/기사-머리-오른쪽.png'),
   load('가mob', 'art/맵/다람쥐-가.png'), load('나mob', 'art/맵/다람쥐-나.png'),
   load('가body', 'art/knight/인형/남-몸통.png'), load('가legL', 'art/knight/인형/남-왼다리.png'), load('가legR', 'art/knight/인형/남-오른다리.png'), load('가hand', 'art/knight/인형/남-손.png'), load('가head', 'art/knight/인형/남-머리.png'),
   load('나body', 'art/knight/인형/남-나-몸통.png'), load('나legL', 'art/knight/인형/남-나-왼다리.png'), load('나legR', 'art/knight/인형/남-나-오른다리.png'), load('나hand', 'art/knight/인형/남-나-손.png'), load('나head', 'art/knight/인형/남-나-머리.png'),
