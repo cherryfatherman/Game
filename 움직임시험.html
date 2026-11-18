@@ -24,7 +24,7 @@ const easeOut = t => 1 - (1 - t) ** 3, easeIn = t => t * t * t, rad = d => d * M
 const backOut = t => { const c = 1.9; return 1 + (c + 1) * (t - 1) ** 3 + c * (t - 1) ** 2; };   // 살짝 지나쳤다 돌아온다
 
 // 한 순간의 자세: 팔 각도(a), 팔에 대한 무기 각도(w), 몸 기울기(lean), 앞으로 내딛는 거리(step), 눌림(sq)
-const IDLE = { a: -62, w: 104, lean: 0, step: 0, sq: 1 }, UP = { a: 128, w: 44, lean: 7, step: 14, sq: 1.04 }, DOWN = { a: -28, w: 12, lean: -11, step: -46, sq: 0.94 };
+const IDLE = { a: -80, e: 62, w: 78, lean: 0, step: 0, sq: 1 }, UP = { a: 126, e: 38, w: 14, lean: 7, step: 14, sq: 1.04 }, DOWN = { a: -24, e: 8, w: 4, lean: -11, step: -46, sq: 0.94 };
 function mix(p, q, t) { const o = {}; for (const k in p) o[k] = lerp(p[k], q[k], t); return o; }
 function pose(t) {
   const breathe = Math.sin(t * 2.6) * 1.5;
@@ -37,27 +37,31 @@ function pose(t) {
   else p = IDLE;
   return Object.assign({}, p, { a: p.a + breathe, bob: Math.sin(t * 2.6) * 2 });
 }
-const BODY_H = 340, SH = { x: -34, y: -214 }, ARM = 190, WPN = 330;       // 어깨 자리(발 기준), 팔 길이, 무기 길이
+// 발 기준 자리: 앞 어깨, 뒤 어깨. 위팔 길이, 아래팔 길이, 무기 길이
+const BODY_H = 350, SH = { x: -86, y: -236 }, SHB = { x: 56, y: -252 }, UA = 128, FA = 132, WPN = 370, UJ = UA - 30, FJ = FA - 34, THICK = 1.35;
 
-function drawArm(a, dark) {                                                   // 팔 그림: 어깨가 오른쪽 끝, 주먹이 왼쪽 끝
-  const im = IMG.arm, h = im.height * ARM / im.width;
-  ctx.save(); ctx.rotate(rad(a)); if (dark) ctx.filter = 'brightness(0.72)'; ctx.drawImage(im, -ARM + 16, -h / 2, ARM, h); ctx.restore();
+function seg(key, len, dark) {                                                // 팔 조각 그림: 몸 쪽 관절이 오른쪽 끝
+  const im = IMG[key], h = im.height * len / im.width * THICK;
+  if (dark) ctx.filter = 'brightness(0.7)'; ctx.drawImage(im, -len + 24, -h / 2, len, h); ctx.filter = 'none';
 }
-function drawWeapon(a, w) {                                                   // 무기 그림: 손잡이가 오른쪽 끝
-  const im = IMG.wpn, h = im.height * WPN / im.width;
-  ctx.save(); ctx.rotate(rad(a)); ctx.translate(-ARM + 44, 0); ctx.rotate(rad(w)); ctx.drawImage(im, -WPN + 46, -h / 2, WPN, h); ctx.restore();
+function drawArm(p, dark, withWeapon) {                                       // 어깨 → 팔꿈치 → 손 → 무기 차례로 꺾인다
+  ctx.save(); ctx.rotate(rad(p.a + (dark ? 12 : 0)));
+  ctx.save(); ctx.translate(-UJ, 0); ctx.rotate(rad(p.e));
+  if (withWeapon) { const im = IMG.wpn, h = im.height * WPN / im.width; ctx.save(); ctx.translate(-FJ, 0); ctx.rotate(rad(p.w)); ctx.drawImage(im, -WPN + 70, -h * 0.5, WPN, h); ctx.restore(); }
+  seg('fore', FA, dark); ctx.restore();
+  seg('upper', UA, dark); ctx.restore();
 }
 function drawParts(p) {                                                       // 발밑이 원점. 왼쪽을 본다
-  const b = IMG.body, bw = b.width * BODY_H / b.height;
+  const b = IMG.body, bw = b.width * BODY_H / b.height, bob = p.bob || 0;
   ctx.save(); ctx.translate(p.step, 0); ctx.rotate(rad(p.lean)); ctx.scale(1 / p.sq, p.sq);
-  ctx.save(); ctx.translate(SH.x + 58, SH.y + 6 + (p.bob || 0)); drawArm(p.a + 14, true); ctx.restore();     // 뒤쪽 팔
-  ctx.drawImage(b, -bw / 2, -BODY_H + (p.bob || 0), bw, BODY_H);
-  ctx.save(); ctx.translate(SH.x, SH.y + (p.bob || 0)); drawWeapon(p.a, p.w); drawArm(p.a, false); ctx.restore();
+  ctx.save(); ctx.translate(SHB.x, SHB.y + bob); drawArm(p, true, false); ctx.restore();                  // 뒤쪽 팔
+  ctx.drawImage(b, -bw / 2, -BODY_H + bob, bw, BODY_H);
+  ctx.save(); ctx.translate(SH.x, SH.y + bob); drawArm(p, false, true); ctx.restore();                    // 앞쪽 팔과 무기
   ctx.restore();
 }
 function tip(p) {                                                             // 무기 끝이 화면에서 어디 있는지(베는 자국에 쓴다)
-  const a = rad(p.a), d = rad(p.a + p.w), L = rad(p.lean);
-  let x = SH.x - Math.cos(a) * (ARM - 44) - Math.cos(d) * (WPN - 60), y = SH.y - Math.sin(a) * (ARM - 44) - Math.sin(d) * (WPN - 60);
+  const a = rad(p.a), e = rad(p.a + p.e), d = rad(p.a + p.e + p.w), L = rad(p.lean), R = WPN - 80;
+  const x = SH.x - Math.cos(a) * UJ - Math.cos(e) * FJ - Math.cos(d) * R, y = SH.y - Math.sin(a) * UJ - Math.sin(e) * FJ - Math.sin(d) * R;
   return [p.step + x * Math.cos(L) - y * Math.sin(L), x * Math.sin(L) + y * Math.cos(L)];
 }
 function shadow(x, r) { const g = ctx.createRadialGradient(x, G + 2, 2, x, G + 2, r); g.addColorStop(0, 'rgba(0,0,0,0.38)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.save(); ctx.translate(0, G + 2); ctx.scale(1, 0.22); ctx.translate(0, -(G + 2)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, G + 2, r, 0, 7); ctx.fill(); ctx.restore(); }
@@ -88,11 +92,13 @@ function draw(time) {
   label('가 · 통짜 그림 기울이기', 400, '치켜든 자세 그대로 몸 전체가 기운다'); label('나 · 부품을 나눠 돌리기', 1200, '준비(길게) → 내리침(짧게) → 멈춤 → 되돌아옴');
 
   // 가: 같은 박자로, 통짜 그림을 발밑 축으로 기울인다
-  knight(170, t, T.hit);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W / 2 - 2, H); ctx.clip();
+  knight(150, t, T.hit);
   const wl = t < T.antic ? 0 : t < T.strike ? lerp(0, 9, easeOut((t - T.antic) / 0.5)) : t < T.hit ? lerp(9, -24, easeIn((t - T.strike) / 0.1)) : t < T.hold ? -24 : t < T.back ? lerp(-24, 0, backOut((t - T.hold) / (T.back - T.hold))) : 0;
-  shadow(560, 110);
-  ctx.save(); ctx.translate(560, G + 6); ctx.rotate(rad(wl)); ctx.translate(wl < 0 ? wl * 1.6 : 0, Math.sin(t * 2.6) * 2); drawParts(Object.assign({}, UP, { lean: 0, step: 0, sq: 1, bob: 0 })); ctx.restore();
+  shadow(520, 110);
+  ctx.save(); ctx.translate(520, G + 6); ctx.rotate(rad(wl)); ctx.translate(wl < 0 ? wl * 1.6 : 0, Math.sin(t * 2.6) * 2); drawParts(Object.assign({}, UP, { lean: 0, step: 0, sq: 1, bob: 0 })); ctx.restore();
   dust(330, sinceHit);
+  ctx.restore();
 
   // 나: 부품
   const shake = sinceHit > 0 && sinceHit < 0.16 ? Math.sin(sinceHit * 110) * 7 * (1 - sinceHit / 0.16) : 0;
@@ -115,7 +121,7 @@ function draw(time) {
   ctx.restore();
 }
 window.__draw = draw;
-Promise.all([load('bg', '배경.jpg'), load('ground', '땅.png'), load('body', '풍차지기-몸.png'), load('arm', '풍차지기-팔.png'), load('wpn', '풍차지기-날개.png'), load('knight', '기사.png')]).then(() => {
+Promise.all([load('bg', '배경.jpg'), load('ground', '땅.png'), load('body', '풍차지기-몸.png'), load('upper', '풍차지기-위팔.png'), load('fore', '풍차지기-아래팔.png'), load('wpn', '풍차지기-날개.png'), load('knight', '기사.png')]).then(() => {
   window.__ready = true;
   if (!location.search.includes('still')) { const t0 = performance.now(); (function f(now) { draw((now - t0) / 1000); requestAnimationFrame(f); })(t0); }
 });
