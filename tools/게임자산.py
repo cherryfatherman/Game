@@ -144,6 +144,7 @@ def 내보내기():
     깃허브에서 Settings → Pages → 가지를 고르고 폴더를 /docs 로 하면 docs/index.html 이 열린다."""
     docs = P('docs'); shutil.rmtree(docs, ignore_errors=True); os.makedirs(P(docs, 'art'))
     shutil.copy(P('게임.html'), P(docs, 'index.html')); shutil.copytree(OUT, P(docs, 'art/게임'))
+    open(P(docs, 's.html'), 'w', encoding='utf-8').write(open(P('세로.html'), encoding='utf-8').read().replace('href="게임.html"', 'href="index.html"'))   # 세로판은 주소 끝에 s.html
     open(P(docs, '.nojekyll'), 'w').close()
     print('docs %.1fMB' % (sum(os.path.getsize(os.path.join(d, x)) for d, _, f in os.walk(docs) for x in f) / 1e6))
 
