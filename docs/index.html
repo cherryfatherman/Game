@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>잊혀진 기사 키우기 · 1~3장 해 보는 판</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0f0c; overflow: hidden; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; -webkit-user-select: none; user-select: none; }
+  #wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(100vw, 177.78vh); height: min(56.25vw, 100vh); font-size: calc(min(100vw, 177.78vh) / 100); overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; }
+  #bar { position: absolute; left: 1.5em; bottom: 1.4em; display: flex; gap: 0.8em; }
+  button { font: inherit; font-weight: 700; color: #fbf1d3; background: rgba(20, 28, 22, 0.86); border: 0.18em solid #d9c890; border-radius: 0.9em; padding: 0.55em 1.1em; font-size: 1.7em; cursor: pointer; }
+  button:active { background: rgba(60, 70, 50, 0.95); }
+  button:disabled { opacity: 0.4; }
+  button.go { background: rgba(150, 70, 30, 0.92); border-color: #ffd58a; }
+  #panel { position: absolute; right: 1.5em; top: 7em; bottom: 1.4em; width: 44em; background: rgba(16, 22, 18, 0.94); border: 0.2em solid #d9c890; border-radius: 1.2em; color: #f3ecd6; display: none; flex-direction: column; }
+  #panel h2 { margin: 0; padding: 0.7em 1em 0.5em; font-size: 2em; color: #ffe9a8; display: flex; justify-content: space-between; align-items: center; }
+  #panel h2 button { font-size: 0.8em; padding: 0.2em 0.7em; }
+  #body { overflow-y: auto; padding: 0 1.4em 1.2em; flex: 1; font-size: 1.55em; line-height: 1.5; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 1em; padding: 0.6em 0; border-bottom: 0.08em solid rgba(217, 200, 144, 0.25); }
+  .row button { font-size: 1em; white-space: nowrap; }
+  .dim { color: #a9ad9a; font-size: 0.86em; }
+  .gold { color: #ffd27a; } .gem { color: #9fd8ff; }
+  .mobrow { display: flex; gap: 0.9em; padding: 0.7em 0; border-bottom: 0.08em solid rgba(217, 200, 144, 0.25); }
+  .mobrow img { width: 4.4em; height: 4.4em; object-fit: contain; flex: none; }
+  .mobrow.no img { filter: brightness(0); opacity: 0.5; }
+  .loot { color: #ffe9a8; font-weight: 700; }
+  .wgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3em 1.2em; margin-top: 0.6em; font-size: 0.88em; }
+  .wgrid div.no { color: #6f7468; }
+  #toast { position: absolute; left: 30%; top: 9em; transform: translateX(-50%); width: 46em; pointer-events: none; display: flex; flex-direction: column; gap: 0.6em; align-items: center; }
+  .t { background: rgba(14, 18, 15, 0.9); border: 0.14em solid #d9c890; border-radius: 0.9em; color: #f6efd8; padding: 0.6em 1.2em; font-size: 1.6em; line-height: 1.45; text-align: center; animation: fade 6s forwards; }
+  .t b { color: #ffe9a8; }
+  @keyframes fade { 0% { opacity: 0; transform: translateY(-0.6em); } 6% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
+  #card { position: absolute; inset: 0; background: rgba(6, 8, 7, 0.78); display: none; align-items: flex-end; justify-content: center; cursor: pointer; }
+  #cardbox { width: 70em; min-height: 11em; margin-bottom: 5em; background: rgba(18, 22, 19, 0.96); border: 0.2em solid #d9c890; border-radius: 1.2em; padding: 1.6em 2.2em; color: #f6efd8; }
+  #who { font-size: 1.7em; color: #ffd58a; font-weight: 700; min-height: 1.4em; }
+  #say { font-size: 2.2em; line-height: 1.55; margin-top: 0.3em; }
+  #say.big { font-size: 3.6em; text-align: center; color: #ffe9a8; padding: 0.6em 0; }
+  #say.em { color: #ffe9a8; font-weight: 700; }
+  #skip { position: absolute; right: 2em; top: 2em; font-size: 1.4em; }
+  #turn { position: fixed; inset: 0; background: #0b0f0c; color: #f3ecd6; display: none; align-items: center; justify-content: center; text-align: center; font-size: 5.5vw; line-height: 1.6; z-index: 9; }
+  @media (orientation: portrait) { #turn { display: flex; } }
+  #hint { position: absolute; right: 3em; bottom: 5.6em; font-size: 1.3em; color: #a9ad9a; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="1600" height="900"></canvas>
+  <div id="bar">
+    <button id="bUp">강화</button><button id="bWp">무기</button><button id="bBook">도감</button><button id="bGo" class="go" style="display:none">다음 스테이지 도전</button>
+  </div>
+  <div id="panel"><h2><span id="ptitle"></span><button id="pclose">닫기</button></h2><div id="body"></div></div>
+  <div id="toast"></div>
+  <div id="card"><button id="skip">건너뛰기</button><div id="cardbox"><div id="who"></div><div id="say"></div></div><div id="hint">누르면 넘어갑니다</div></div>
+</div>
+<div id="turn">휴대폰을 가로로 돌려 주세요<br>↻</div>
+<script src="art/게임/자료.js"></script>
+<script>
+// 잊혀진 기사 키우기 · 1~3장을 실제로 해 보는 판.
+// 그림과 글은 tools/게임자산.py 가 art/게임/ 에 모아 둔 것을 쓴다. 숫자는 아래 '값' 한 곳에 모았다(1차 값. 해 보고 고친다).
+const W = 1600, H = 900, GROUND = 770, D = window.DATA, $ = id => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d'), IMG = {};
+function load(key, src) { if (IMG[key]) return IMG[key].p; const im = new Image(); IMG[key] = im; im.p = new Promise(r => { im.onload = r; im.onerror = r; }); im.src = 'art/게임/' + src; return im.p; }
+
+// ───────── 값 ─────────
+const V = {
+  stages: 30,                    // 지금 들어 있는 스테이지 수 (1-1 ~ 3-10)
+  chMul: [3.2, 3.0, 2.8, 2.5, 2.3, 2.1, 2.0, 1.9, 1.8, 1.7],   // 한 장을 지나는 동안 기준 공격력이 몇 배가 되는가. 10장 끝에 약 3.8만
+  atkPerLv: 0.03, hpPerLv: 0.08, lootBonus: 0.01, starBonus: 0.10,   // 보너스는 모두 더한다(곱하지 않는다)
+  mobDef: 0.3, mobHp: 0.7, bossHp: 40, bossTime: 30,     // 우두머리는 기준 공격력의 6할쯤은 되어야 30초 안에 넘는다
+  goal: 20, lootRate: 0.08, crit: 0.10, critMul: 1.5, lineCap: 999999,
+  wStep: [0, 3, 5, 8],           // 한 장 안에서 무기 단계가 올라가야 하는 스테이지
+  gemStage: 3, gemBoss: 15, gemStart: 5, gemKills: 40,      // 처음 깨면 3개, 우두머리 15개, 그리고 40마리마다 1개
+  pullDrop: 0.5, pullSpan: 5,    // 뽑기: 한 단계 위일수록 절반만 나온다. 지금 필요한 단계보다 하나 위까지 나온다
+};
+const par = s => { let v = 10; for (let i = 0; i < s; i++) v *= Math.pow(V.chMul[Math.floor(i / 10)], 0.1); return v; };
+const expect = s => 1 + (V.atkPerLv + V.lootBonus) * s + V.starBonus * Math.floor(s / 10);      // 그 스테이지쯤이면 갖췄을 보너스
+const WATK = D.weapons.map((w, k) => { const s = Math.floor(k / 4) * 10 + V.wStep[k % 4]; return Math.max(1, Math.round(par(s) / expect(s))); });   // 그 단계가 필요해지는 스테이지의 기준 공격력에 맞춘다
+const mobStat = s => { const p = par(s), boss = s % 10 === 9, hp = Math.max(3, Math.round(p * V.mobHp * (boss ? V.bossHp : 1)));
+  return { hp, def: Math.floor(p * V.mobDef), atk: Math.max(2, Math.round(100 * (1 + V.hpPerLv * s) / 22 * (boss ? 1.6 : 1))), gold: Math.max(1, Math.round(p * V.mobHp / 4 * (boss ? 10 : 1))) }; };
+const upCost = (lv, k) => { const s = Math.min(lv, V.stages - 1); return Math.max(k, Math.round(par(s) * V.mobHp / 4 * k * Math.pow(1.04, Math.max(0, lv - V.stages)))); };   // 그 레벨쯤의 스테이지 몬스터 k마리어치
+const fmt = n => { n = Math.round(n); return n < 10000 ? n.toLocaleString('ko-KR') : (n / 10000).toFixed(n < 1e6 ? 1 : 0).replace(/\.0$/, '') + '만'; };
+
+// ───────── 저장 ─────────
+const SAVE = 'forgotten-knight-v1';
+let S = { stage: 0, cleared: 0, auto: true, gold: 0, gems: V.gemStart, atkLv: 0, hpLv: 0, wc: D.weapons.map((w, i) => i ? 0 : 1), best: 0, loot: {}, stars: 0, seen: {} };
+try { const j = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (j && j.wc) S = Object.assign(S, j); } catch (e) {}
+const save = () => { try { localStorage.setItem(SAVE, JSON.stringify(S)); } catch (e) {} };
+const lootKinds = () => Object.keys(S.loot).length;
+const atk = () => WATK[S.best] * (1 + V.atkPerLv * S.atkLv + V.lootBonus * lootKinds() + V.starBonus * S.stars);
+const maxHp = () => Math.round(100 * (1 + V.hpPerLv * S.hpLv));
+const lvCap = () => S.cleared + 3;
+const needStep = s => Math.min(D.weapons.length - 1, Math.floor(s / 10) * 4 + V.wStep.filter(x => x <= s % 10).length - 1);   // 그 스테이지에 맞는 무기 단계
+
+// ───────── 스테이지 ─────────
+const stageKey = s => (Math.floor(s / 10) + 1) + '-' + (s % 10 + 1), mobKey = s => (Math.floor(s / 10) + 1) + '-' + String(s % 10 + 1).padStart(2, '0');
+let WORLD = 3000, PLATS = [], FLOORS = [], mobs = [], mist = [], nums = [], cam = 0, kills = 0, goal = V.goal, boss = null, timer = 0, phase = 'load', fade = 1, phaseT = 0, swing = 0;
+const knight = { x: 300, y: GROUND, floor: 0, dir: 1, state: 'walk', t: 0, atk: 0, jump: null, target: null, hp: 100, hurt: 0 };
+// 기사 인형(1024 그림 기준 좌표). 왼쪽을 보고 선 그림.
+const K = { face: -1, s: 0.31, cx: 578, feet: 927, hipL: [498, 742], hipR: [662, 742], hipY: 742, leg: 185, hand: [703, 694], neck: [572, 458], swordLen: 600, grip: 100, rest: -0.405, lamp: [640, 668] };
+
+function rng(seed) { let x = seed * 9301 + 49297; return () => (x = (x * 16807 + 11) % 2147483647) / 2147483647; }
+async function enter(s) {
+  phase = 'load'; S.stage = s; save();
+  const ch = Math.floor(s / 10) + 1, isBoss = s % 10 === 9, key = stageKey(s);
+  const need = [load('bg' + D.bg[key], 'bg/' + D.bg[key] + '.jpg'), load('ground' + ch, 'plat/땅-' + ch + '.png')];
+  for (const p of D.plat[ch]) need.push(load('p' + p.img, 'plat/' + p.img));
+  for (let i = 1; i <= 10; i++) { const k = ch + '-' + String(i).padStart(2, '0'); need.push(load('m' + k, 'mob/' + k + '.png')); }
+  await Promise.all(need);
+  WORLD = isBoss ? W : 3000; PLATS = []; mobs = []; mist = []; nums = []; kills = 0; goal = isBoss ? 1 : V.goal; boss = null; timer = V.bossTime; swing = 0;
+  if (!isBoss) {
+    const r = rng(s + 5), list = D.plat[ch];
+    for (let i = 0; i < 4; i++) {
+      const p = list[Math.floor(r() * list.length)], x = 520 + i * 600 + (r() - 0.5) * 200;
+      const y = p.kind === 'float' ? [470, 540, 600][Math.floor(r() * 3)] : GROUND - (p.h - p.top) + 14;
+      PLATS.push({ x, y, w: p.w, h: p.h, top: p.top, img: 'p' + p.img });
+    }
+  }
+  FLOORS = [{ x: 0, y: GROUND, w: WORLD }].concat(PLATS.map(p => ({ x: p.x + p.w * 0.1, y: p.y, w: p.w * 0.8 })));
+  Object.assign(knight, { x: isBoss ? 260 : 200, y: GROUND, floor: 0, dir: 1, state: 'walk', atk: 0, jump: null, hp: maxHp(), hurt: 0 }); cam = 0;
+  if (isBoss) { boss = spawn(0, mobKey(s), s, 1150); boss.boss = true; } else fill(true);
+  phase = 'play'; phaseT = 0; fade = 1; ui();
+  const diary = D.story.diary[key]; if (diary && !S.seen['d' + key] && S.seen.opening) { S.seen['d' + key] = 1; toast(diary); }
+}
+function spawn(floor, key, s, x) {
+  const f = FLOORS[floor], d = D.mob[key], st = mobStat(s);
+  const m = { key, floor, x: x || f.x + 60 + Math.random() * Math.max(10, f.w - 120), y: f.y, dir: Math.random() < 0.5 ? -1 : 1, hp: st.hp, max: st.hp, def: st.def, atk: st.atk, gold: st.gold,
+    t: Math.random() * 9, hit: 0, dead: 0, speed: d.sp * (0.8 + Math.random() * 0.4), wait: 0, cd: 0.6 + Math.random(), lunge: 0, h: d.h, w: d.w, fly: d.fly };
+  mobs.push(m); return m;
+}
+function fill(first) {
+  if (boss || phase === 'clear') return;
+  const s = S.stage, base = Math.floor(s / 10) * 10;
+  for (let i = 0; i < FLOORS.length; i++) {
+    const want = i === 0 ? 6 : FLOORS[i].w > 300 ? 2 : 1;
+    while (mobs.filter(m => m.floor === i && !m.dead).length < want) {
+      const other = s > base && Math.random() < 0.25 ? base + Math.floor(Math.random() * (s - base)) : s;       // 넷에 하나는 앞 스테이지의 몬스터
+      const m = spawn(i, mobKey(other), s); if (i === 0 && !first && Math.abs(m.x - knight.x) < 500) m.x = knight.x + (Math.random() < 0.5 ? -1 : 1) * (600 + Math.random() * 500);
+      m.x = Math.max(FLOORS[i].x + 40, Math.min(FLOORS[i].x + FLOORS[i].w - 40, m.x));
+    }
+  }
+}
+
+function hitMob(m, mult, lines) {
+  for (let i = 0; i < lines; i++) {
+    const a = atk() * mult, c = Math.random() < V.crit; let dmg = Math.max(a * 0.1, a - m.def) * (0.9 + Math.random() * 0.2) * (c ? V.critMul : 1);
+    dmg = Math.min(V.lineCap, Math.max(1, Math.round(dmg))); m.hp -= dmg;
+    nums.push({ x: m.x + (Math.random() - 0.5) * 40, y: m.y - m.h * (m.fly ? 1.5 : 0.85) - i * 46, v: fmt(dmg), t: -i * 0.07, c: c ? '#ffd24a' : '#fff' });
+  }
+  m.hit = 0.18;
+  if (m.hp <= 0 && !m.dead) {
+    m.dead = 0.001; kills++; S.gold += m.gold; S.kc = (S.kc || 0) + 1; if (S.kc % V.gemKills === 0) { S.gems++; toast('<span class="gem">보석 +1</span> <span class="dim">(' + V.gemKills + '마리마다 하나)</span>'); } knight.hp = Math.min(maxHp(), knight.hp + maxHp() * 0.04);
+    for (let i = 0; i < (m.boss ? 40 : 9); i++) mist.push({ x: m.x + (Math.random() - 0.5) * m.w, y: m.y - Math.random() * m.h, vx: (Math.random() - 0.5) * 70, vy: -30 - Math.random() * 60, r: 22 + Math.random() * 30, t: 0, life: 0.7 + Math.random() * 0.5 });
+    if (m.boss || Math.random() < V.lootRate) getLoot(m.key);
+    if (kills >= goal && phase === 'play') { phase = 'clear'; phaseT = 0; }
+    ui();
+  }
+}
+function getLoot(key) {
+  const d = D.mob[key], first = !S.loot[key]; S.loot[key] = (S.loot[key] || 0) + 1;
+  if (first) toast('<b>전리품 · ' + d.loot + '</b><br>' + d.lootText + '<br><span class="dim">도감 ' + lootKinds() + '종 · 공격력 +' + Math.round(V.lootBonus * 100) + '%</span>');
+}
+function fail() {                                                            // 쓰러지거나 우두머리 시간이 다 됐다: 한 스테이지 물러나서 힘을 기른다
+  if (phase !== 'play') return; phase = 'fail'; phaseT = 0; S.auto = false; window.__dbg && window.__dbg.fails++;
+  toast(boss && timer <= 0 ? '시간이 다 됐다. 한 걸음 물러나 힘을 기른다.' : '쓰러졌다. 한 걸음 물러나 힘을 기른다.');
+}
+function cleared() {
+  const s = S.stage, first = s >= S.cleared, isBoss = s % 10 === 9;
+  if (first) {
+    S.cleared = s + 1; const g = isBoss ? V.gemBoss : V.gemStage; S.gems += g; if (isBoss) S.stars++;
+    toast('<b>' + stageKey(s) + ' ' + (D.places[stageKey(s)] || '') + '</b> 을 지났다 · <span class="gem">보석 +' + g + '</span>');
+    const sc = SCENES[stageKey(s)]; if (sc) { cards(sc, () => next(s)); save(); return; }
+  }
+  next(s);
+}
+function next(s) { save(); enter(S.auto && s + 1 < V.stages ? s + 1 : s); }
+
+function update(dt) {
+  knight.t += dt; phaseT += dt;
+  if (knight.hurt > 0) knight.hurt -= dt;
+  for (const q of mist) { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; q.r += 26 * dt; }
+  for (let i = mist.length - 1; i >= 0; i--) if (mist[i].t > mist[i].life) mist.splice(i, 1);
+  for (const n of nums) n.t += dt;
+  while (nums.length && nums[0].t > 0.9) nums.shift();
+  if (phase === 'clear') { if (phaseT > (boss ? 1.6 : 0.7)) { phase = 'wait'; cleared(); } }
+  if (phase === 'fail') { if (phaseT > 1.2) { phase = 'wait'; enter(Math.max(0, S.stage - 1)); } return; }
+  if (phase !== 'play' && phase !== 'clear') return;
+  if (boss && phase === 'play') { timer -= dt; if (timer <= 0) { fail(); return; } }
+  for (const m of mobs) {
+    m.t += dt; if (m.hit > 0) m.hit -= dt; if (m.lunge > 0) m.lunge -= dt;
+    if (m.dead) { m.dead += dt; if (!m.boss) m.x -= knight.dir * -220 * dt; continue; }               // 무늬가 벗겨지면 달아난다
+    const f = FLOORS[m.floor], dx = knight.x - m.x, near = m.floor === knight.floor && !knight.jump && Math.abs(dx) < 95 + m.w * 0.4;
+    if (near && phase === 'play') {                                                                   // 기사가 닿는 곳에 있으면 덤빈다
+      m.dir = Math.sign(dx) || m.dir; m.cd -= dt;
+      if (m.cd <= 0) { m.cd = m.boss ? 1.5 : 1.3; m.lunge = 0.25; knight.hp -= m.atk; knight.hurt = 0.2; nums.push({ x: knight.x, y: knight.y - 250, v: '-' + fmt(m.atk), t: 0, c: '#ff8a7a' }); if (knight.hp <= 0) { knight.hp = 0; fail(); return; } }
+      continue;
+    }
+    if (m.boss) { m.dir = Math.sign(dx) || m.dir; if (Math.abs(dx) > 200) m.x += m.dir * m.speed * dt; continue; }
+    if (m.wait > 0) { m.wait -= dt; continue; }
+    m.x += m.dir * m.speed * dt;
+    if (m.x < f.x + 40) { m.x = f.x + 40; m.dir = 1; }
+    if (m.x > f.x + f.w - 40) { m.x = f.x + f.w - 40; m.dir = -1; }
+    if (Math.random() < dt * 0.25) m.wait = 0.5 + Math.random();
+    if (Math.random() < dt * 0.15) m.dir *= -1;
+  }
+  for (let i = mobs.length - 1; i >= 0; i--) if (mobs[i].dead > (mobs[i].boss ? 9 : 0.6)) mobs.splice(i, 1);
+  if (Math.random() < dt * 0.9) fill();
+
+  // 기사: 가장 가까운 몬스터를 찾아 가서 벤다. 층이 다르면 뛰어오른다.
+  if (knight.jump) {
+    const j = knight.jump; j.t += dt / j.dur; const k = Math.min(1, j.t);
+    knight.x = j.x0 + (j.x1 - j.x0) * k; knight.y = j.y0 + (j.y1 - j.y0) * k - Math.sin(Math.PI * k) * j.h;
+    if (k >= 1) { knight.floor = j.to; knight.y = j.y1; knight.jump = null; knight.state = 'walk'; }
+  } else {
+    let best = null, bd = 1e9;
+    for (const m of mobs) { if (m.dead) continue; const d = Math.abs(m.x - knight.x) + (m.floor === knight.floor ? 0 : 500) + Math.abs(m.y - knight.y) * 0.6; if (d < bd) { bd = d; best = m; } }
+    knight.target = best;
+    if (knight.atk > 0) {
+      const before = knight.atk; knight.atk -= dt;
+      if (before > 0.2 && knight.atk <= 0.2) {                                                       // 내려치는 순간. 다섯 번에 한 번은 연속 베기(세 줄)
+        swing++; const skill = swing % 5 === 0;
+        for (const m of mobs) if (!m.dead && m.floor === knight.floor && (m.x - knight.x) * knight.dir > -30 - m.w * 0.3 && Math.abs(m.x - knight.x) < 175 + m.w * 0.4) hitMob(m, skill ? 1.2 : 1, skill ? 3 : 1);
+      }
+      if (knight.atk <= 0) knight.state = 'walk';
+    } else if (best) {
+      if (best.floor !== knight.floor) {
+        const f = FLOORS[best.floor], x1 = Math.max(f.x + 30, Math.min(f.x + f.w - 30, best.x - 90 * Math.sign(best.x - knight.x || 1)));
+        if (Math.abs(x1 - knight.x) > 420) { knight.dir = Math.sign(x1 - knight.x); knight.x += knight.dir * 260 * dt; knight.state = 'walk'; }
+        else { knight.dir = Math.sign(x1 - knight.x) || knight.dir; knight.state = 'jump'; knight.jump = { t: 0, dur: 0.55, x0: knight.x, y0: knight.y, x1, y1: f.y, h: 120 + Math.max(0, knight.y - f.y) * 0.25, to: best.floor }; }
+      } else {
+        const dx = best.x - knight.x; knight.dir = Math.sign(dx) || knight.dir;
+        if (Math.abs(dx) > 120 + best.w * 0.35) { knight.x += knight.dir * 260 * dt; knight.state = 'walk'; }
+        else { knight.state = 'attack'; knight.atk = 0.42; }
+      }
+    } else knight.state = 'idle';
+  }
+  knight.x = Math.max(60, Math.min(WORLD - 60, knight.x));
+  cam += (Math.max(0, Math.min(WORLD - W, knight.x - W * 0.42)) - cam) * Math.min(1, dt * 4);
+}
+
+// ───────── 그리기 ─────────
+function mirrorTile(im, par, h) {
+  const bw = im.width * (h / im.height), off = (cam * par) % (bw * 2);
+  for (let i = -1; i < 4; i++) {
+    const x = i * bw - off; if (x > W || x + bw < 0) continue;
+    ctx.save();
+    if (((i % 2) + 2) % 2 === 1) { ctx.translate(x + bw, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, 0, bw + 1, h); } else ctx.drawImage(im, x, 0, bw + 1, h);
+    ctx.restore();
+  }
+}
+function drawWorld() {
+  const ch = Math.floor(S.stage / 10) + 1, bg = IMG['bg' + D.bg[stageKey(S.stage)]], g = IMG['ground' + ch], gd = D.ground[ch];
+  if (bg && bg.width) mirrorTile(bg, 0.25, H); else { ctx.fillStyle = '#16241a'; ctx.fillRect(0, 0, W, H); }
+  for (const p of PLATS) { const x = p.x - cam; if (x > W || x + p.w < 0) continue; ctx.drawImage(IMG[p.img], x, p.y - p.top, p.w, p.h); }
+  if (g && g.width) {
+    ctx.fillStyle = 'rgb(' + gd.under + ')'; ctx.fillRect(0, GROUND - gd.top + gd.h - 3, W, H);
+    const off = cam % (W * 2);                                                // 그림과 뒤집은 그림을 번갈아 이어 붙여 이음매를 없앤다
+    for (let i = -1; i < 3; i++) { const x = i * W - off; if (x > W || x + W < 0) continue; ctx.save();
+      if (((i % 2) + 2) % 2 === 1) { ctx.translate(x + W, 0); ctx.scale(-1, 1); ctx.drawImage(g, 0, GROUND - gd.top, W + 1, gd.h); } else ctx.drawImage(g, x, GROUND - gd.top, W + 1, gd.h); ctx.restore(); }
+  }
+}
+function shadow(x, y, r) {
+  const g = ctx.createRadialGradient(x, y, 2, x, y, r); g.addColorStop(0, 'rgba(0,0,0,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.save(); ctx.translate(0, y); ctx.scale(1, 0.26); ctx.translate(0, -y); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
+}
+// 검은 무늬: 망각수에게 물든 표시. 그림 위에 코드로 얹는다. 쓰러지면 벗겨진다.
+const STAIN = {};
+function stained(key) {
+  if (STAIN[key]) return STAIN[key];
+  const im = IMG[key], c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const g = c.getContext('2d');
+  g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-atop';
+  let seed = 7 + key.length; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, u = Math.max(im.width, im.height) / 100;
+  const sh = g.createLinearGradient(0, im.height * 0.35, 0, im.height); sh.addColorStop(0, 'rgba(12,8,18,0)'); sh.addColorStop(1, 'rgba(12,8,18,0.2)'); g.fillStyle = sh; g.fillRect(0, 0, im.width, im.height);
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  const vein = (x, y, a, w, n) => { for (let i = 0; i < n && w > 0.3; i++) {
+    const len = (5 + rnd() * 6) * u, nx = x + Math.cos(a) * len, ny = y + Math.sin(a) * len;
+    g.strokeStyle = 'rgba(14,10,22,0.7)'; g.lineWidth = w * u; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo((x + nx) / 2 + (rnd() - 0.5) * 5 * u, (y + ny) / 2 + (rnd() - 0.5) * 5 * u, nx, ny); g.stroke();
+    if (rnd() < 0.45) vein(nx, ny, a + (rnd() < 0.5 ? -1 : 1) * (0.6 + rnd() * 0.5), w * 0.6, n - i - 1);
+    x = nx; y = ny; a += (rnd() - 0.5) * 0.9; w *= 0.8; } };
+  for (let i = 0; i < 4; i++) vein(im.width * (0.2 + rnd() * 0.6), im.height * (0.55 + rnd() * 0.45), -Math.PI / 2 + (rnd() - 0.5) * 1.4, 1.3 + rnd(), 6);
+  return STAIN[key] = c;
+}
+function drawMob(m) {
+  const x = m.x - cam; if (x < -500 || x > W + 500) return;
+  const raw = IMG['m' + m.key]; if (!raw || !raw.width) return;
+  const im = m.dead || m.boss ? raw : stained('m' + m.key), s = m.h / raw.height, moving = !m.wait && !m.dead;
+  const sway = m.boss ? Math.sin(m.t * 1.6) * 0.012 : moving ? Math.sin(m.t * 9) * 0.06 : 0, sq = 1 + Math.sin(m.t * (moving ? 16 : 3)) * (m.boss ? 0.008 : moving ? 0.035 : 0.015);
+  const lift = m.fly ? 95 + Math.sin(m.t * 3) * 14 : 0, lunge = m.lunge > 0 ? Math.sin(m.lunge / 0.25 * Math.PI) * (m.boss ? 60 : 34) * m.dir : 0;
+  shadow(x, m.y, m.w * (m.fly ? 0.28 : 0.42));
+  ctx.save(); ctx.translate(x + lunge, m.y - lift + (m.boss ? 8 : 4)); ctx.rotate(sway);
+  if (m.dead) { const k = m.dead / (m.boss ? 9 : 0.6); ctx.globalAlpha = m.boss ? 1 : Math.max(0, 1 - k); if (!m.boss) ctx.translate(0, -Math.sin(k * Math.PI) * 26); }
+  ctx.scale((m.dir > 0 ? -s : s), s / sq * (m.hit > 0 ? 0.94 : 1));                              // 그림은 왼쪽을 본다
+  if (m.hit > 0) ctx.filter = 'brightness(1.9)';
+  ctx.drawImage(im, -raw.width / 2, -raw.height); ctx.restore();
+  if (!m.dead && !m.boss && m.hp < m.max) { const bw = Math.max(60, m.w * 0.5); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(x - bw / 2, m.y - m.h - lift - 16, bw, 8); ctx.fillStyle = '#e8604a'; ctx.fillRect(x - bw / 2, m.y - m.h - lift - 16, bw * Math.max(0, m.hp / m.max), 8); }
+}
+function part(key, pivot, ang) { const im = IMG[key]; if (!ang) { ctx.drawImage(im, 0, 0); return; } ctx.save(); ctx.translate(pivot[0], pivot[1]); ctx.rotate(ang); ctx.translate(-pivot[0], -pivot[1]); ctx.drawImage(im, 0, 0); ctx.restore(); }
+// 등불: 기사 그림에 그려 넣지 않는다. 코드로 그려 허리에 달고, 별을 모을수록 불빛이 커진다.
+const LAMP = { x: 0, y: 0, on: false };
+function drawLantern(hx, hy, ang, t) {
+  const iron = '#2f271f', st = S.stars, lit = 0.5 + st / 14;
+  ctx.save(); ctx.translate(hx, hy); ctx.rotate(ang); ctx.scale(0.62, 0.62); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = iron; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 22); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 33, 11, 0, 7); ctx.stroke();
+  ctx.fillStyle = iron; ctx.beginPath(); ctx.moveTo(-36, 64); ctx.quadraticCurveTo(-8, 40, 0, 42); ctx.quadraticCurveTo(8, 40, 36, 64); ctx.closePath(); ctx.fill();
+  const g = ctx.createRadialGradient(0, 104, 3, 0, 104, 50); g.addColorStop(0, '#fff6d0'); g.addColorStop(0.35 + lit * 0.2, '#ffbb5a'); g.addColorStop(1, '#6b3d18');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(-29, 64, 58, 78, 7); ctx.fill();
+  const f = 1 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23) * 0.05, fh = (20 + st * 3.2) * f;
+  ctx.fillStyle = '#fffbe6'; ctx.beginPath(); ctx.moveTo(0, 118); ctx.quadraticCurveTo(-11 - st, 112, 0, 118 - fh); ctx.quadraticCurveTo(11 + st, 112, 0, 118); ctx.fill();
+  ctx.strokeStyle = iron; ctx.lineWidth = 6; ctx.beginPath(); ctx.roundRect(-29, 64, 58, 78, 7); ctx.stroke();
+  ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(-10, 64); ctx.lineTo(-10, 142); ctx.moveTo(10, 64); ctx.lineTo(10, 142); ctx.stroke();
+  ctx.fillStyle = iron; ctx.beginPath(); ctx.roundRect(-35, 140, 70, 13, 4); ctx.fill();
+  const p = ctx.getTransform().transformPoint(new DOMPoint(0, 104)); LAMP.x = p.x; LAMP.y = p.y; LAMP.on = true; ctx.restore();
+}
+function drawLampGlow() {
+  if (!LAMP.on) return; LAMP.on = false;
+  const t = knight.t, r = (64 + S.stars * 24) * (1 + Math.sin(t * 9) * 0.05), a = 0.28 + S.stars * 0.035, g = ctx.createRadialGradient(LAMP.x, LAMP.y, 0, LAMP.x, LAMP.y, r);
+  g.addColorStop(0, 'rgba(255,214,140,' + a + ')'); g.addColorStop(0.4, 'rgba(255,170,80,' + a * 0.45 + ')'); g.addColorStop(1, 'rgba(255,150,60,0)');
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(LAMP.x, LAMP.y, r, 0, 7); ctx.fill(); ctx.restore();
+}
+function drawKnight() {
+  const k = knight, t = k.t, walking = k.state === 'walk', air = !!k.jump;
+  let leg = 0, bob = Math.sin(t * 2.4) * 3, lean = 0, sword = K.rest + Math.sin(t * 2.4) * 0.03, head = Math.sin(t * 2.4 + 0.6) * 0.02;
+  if (walking) { leg = Math.sin(t * 13) * 0.42; bob = Math.abs(Math.sin(t * 13)) * 5; lean = 0.05; sword = K.rest + Math.sin(t * 13) * 0.1; head = Math.sin(t * 13) * 0.03; }
+  if (air) { leg = 0.5; lean = 0.08; sword = K.rest + 0.9; head = -0.06; bob = 0; }
+  if (k.atk > 0) { const p = 1 - k.atk / 0.42; sword = p < 0.45 ? K.rest + (p / 0.45) * 1.75 : K.rest + 1.75 - ((p - 0.45) / 0.3) * 2.9; if (p > 0.75) sword = K.rest - 1.15 + ((p - 0.75) / 0.25) * 1.15; lean = p < 0.45 ? -0.07 : 0.16; leg = 0.2; bob = p < 0.45 ? -6 : 6; }
+  if (phase === 'fail') { lean = -0.5 * Math.min(1, phaseT * 2); bob = 30 * Math.min(1, phaseT * 2); }
+  const drop = air ? 0 : K.leg * (1 - Math.cos(leg)), x = k.x - cam;
+  shadow(x, air ? FLOORS[k.jump.to].y : k.y, 50);
+  ctx.save(); ctx.translate(x, k.y); ctx.scale(k.dir * K.face * K.s, K.s); ctx.translate(-K.cx, -K.feet + drop);
+  if (k.hurt > 0) ctx.filter = 'brightness(1.6) saturate(1.4)';
+  part('legL', K.hipL, leg); part('legR', K.hipR, -leg);
+  ctx.save(); ctx.translate(K.cx, K.hipY + bob); ctx.rotate(K.face * lean); ctx.translate(-K.cx, -K.hipY);
+  ctx.drawImage(IMG.body, 0, 0);
+  drawLantern(K.lamp[0], K.lamp[1], (walking ? Math.sin(t * 13 - 0.9) * 0.3 : air ? 0.35 : Math.sin(t * 2.4) * 0.05) - K.face * lean, t);
+  const sw = IMG['w' + S.best];
+  if (sw && sw.width) { const h = sw.height * K.swordLen / sw.width; ctx.save(); ctx.translate(K.hand[0], K.hand[1]); ctx.scale(-K.face, 1); ctx.rotate(-sword); ctx.drawImage(sw, -(K.swordLen - K.grip), -h / 2, K.swordLen, h); ctx.restore(); }
+  ctx.drawImage(IMG.hand, 0, 0);
+  part(k.dir * K.face < 0 ? 'headR' : 'head', K.neck, head);                // 뒤집어 쓸 때는 눈 색을 맞바꾼 머리: 어느 쪽을 봐도 왼눈이 하늘색
+  ctx.restore(); ctx.restore();
+  if (k.atk > 0 && k.atk < 0.22) {
+    ctx.save(); ctx.translate(x + k.dir * 60, k.y - 95); ctx.scale(k.dir, 1); ctx.globalAlpha = k.atk / 0.22 * 0.85; ctx.lineCap = 'round';
+    ctx.strokeStyle = '#fff6d8'; ctx.lineWidth = 16; ctx.beginPath(); ctx.arc(0, 0, 105, -1.1, 1.0); ctx.stroke();
+    ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, 122, -0.9, 0.8); ctx.stroke(); ctx.restore();
+  }
+}
+function say(s, x, y, c, a, size, bold) { ctx.font = (bold === false ? '' : 'bold ') + (size || 30) + 'px sans-serif'; ctx.textAlign = a || 'left'; ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(4, (size || 30) / 5); ctx.strokeStyle = 'rgba(0,0,0,0.72)'; ctx.strokeText(s, x, y); ctx.fillStyle = c; ctx.fillText(s, x, y); }
+function barBox(x, y, w, h, k, col) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.roundRect(x - 3, y - 3, w + 6, h + 6, 8); ctx.fill(); ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, Math.max(0, w * Math.min(1, k)), h, 6); ctx.fill(); }
+function drawHud() {
+  ctx.textBaseline = 'top'; const key = stageKey(S.stage);
+  say(key + ' ' + (D.places[key] || ''), 28, 22, '#f4ead0', 'left', 36);
+  if (!boss) { barBox(30, 74, 300, 16, kills / goal, '#e8c66a'); say(Math.min(kills, goal) + ' / ' + goal, 344, 66, '#f4ead0', 'left', 24); }
+  say('골드 ' + fmt(S.gold), 30, 104, '#ffd27a', 'left', 28); say('보석 ' + S.gems, 250, 104, '#9fd8ff', 'left', 28);
+  say('별 ' + '★'.repeat(S.stars) + '☆'.repeat(7 - S.stars), 30, 142, '#ffe9a8', 'left', 26);
+  say('공격력 ' + fmt(atk()), W - 28, 22, '#f4ead0', 'right', 34);
+  say(D.weapons[S.best].name, W - 28, 64, '#cfd8c4', 'right', 24, false);
+  barBox(W - 330, 104, 300, 18, knight.hp / maxHp(), '#6fcf7a'); say('체력 ' + fmt(knight.hp) + ' / ' + fmt(maxHp()), W - 340, 100, '#e9f5e3', 'right', 22, false);
+  if (boss) {
+    const d = D.mob[boss.key]; say(d.name, W / 2, 20, '#ffe9a8', 'center', 34); barBox(W / 2 - 330, 66, 660, 24, boss.hp / boss.max, '#d9523f');
+    say(Math.max(0, timer).toFixed(1) + '초', W / 2, 98, timer < 8 ? '#ff9a8a' : '#f4ead0', 'center', 28);
+  }
+  ctx.textBaseline = 'middle';
+  for (const n of nums) { if (n.t < 0) continue; ctx.globalAlpha = Math.max(0, 1 - n.t / 0.9); say(n.v, n.x - cam, n.y - n.t * 70, n.c, 'center', 40); } ctx.globalAlpha = 1;
+}
+function drawMist() { for (const q of mist) { const a = (1 - q.t / q.life) * 0.5, x = q.x - cam, g = ctx.createRadialGradient(x, q.y, 0, x, q.y, q.r); g.addColorStop(0, 'rgba(14,10,22,' + a + ')'); g.addColorStop(1, 'rgba(14,10,22,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, q.y, q.r, 0, 7); ctx.fill(); } }
+let last = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000 || 0.016); last = now;
+  if (fade > 0 && phase !== 'load') fade = Math.max(0, fade - dt * 2.5);
+  if (!CARD.on) for (let i = 0; i < (window.__speed || 1); i++) update(dt);       // __speed: 시험할 때 빨리 감기
+  if (phase !== 'load' || IMG['bg' + D.bg[stageKey(S.stage)]]) {
+    drawWorld();
+    const all = mobs.map(m => ({ y: m.y, f: () => drawMob(m) })).concat([{ y: knight.jump ? 9999 : knight.y + 1, f: drawKnight }]).sort((a, b) => a.y - b.y);
+    for (const a of all) a.f();
+    drawMist(); drawLampGlow(); drawHud();
+  }
+  if (fade > 0) { ctx.fillStyle = 'rgba(8,10,9,' + fade + ')'; ctx.fillRect(0, 0, W, H); }
+  requestAnimationFrame(frame);
+}
+
+// ───────── 창과 단추 ─────────
+let PANEL = null;
+function toast(html) { const d = document.createElement('div'); d.className = 't'; d.innerHTML = html; $('toast').appendChild(d); setTimeout(() => d.remove(), 6000); while ($('toast').children.length > 3) $('toast').firstChild.remove(); }
+function ui() {
+  $('bGo').style.display = !S.auto && S.stage < V.stages - 1 || (!S.auto && S.stage === V.stages - 1 && S.cleared < V.stages) ? '' : 'none';
+  $('bGo').textContent = S.stage % 10 === 8 ? '우두머리 도전' : '다음 스테이지 도전';
+  if (PANEL) PANEL();
+}
+function open(title, fn) { PANEL = fn; $('ptitle').textContent = title; $('panel').style.display = 'flex'; fn(); }
+$('pclose').onclick = () => { PANEL = null; $('panel').style.display = 'none'; };
+$('bGo').onclick = () => { S.auto = true; if (phase === 'play') enter(Math.min(V.stages - 1, S.stage + 1)); ui(); };
+function panelUp() {
+  const cap = lvCap(), ca = upCost(S.atkLv, 10), ch = upCost(S.hpLv, 6);
+  $('body').innerHTML = '<div class="row"><div><b>공격 ' + S.atkLv + '레벨</b><br><span class="dim">한 레벨에 공격력 +' + V.atkPerLv * 100 + '% · 지금 ' + fmt(atk()) + '</span></div><button id="ua"' + (S.gold < ca || S.atkLv >= cap ? ' disabled' : '') + '>' + (S.atkLv >= cap ? '스테이지를 더 깨야 한다' : '<span class="gold">' + fmt(ca) + ' 골드</span>') + '</button></div>' +
+    '<div class="row"><div><b>체력 ' + S.hpLv + '레벨</b><br><span class="dim">한 레벨에 체력 +' + V.hpPerLv * 100 + '% · 지금 ' + fmt(maxHp()) + '</span></div><button id="uh"' + (S.gold < ch || S.hpLv >= cap ? ' disabled' : '') + '>' + (S.hpLv >= cap ? '스테이지를 더 깨야 한다' : '<span class="gold">' + fmt(ch) + ' 골드</span>') + '</button></div>' +
+    '<p class="dim">공격력 = 무기 공격력 × (1 + 강화 + 도감 + 별)<br>강화 ' + Math.round(V.atkPerLv * S.atkLv * 100) + '% · 도감 ' + lootKinds() + '% · 별 ' + S.stars * 10 + '%<br>강화는 지금 ' + cap + '레벨까지 열려 있다. 스테이지를 깨면 더 열린다.</p>';
+  $('ua').onclick = () => { if (S.gold >= ca && S.atkLv < cap) { S.gold -= ca; S.atkLv++; save(); ui(); } };
+  $('uh').onclick = () => { if (S.gold >= ch && S.hpLv < cap) { S.gold -= ch; S.hpLv++; knight.hp = Math.min(maxHp(), knight.hp + 8); save(); ui(); } };
+}
+let lastPull = '';
+function pull(n) {
+  if (S.gems < n) return; S.gems -= n; const top = Math.min(D.weapons.length - 1, needStep(Math.min(V.stages - 1, Math.max(S.cleared, S.stage))) + 1), lo = Math.max(0, top - V.pullSpan), got = [];
+  for (let i = 0; i < n; i++) { let tot = 0; for (let k = lo; k <= top; k++) tot += Math.pow(V.pullDrop, k - lo); let r = Math.random() * tot, k = lo; for (; k < top; k++) { r -= Math.pow(V.pullDrop, k - lo); if (r <= 0) break; } S.wc[k]++; got.push(k); }
+  for (let k = 0; k < D.weapons.length - 1; k++) while (S.wc[k] >= 10 && k < top + 0) { S.wc[k] -= 10; S.wc[k + 1]++; got.push(-(k + 1)); }      // 열 자루를 모으면 한 단계 위로
+  for (let k = D.weapons.length - 1; k > S.best; k--) if (S.wc[k] > 0) { S.best = k; toast('<b>' + D.weapons[k].name + '</b> 을 손에 쥐었다 · 무기 공격력 ' + fmt(WATK[k])); break; }
+  const best = Math.max(...got.filter(k => k >= 0)); lastPull = '방금 뽑은 것 가운데 가장 좋은 것: <b>' + D.weapons[best].name + '</b>' + (got.some(k => k < 0) ? ' · 열 자루가 모여 승급했다' : '');
+  save(); ui();
+}
+function panelWp() {
+  let h = '<div class="row"><div><b>' + D.weapons[S.best].name + '</b> <span class="dim">' + D.weapons[S.best].grade + ' ' + D.weapons[S.best].step + '단계</span><br><span class="dim">무기 공격력 ' + fmt(WATK[S.best]) + ' · 보석 <span class="gem">' + S.gems + '</span></span></div><div><button id="p1"' + (S.gems < 1 ? ' disabled' : '') + '>1번 뽑기</button> <button id="p10"' + (S.gems < 10 ? ' disabled' : '') + '>10번</button></div></div>';
+  h += '<p class="dim">' + (lastPull || '보석 하나에 한 번. 같은 무기 열 자루가 모이면 한 단계 위 무기가 된다. 가장 좋은 무기를 알아서 쥔다.') + '</p><div class="wgrid">';
+  D.weapons.forEach((w, k) => { const has = S.wc[k] > 0 || k <= S.best; h += '<div class="' + (has ? '' : 'no') + '">' + (has ? w.name : '???') + ' <span class="dim">' + w.grade + ' ' + w.step + ' · ' + fmt(WATK[k]) + (S.wc[k] ? ' · ' + S.wc[k] + '자루' : '') + '</span></div>'; });
+  $('body').innerHTML = h + '</div>'; $('p1').onclick = () => pull(1); $('p10').onclick = () => pull(10);
+}
+function panelBook() {
+  let h = '<p class="dim">전리품 ' + lootKinds() + ' / ' + V.stages + '종 · 한 종에 공격력 +1%</p>';
+  for (let s = 0; s < V.stages; s++) { const k = mobKey(s), d = D.mob[k], met = s <= Math.max(S.cleared, S.stage), n = S.loot[k];
+    h += '<div class="mobrow' + (met ? '' : ' no') + '"><img src="art/게임/mob/' + k + '.png"><div><b>' + stageKey(s) + ' ' + (met ? d.name : '???') + '</b>' + (met ? '<br><span class="dim">' + d.text + '</span>' : '') + (n ? '<br><span class="loot">' + d.loot + ' ×' + n + '</span><br>' + d.lootText : met ? '<br><span class="dim">전리품을 아직 얻지 못했다</span>' : '') + '</div></div>'; }
+  $('body').innerHTML = h;
+}
+$('bUp').onclick = () => open('강화', panelUp); $('bWp').onclick = () => open('무기 뽑기', panelWp); $('bBook').onclick = () => open('도감', panelBook);
+
+// ───────── 이야기 카드 ─────────
+const CARD = { on: false, list: [], i: 0, done: null };
+function cards(list, done) { CARD.list = list.filter(c => !c['작게'] || c.keep); CARD.i = 0; CARD.done = done; CARD.on = true; $('card').style.display = 'flex'; showCard(); }
+function showCard() {
+  const c = CARD.list[CARD.i]; if (!c) { CARD.on = false; $('card').style.display = 'none'; const d = CARD.done; CARD.done = null; if (d) d(); return; }
+  $('who').textContent = c['말하는이'] || ''; const s = $('say'); s.className = c['제목카드'] ? 'big' : c['강조'] || c['얻음'] ? 'em' : ''; s.textContent = (c['글'] || '').replace(/\{이름\}/g, '루');
+}
+$('card').onclick = e => { if (e.target.id === 'skip') CARD.i = 1e9; else CARD.i++; showCard(); };
+const T = (g, w) => w ? { '말하는이': w, '글': g } : { '글': g };
+const SCENES = {
+  '1-3': D.story.scene['밥상'], '1-10': D.story.scene['첫조각'],
+  '2-10': [T('거인이 주저앉았다. 그래도 망토를 놓지 않는다.'), T('아저씨는 이름이 뭐야?', '하린'), T('거인은 대답하지 못한다.'), T('없으면 내가 지어 줄게.', '하린'),
+    T('거인이 망토를 놓았다. 바람이 쏟아지고, 바람개비 수백 개가 한꺼번에 돈다.'), { '강조': true, '글': '두 번째 별, 이름의 별이 깨어났다. (별 2/7)' },
+    T('…근데 넌 누구였지?', '하린'), T('이름을 잊어버리면 어때? 다시 물어보면 되잖아. 그럼 우리 다시 친구 하면 되겠다.', '하린')],
+  '3-10': [T('이길 수 있는 순간에 검을 멈췄다.'), T('왜 검을 멈췄느냐?', '그림자 기사'), T('"기사는 이기려고만 검을 드는 게 아니니까요."'), T('왕은 좋은 분이었다. 그래서 아무도 왕을 막지 못했다.', '그림자 기사'),
+    T('훈련 끝. 해산.', '그림자 기사'), T('그가 처음으로 말에서 내렸다. 녹이 부서져 떨어진다. 끝나지 않던 밤에 동이 튼다.'), { '강조': true, '글': '세 번째 별, 용기의 별이 깨어났다. (별 3/7)' },
+    T('이름이 없구나. 나도 그렇다.', '그림자 기사'), T('그가 창을 어깨에 얹어 주었다. 잊힌 기사들이, 잊힌 수습기사를 기사로 세운다.'), { '글': '4장 오래된 정원은 준비하고 있어요.', '작게': true, keep: true }],
+};
+
+// ───────── 시작 ─────────
+const boot = ['body', 'legL', 'legR', 'hand', 'head', 'headR'].map(k => load(k, 'knight/' + k + '.png')).concat(D.weapons.map((w, i) => load('w' + i, 'weapon/' + String(i).padStart(2, '0') + '.png')));
+Promise.all(boot).then(async () => {
+  await enter(Math.min(S.stage, V.stages - 1)); window.__ready = true; requestAnimationFrame(frame);
+  if (!S.seen.opening) cards(D.story.opening, () => { S.seen.opening = 1; save(); const k = stageKey(S.stage), d = D.story.diary[k]; if (d && !S.seen['d' + k]) { S.seen['d' + k] = 1; toast(d); } });
+  setInterval(save, 5000);
+});
+window.__dbg = { fails: 0, S, V, par, WATK, mobStat, atk, enter, pull, upCost, state: () => ({ phase, kills, goal, hp: knight.hp, mobs: mobs.length, boss: boss && boss.hp, timer }) };
+</script>
+</body>
+</html>

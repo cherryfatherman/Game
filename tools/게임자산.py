@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """게임.html 이 쓰는 그림과 자료를 art/게임/ 에 만든다. 그림을 새로 뽑지 않고, 있는 그림을 줄이고 모은다.
 
-  python3 tools/게임자산.py
+  python3 tools/게임자산.py      # 게임.html 을 고친 뒤에도 돌린다. docs/ 가 새로 만들어진다
 
 - 배경: 스테이지마다 가로 1600 JPG (art/게임/bg/1-1.jpg …). 3장 일반 스테이지는 그림이 아직 없어 우두머리 방 그림을 함께 쓴다.
 - 몬스터: 누끼 딴 그림을 줄인다 (art/게임/mob/1-01.png …).
@@ -139,6 +139,15 @@ def 글():
     return mobs, places, story
 
 
+def 내보내기():
+    """깃허브 페이지에 올릴 것만 docs/ 에 모은다. 저장소 전체는 1GB가 넘어서 통째로는 못 올린다.
+    깃허브에서 Settings → Pages → 가지를 고르고 폴더를 /docs 로 하면 docs/index.html 이 열린다."""
+    docs = P('docs'); shutil.rmtree(docs, ignore_errors=True); os.makedirs(P(docs, 'art'))
+    shutil.copy(P('게임.html'), P(docs, 'index.html')); shutil.copytree(OUT, P(docs, 'art/게임'))
+    open(P(docs, '.nojekyll'), 'w').close()
+    print('docs %.1fMB' % (sum(os.path.getsize(os.path.join(d, x)) for d, _, f in os.walk(docs) for x in f) / 1e6))
+
+
 if __name__ == '__main__':
     bg = 배경(); mob = 몬스터(); pl = 발판(); weapons = 기사와무기(); text, places, story = 글()
     for k in mob:
@@ -148,3 +157,4 @@ if __name__ == '__main__':
     n = sum(len(f) for _, _, f in os.walk(OUT)); size = sum(os.path.getsize(os.path.join(d, x)) for d, _, f in os.walk(OUT) for x in f)
     print('파일', n, '크기 %.1fMB' % (size / 1e6), '몬스터', len(mob), '글 없는 몬스터', [k for k in mob if 'name' not in mob[k]])
     print({k: places.get(k) for k in ('1-1', '2-5', '3-7')})
+    내보내기()

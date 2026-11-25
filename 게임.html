@@ -27,7 +27,7 @@
   .loot { color: #ffe9a8; font-weight: 700; }
   .wgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3em 1.2em; margin-top: 0.6em; font-size: 0.88em; }
   .wgrid div.no { color: #6f7468; }
-  #toast { position: absolute; left: 50%; top: 9em; transform: translateX(-50%); width: 52em; pointer-events: none; display: flex; flex-direction: column; gap: 0.6em; align-items: center; }
+  #toast { position: absolute; left: 30%; top: 9em; transform: translateX(-50%); width: 46em; pointer-events: none; display: flex; flex-direction: column; gap: 0.6em; align-items: center; }
   .t { background: rgba(14, 18, 15, 0.9); border: 0.14em solid #d9c890; border-radius: 0.9em; color: #f6efd8; padding: 0.6em 1.2em; font-size: 1.6em; line-height: 1.45; text-align: center; animation: fade 6s forwards; }
   .t b { color: #ffe9a8; }
   @keyframes fade { 0% { opacity: 0; transform: translateY(-0.6em); } 6% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
@@ -38,6 +38,8 @@
   #say.big { font-size: 3.6em; text-align: center; color: #ffe9a8; padding: 0.6em 0; }
   #say.em { color: #ffe9a8; font-weight: 700; }
   #skip { position: absolute; right: 2em; top: 2em; font-size: 1.4em; }
+  #turn { position: fixed; inset: 0; background: #0b0f0c; color: #f3ecd6; display: none; align-items: center; justify-content: center; text-align: center; font-size: 5.5vw; line-height: 1.6; z-index: 9; }
+  @media (orientation: portrait) { #turn { display: flex; } }
   #hint { position: absolute; right: 3em; bottom: 5.6em; font-size: 1.3em; color: #a9ad9a; }
 </style>
 </head>
@@ -51,6 +53,7 @@
   <div id="toast"></div>
   <div id="card"><button id="skip">건너뛰기</button><div id="cardbox"><div id="who"></div><div id="say"></div></div><div id="hint">누르면 넘어갑니다</div></div>
 </div>
+<div id="turn">휴대폰을 가로로 돌려 주세요<br>↻</div>
 <script src="art/게임/자료.js"></script>
 <script>
 // 잊혀진 기사 키우기 · 1~3장을 실제로 해 보는 판.
