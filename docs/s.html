@@ -6,10 +6,20 @@
 <title>잊혀진 기사 키우기 · 세로판</title>
 <style>
   html, body { margin: 0; height: 100%; background: #070a08; overflow: hidden; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-  #wrap { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: min(100vw, 52dvh); height: 100dvh; font-size: calc(min(100vw, 52dvh) / 100); display: flex; flex-direction: column; background: #10150f; overflow: hidden; }
-  #view { position: relative; flex: none; }
-  canvas { display: block; width: 100%; aspect-ratio: 900 / 800; }
-  #ui { flex: 1; min-height: 0; display: flex; flex-direction: column; background: linear-gradient(#1b2219, #11160f); border-top: 0.6em solid #2a2418; box-shadow: inset 0 0.5em 0 #6b5a34; color: #f3ecd6; }
+  #wrap { position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: min(100vw, 62dvh); height: 100dvh; font-size: calc(min(100vw, 62dvh) / 100); background: #10150f; overflow: hidden; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #ui { position: absolute; left: 0; right: 0; bottom: 0; height: 56%; display: none; flex-direction: column; background: linear-gradient(#1b2219, #11160f); border-top: 0.6em solid #d9c890; border-radius: 3em 3em 0 0; color: #f3ecd6; box-shadow: 0 -2em 4em rgba(0, 0, 0, 0.6); }
+  #ui.on { display: flex; }
+  #menu, #snd { position: absolute; right: 2.4em; width: 9em; height: 9em; border-radius: 50%; border: 0.4em solid #d9c890; background: rgba(16, 22, 18, 0.8); color: #fff3cf; font: inherit; font-weight: 700; font-size: 1em; padding: 0; }
+  #menu { top: 21em; } #menu span, #snd span { font-size: 3.6em; } #snd { top: 32em; border-color: rgba(217, 200, 144, 0.5); }
+  #menu.dot::after { content: ''; position: absolute; right: -0.4em; top: -0.4em; width: 3em; height: 3em; border-radius: 50%; background: #ff5a3a; border: 0.4em solid #fff3cf; }
+  #skills { position: absolute; left: 0; right: 0; bottom: 4em; display: flex; justify-content: center; gap: 1.8em; }
+  .sk { position: relative; width: 13.4em; height: 13.4em; border-radius: 50%; border: 0.5em solid #d9c890; background: radial-gradient(circle at 35% 30%, #50623f, #141a12 75%); overflow: hidden; padding: 0; font: inherit; font-size: 1em; color: #fff3cf; box-shadow: 0 0.6em 1.4em rgba(0, 0, 0, 0.6); }
+  .sk svg { width: 62%; height: 62%; margin-top: 4%; } .sk b { position: absolute; left: 0; right: 0; bottom: 9%; font-size: 2em; text-shadow: 0 0 0.3em #000; }
+  .sk i { position: absolute; inset: 0; background: conic-gradient(rgba(0, 0, 0, 0.72) var(--p, 0%), transparent 0); }
+  .sk.lock { filter: grayscale(1) brightness(0.45); border-color: #5c5136; } .sk.ready { border-color: #fff2c4; box-shadow: 0 0 1.6em rgba(255, 220, 130, 0.7); }
+  #auto { position: absolute; left: 3em; bottom: 21em; font: inherit; font-size: 2.8em; font-weight: 700; color: #fff3cf; background: rgba(16, 22, 18, 0.8); border: 0.14em solid #d9c890; border-radius: 2em; padding: 0.3em 1em; }
+  #auto.off { color: #8d917f; border-color: #5c5136; }
   #stat { display: flex; justify-content: space-between; align-items: center; padding: 2.2em 3em 1.2em; font-size: 3.6em; font-weight: 700; }
   #stat span.g { color: #ffd27a; } #stat span.j { color: #9fd8ff; } #stat span.a { color: #f6efd8; }
   #tabs { display: flex; gap: 1.2em; padding: 0 3em; }
@@ -26,20 +36,19 @@
   .mobrow.no img { filter: brightness(0); opacity: 0.45; }
   .loot { color: #ffe9a8; font-weight: 700; }
   .wgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3em 1em; margin-top: 0.5em; font-size: 0.86em; } .wgrid .no { color: #6f7468; }
-  #go { position: absolute; right: 2.4em; bottom: 2.4em; font: inherit; font-size: 3.6em; font-weight: 700; color: #fff4d6; background: linear-gradient(#c8672f, #8f3d18); border: 0.14em solid #ffd58a; border-radius: 0.7em; padding: 0.5em 1em; display: none; box-shadow: 0 0.2em 0 #4d1f0a; }
-  #snd { position: absolute; right: 2.2em; top: 14em; font-size: 3em; background: rgba(0, 0, 0, 0.45); color: #fff; border: none; border-radius: 50%; width: 2.2em; height: 2.2em; }
-  #toast { position: absolute; left: 4em; right: 4em; top: 23em; pointer-events: none; display: flex; flex-direction: column; gap: 1em; align-items: center; }
+  #go { position: absolute; right: 3em; bottom: 21em; font: inherit; font-size: 3.6em; font-weight: 700; color: #fff4d6; background: linear-gradient(#c8672f, #8f3d18); border: 0.14em solid #ffd58a; border-radius: 0.7em; padding: 0.5em 1em; display: none; box-shadow: 0 0.2em 0 #4d1f0a; }
+  #toast { position: absolute; left: 4em; right: 14em; top: 21em; pointer-events: none; display: flex; flex-direction: column; gap: 1em; align-items: center; }
   .t { background: rgba(14, 18, 15, 0.92); border: 0.12em solid #d9c890; border-radius: 0.8em; color: #f6efd8; padding: 0.6em 1em; font-size: 3.2em; line-height: 1.45; text-align: center; animation: fade 6s forwards; }
   .t b { color: #ffe9a8; }
   @keyframes fade { 0% { opacity: 0; transform: translateY(-0.6em); } 6% { opacity: 1; transform: none; } 85% { opacity: 1; } 100% { opacity: 0; } }
-  #title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 26em; background: linear-gradient(rgba(8, 10, 9, 0) 40%, rgba(8, 10, 9, 0.92) 62%); }
-  #title h1 { position: absolute; top: 1.1em; margin: 0; font-size: 9.6em; line-height: 1.25; text-align: center; color: #fff3cf; text-shadow: 0 0.06em 0 #3a2a10, 0 0 0.5em rgba(0, 0, 0, 0.9); letter-spacing: 0.02em; }
+  #title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 30em; background: linear-gradient(rgba(8, 10, 9, 0.35), rgba(8, 10, 9, 0) 30%, rgba(8, 10, 9, 0) 60%, rgba(8, 10, 9, 0.85)); }
+  #title h1 { position: absolute; top: 2.4em; margin: 0; font-size: 9.6em; line-height: 1.25; text-align: center; color: #fff3cf; text-shadow: 0 0.06em 0 #3a2a10, 0 0 0.5em rgba(0, 0, 0, 0.9); letter-spacing: 0.02em; }
   #title h1 small { display: block; font-size: 0.36em; color: #ffd58a; letter-spacing: 0.3em; margin-bottom: 0.3em; }
   #start { font: inherit; font-size: 5em; font-weight: 700; color: #2a2112; background: linear-gradient(#f6e3a8, #d9b95f); border: 0.12em solid #fff2c4; border-radius: 0.6em; padding: 0.5em 2em; box-shadow: 0 0.2em 0 #7d6529; animation: pulse 1.6s infinite; }
   @keyframes pulse { 50% { transform: scale(1.05); } }
   #title p { font-size: 2.8em; color: #a3a792; margin-top: 2em; } #title a { color: #d9c890; }
   #card { position: absolute; inset: 0; background: rgba(6, 8, 7, 0.55); display: none; flex-direction: column; justify-content: flex-end; }
-  #cardbox { margin: 0 3em 9em; background: linear-gradient(#232b20, #151a13); border: 0.5em solid #d9c890; border-radius: 2.4em; padding: 3.4em 3.6em 4.4em; color: #f6efd8; min-height: 30em; position: relative; box-shadow: 0 1em 3em rgba(0, 0, 0, 0.6); }
+  #cardbox { margin: 0 3em 24em; background: linear-gradient(#232b20, #151a13); border: 0.5em solid #d9c890; border-radius: 2.4em; padding: 3.4em 3.6em 4.4em; color: #f6efd8; min-height: 30em; position: relative; box-shadow: 0 1em 3em rgba(0, 0, 0, 0.6); }
   #who { position: absolute; left: 3em; top: -1.1em; font-size: 3.6em; font-weight: 700; color: #2a2112; background: linear-gradient(#f6e3a8, #d9b95f); border-radius: 0.5em; padding: 0.15em 0.9em; display: none; }
   #face { position: absolute; right: 2em; bottom: 100%; height: 42em; max-width: 60em; object-fit: contain; object-position: bottom; display: none; filter: drop-shadow(0 0 2em rgba(0, 0, 0, 0.8)); pointer-events: none; }
   #say { font-size: 4.2em; line-height: 1.6; min-height: 4.8em; }
@@ -52,7 +61,9 @@
 </head>
 <body>
 <div id="wrap">
-  <div id="view"><canvas id="c" width="900" height="800"></canvas><button id="snd">♪</button></div>
+  <canvas id="c" width="900" height="1950"></canvas>
+  <button id="menu"><span>☰</span></button><button id="snd"><span>♪</span></button>
+  <button id="auto">자동</button><div id="skills"></div>
   <div id="ui">
     <div id="stat"></div>
     <div id="tabs"><button data-tab="up" class="on">강화</button><button data-tab="wp">무기</button><button data-tab="book">도감</button></div>
@@ -65,11 +76,13 @@
 </div>
 <script src="art/게임/자료.js"></script>
 <script>
-// 잊혀진 기사 키우기 · 세로판. 위는 싸움 창, 아래는 늘 떠 있는 성장 창.
+// 잊혀진 기사 키우기 · 세로판. 화면 전체가 싸움 창이다. 아래에는 스킬만 있고, 강화·무기·도감은 ☰ 안에 있다.
 // 가로판(게임.html)과 같은 그림, 같은 값, 같은 저장을 쓴다. 여기에는 타격감, 보상 연출, 대화 연출, 제목 화면, 소리를 더했다.
-const W = 900, VH = 800, H = 900, Z = 1.1, VW = W / Z, TOP = 118, GROUND = 770;     // 싸움 창은 세계를 1.1배로 당겨 보여 준다
+const W = 900, H = 900, Z = 1.2, VW = W / Z, GROUND = 770; let VH = 1950, GY = 1650;     // 화면 높이는 휴대폰에 맞춘다
 const D = window.DATA, $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d'), IMG = {};
+function fit() { const r = $('wrap').getBoundingClientRect(); VH = Math.max(900, Math.round(W * r.height / r.width)); cv.height = VH; GY = VH - 300; }       // 땅은 화면 아래에서 300 위. 그 아래 흙 위에 스킬 단추가 놓인다
+fit(); addEventListener('resize', fit);
 function load(key, src) { if (IMG[key]) return IMG[key].p; const im = new Image(); IMG[key] = im; im.p = new Promise(r => { im.onload = r; im.onerror = r; }); im.src = 'art/게임/' + src; return im.p; }
 
 // ───────── 값 (가로판과 같다) ─────────
@@ -216,7 +229,7 @@ function update(dt) {
     for (const m of mobs) { if (m.dead) continue; const d = Math.abs(m.x - knight.x) + (m.floor === knight.floor ? 0 : 500) + Math.abs(m.y - knight.y) * 0.6; if (d < bd) { bd = d; best = m; } }
     knight.target = best;
     if (knight.atk > 0) { const before = knight.atk; knight.atk -= dt;
-      if (before > 0.2 && knight.atk <= 0.2) { swing++; const skill = swing % 5 === 0; sfx('slash'); knight.skill = skill ? 0.3 : 0;
+      if (before > 0.2 && knight.atk <= 0.2) { const skill = false; sfx('slash');
         for (const m of mobs) if (!m.dead && m.floor === knight.floor && (m.x - knight.x) * knight.dir > -30 - m.w * 0.3 && Math.abs(m.x - knight.x) < 175 + m.w * 0.4) hitMob(m, skill ? 1.2 : 1, skill ? 3 : 1); }
       if (knight.atk <= 0) knight.state = 'walk'; }
     else if (best && phase === 'play') {
@@ -232,12 +245,16 @@ function update(dt) {
 
 // ───────── 그리기 ─────────
 function mirror(im, off, y, w, h) { for (let i = -1; i < 4; i++) { const x = i * w - (off % (w * 2)); if (x > W || x + w < 0) continue; ctx.save(); if (((i % 2) + 2) % 2 === 1) { ctx.translate(x + w, 0); ctx.scale(-1, 1); ctx.drawImage(im, 0, y, w + 1, h); } else ctx.drawImage(im, x, y, w + 1, h); ctx.restore(); } }
+function drawBackdrop() {                                                     // 먼 배경은 화면 높이에 맞춰 크게 깔린다. 그림 속 땅 높이를 싸움 땅에 맞춘다
+  const bg = IMG['bg' + D.bg[stageKey(S.stage)]], sb = GY / GROUND, ch = Math.floor(S.stage / 10) + 1, gd = D.ground[ch];
+  ctx.fillStyle = 'rgb(' + gd.under + ')'; ctx.fillRect(0, 0, W, VH);
+  if (bg && bg.width) mirror(bg, cam * 0.3, 0, bg.width * (H * sb / bg.height), H * sb);
+}
 function drawWorld() {
-  const ch = Math.floor(S.stage / 10) + 1, bg = IMG['bg' + D.bg[stageKey(S.stage)]], g = IMG['ground' + ch], gd = D.ground[ch];
-  if (bg && bg.width) mirror(bg, cam * 0.25, 0, bg.width * (H / bg.height), H); else { ctx.fillStyle = '#16241a'; ctx.fillRect(0, 0, W, H); }
+  const ch = Math.floor(S.stage / 10) + 1, g = IMG['ground' + ch], gd = D.ground[ch];
   if (phase === 'title') return;
   for (const p of PLATS) { const x = p.x - cam; if (x > W || x + p.w < 0) continue; ctx.drawImage(IMG[p.img], x, p.y - p.top, p.w, p.h); }
-  if (g && g.width) { ctx.fillStyle = 'rgb(' + gd.under + ')'; ctx.fillRect(0, GROUND - gd.top + gd.h - 3, W, H); mirror(g, cam, GROUND - gd.top, 1600, gd.h); }
+  if (g && g.width) { ctx.fillStyle = 'rgb(' + gd.under + ')'; ctx.fillRect(-50, GROUND - gd.top + gd.h - 3, W + 100, 3000); mirror(g, cam, GROUND - gd.top, 1600, gd.h); }
 }
 function shadow(x, y, r) { const g = ctx.createRadialGradient(x, y, 2, x, y, r); g.addColorStop(0, 'rgba(0,0,0,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.save(); ctx.translate(0, y); ctx.scale(1, 0.26); ctx.translate(0, -y); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore(); }
 const STAIN = {};
@@ -315,33 +332,38 @@ function drawFx() {
 }
 function say(s, x, y, c, a, size, bold) { ctx.font = (bold === false ? '' : 'bold ') + (size || 30) + 'px sans-serif'; ctx.textAlign = a || 'left'; ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(4, (size || 30) / 5); ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.strokeText(s, x, y); ctx.fillStyle = c; ctx.fillText(s, x, y); }
 function bar(x, y, w, h, k, col, back) { ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.beginPath(); ctx.roundRect(x - 4, y - 4, w + 8, h + 8, h / 2 + 4); ctx.fill(); if (back) { ctx.fillStyle = back; ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fill(); } ctx.fillStyle = col; ctx.beginPath(); ctx.roundRect(x, y, Math.max(h, w * Math.min(1, Math.max(0, k))), h, h / 2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.beginPath(); ctx.roundRect(x + 3, y + 2, Math.max(0, w * Math.min(1, Math.max(0, k)) - 6), h * 0.35, h / 4); ctx.fill(); }
-let hpShow = 1, bossShow = 1;
+let hpShow = 1, bossShow = 1, flash = 0;
 function drawHud(dt) {
-  ctx.textBaseline = 'top'; const key = stageKey(S.stage), g = ctx.createLinearGradient(0, 0, 0, 150); g.addColorStop(0, 'rgba(0,0,0,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 150);
-  say(key, 26, 20, '#ffd58a', 'left', 30); say(D.places[key] || '', 26 + ctx.measureText(key).width + 16, 20, '#f4ead0', 'left', 30);
-  say('★'.repeat(S.stars) + '☆'.repeat(7 - S.stars), W - 26, 22, '#ffe9a8', 'right', 26);
-  hpShow += (knight.hp / maxHp() - hpShow) * Math.min(1, dt * 8); bar(26, 66, 300, 20, hpShow, hpShow < 0.3 ? '#e8604a' : '#6fcf7a', '#3a2020'); ctx.textBaseline = 'middle'; say(fmt(knight.hp) + ' / ' + fmt(maxHp()), 176, 77, '#fff', 'center', 18);
-  ctx.textBaseline = 'top';
-  if (boss) { bossShow += (Math.max(0, boss.hp) / boss.max - bossShow) * Math.min(1, dt * 8); bar(150, 122, W - 300, 26, bossShow, '#d9523f', '#3a1a16'); ctx.textBaseline = 'middle'; say(D.mob[boss.key].name, W / 2, 136, '#fff', 'center', 22); ctx.textBaseline = 'top'; say(Math.max(0, timer).toFixed(1), W / 2, 158, timer < 8 ? '#ff9a8a' : '#f4ead0', 'center', 34); }
-  else { bar(W - 326, 66, 300, 20, kills / goal, '#e8c66a', '#2c2816'); ctx.textBaseline = 'middle'; say(Math.min(kills, goal) + ' / ' + goal, W - 176, 77, '#fff', 'center', 18); bossShow = 1; }
+  const key = stageKey(S.stage), g = ctx.createLinearGradient(0, 0, 0, 330); g.addColorStop(0, 'rgba(0,0,0,0.7)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 330);
+  ctx.textBaseline = 'top'; const T0 = 44;
+  say(key, 30, T0, '#ffd58a', 'left', 34); say(D.places[key] || '', 30 + ctx.measureText(key).width + 16, T0, '#f4ead0', 'left', 34);
+  say('★'.repeat(S.stars) + '☆'.repeat(7 - S.stars), W - 30, T0 + 2, '#ffe9a8', 'right', 28);
+  hpShow += (knight.hp / maxHp() - hpShow) * Math.min(1, dt * 8); bar(30, T0 + 54, 400, 24, hpShow, hpShow < 0.3 ? '#e8604a' : '#6fcf7a', '#3a2020');
+  ctx.textBaseline = 'middle'; say(fmt(knight.hp) + ' / ' + fmt(maxHp()), 230, T0 + 67, '#fff', 'center', 20);
+  if (!boss) { bar(W - 430, T0 + 54, 400, 24, kills / goal, '#e8c66a', '#2c2816'); say(Math.min(kills, goal) + ' / ' + goal, W - 230, T0 + 67, '#fff', 'center', 20); bossShow = 1; }
+  ctx.textBaseline = 'top'; say('● ' + fmt(S.gold), 30, T0 + 96, '#ffd27a', 'left', 30); say('◆ ' + S.gems, 300, T0 + 96, '#9fd8ff', 'left', 30); say('⚔ ' + fmt(atk()), 470, T0 + 96, '#f6efd8', 'left', 30);
+  if (boss) { bossShow += (Math.max(0, boss.hp) / boss.max - bossShow) * Math.min(1, dt * 8); bar(60, T0 + 160, W - 250, 34, bossShow, '#d9523f', '#3a1a16'); ctx.textBaseline = 'middle'; say(D.mob[boss.key].name, 60 + (W - 250) / 2, T0 + 178, '#fff', 'center', 26); say(Math.max(0, timer).toFixed(1), W - 240, T0 + 80, timer < 8 ? '#ff9a8a' : '#f4ead0', 'center', 44); }
   ctx.textBaseline = 'middle';
-  for (const n of nums) { if (n.t < 0) continue; const k = n.t / 0.9, pop = n.t < 0.12 ? 1 + (0.12 - n.t) * 5 : 1; ctx.globalAlpha = Math.max(0, 1 - k * k); say(n.v, (n.x - cam) * Z, (n.y - TOP) * Z - n.t * 80, n.c, 'center', (n.big ? 54 : 42) * pop); } ctx.globalAlpha = 1;
-  if (banner) { const t = banner.t, a = Math.min(1, t * 4) * Math.min(1, Math.max(0, ((banner.big ? 2.2 : 1.8) - t) * 3));
-    if (banner.band) { ctx.fillStyle = (banner.dark ? 'rgba(40,8,8,' : 'rgba(20,16,6,') + 0.72 * a + ')'; ctx.fillRect(0, 300, W, 150); ctx.fillStyle = 'rgba(255,225,150,' + 0.9 * a + ')'; ctx.fillRect(0, 300, W, 5); ctx.fillRect(0, 445, W, 5); }
+  for (const n of nums) { if (n.t < 0) continue; const k = n.t / 0.9, pop = n.t < 0.12 ? 1 + (0.12 - n.t) * 5 : 1; ctx.globalAlpha = Math.max(0, 1 - k * k); say(n.v, (n.x - cam) * Z, GY + (n.y - GROUND) * Z - n.t * 90, n.c, 'center', (n.big ? 64 : 48) * pop); } ctx.globalAlpha = 1;
+  if (flash > 0) { flash -= dt; ctx.fillStyle = 'rgba(255,240,200,' + Math.max(0, flash / 0.3) * 0.7 + ')'; ctx.fillRect(0, 0, W, VH); }
+  if (banner) { const t = banner.t, a = Math.min(1, t * 4) * Math.min(1, Math.max(0, ((banner.big ? 2.2 : 1.8) - t) * 3)), by = GY - 760;
+    if (banner.band) { ctx.fillStyle = (banner.dark ? 'rgba(40,8,8,' : 'rgba(20,16,6,') + 0.72 * a + ')'; ctx.fillRect(0, by, W, 190); ctx.fillStyle = 'rgba(255,225,150,' + 0.9 * a + ')'; ctx.fillRect(0, by, W, 6); ctx.fillRect(0, by + 184, W, 6); }
     else if (banner.big) { ctx.fillStyle = 'rgba(0,0,0,' + 0.55 * a + ')'; ctx.fillRect(0, 0, W, VH); }
-    ctx.globalAlpha = a; const sl = (1 - Math.min(1, t * 5)) * 120; say(banner.sub || '', W / 2 - sl, banner.band ? 336 : 250, banner.dark ? '#ffb0a0' : '#ffd58a', 'center', 28); say(banner.text, W / 2 + sl, banner.band ? 392 : 316, banner.dark ? '#ffd0c8' : '#fff3cf', 'center', banner.big ? 76 : 64); ctx.globalAlpha = 1; }
+    ctx.globalAlpha = a; const sl = (1 - Math.min(1, t * 5)) * 120; say(banner.sub || '', W / 2 - sl, by + 48, banner.dark ? '#ffb0a0' : '#ffd58a', 'center', 34); say(banner.text, W / 2 + sl, by + 118, banner.dark ? '#ffd0c8' : '#fff3cf', 'center', banner.big ? 88 : 76); ctx.globalAlpha = 1; }
 }
 let last = 0, dirty = true;
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000 || 0.016); last = now;
   if (fade > 0 && phase !== 'load') fade = Math.max(0, fade - dt * 2.5);
-  if (freeze > 0) freeze -= dt; else if (!CARD.on) for (let i = 0; i < (window.__speed || 1); i++) update(dt);
+  if (freeze > 0) freeze -= dt; else if (!CARD.on) for (let i = 0; i < (window.__speed || 1); i++) { update(dt); skillTick(dt); }
   shake *= Math.exp(-14 * dt);
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, VH);
   if (phase !== 'load' || IMG['bg' + D.bg[stageKey(S.stage)]]) {
-    ctx.save(); ctx.scale(Z, Z); ctx.translate((Math.random() - 0.5) * shake, -TOP + (Math.random() - 0.5) * shake);
+    const sx = (Math.random() - 0.5) * shake, sy = (Math.random() - 0.5) * shake;
+    ctx.save(); ctx.translate(sx * 0.4, sy * 0.4); drawBackdrop(); ctx.restore();
+    ctx.save(); ctx.translate(sx * Z, GY + sy * Z); ctx.scale(Z, Z); ctx.translate(0, -GROUND);
     drawWorld();
-    if (phase === 'title') { const k = knight; k.state = 'idle'; k.dir = 1; k.y = GROUND - 20; ctx.fillStyle = 'rgba(8,12,10,0.25)'; ctx.fillRect(0, 0, W, H); drawKnight(VW / 2); }
+    if (phase === 'title') { const k = knight; k.state = 'idle'; k.dir = 1; k.y = GROUND - 20; drawKnight(VW / 2); }
     else { const all = mobs.map(m => ({ y: m.y, f: () => drawMob(m) })).concat([{ y: knight.jump ? 9999 : knight.y + 1, f: () => drawKnight() }]).sort((a, b) => a.y - b.y); for (const a of all) a.f(); drawFx(); }
     ctx.restore(); drawLampGlow();
     if (phase !== 'title') drawHud(dt);
@@ -351,11 +373,33 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-// ───────── 아래 성장 창 ─────────
+// ───────── 스킬: 화면 아래에는 이것만 있다 ─────────
+const IC = { cut: '<path d="M14 50 L46 10 L52 16 L24 54Z" fill="#fff3cf"/><path d="M8 56l8-2-6-6z" fill="#d9b95f"/>', ember: '<circle cx="32" cy="38" r="12" fill="#ffb347"/><circle cx="14" cy="20" r="6" fill="#ffd27a"/><circle cx="48" cy="16" r="7" fill="#ffd27a"/><circle cx="50" cy="44" r="5" fill="#ff8c3a"/>',
+  flash: '<circle cx="32" cy="32" r="11" fill="#fff6d0"/><g stroke="#ffe08a" stroke-width="5" stroke-linecap="round"><path d="M32 6v10M32 48v10M6 32h10M48 32h10M13 13l7 7M44 44l7 7M51 13l-7 7M20 44l-7 7"/></g>', dash: '<path d="M6 32h34" stroke="#cfe8ff" stroke-width="6" stroke-linecap="round"/><path d="M36 16l22 16-22 16z" fill="#fff3cf"/>', lock: '<rect x="18" y="28" width="28" height="24" rx="4" fill="#8d917f"/><path d="M24 28v-8a8 8 0 0116 0v8" fill="none" stroke="#8d917f" stroke-width="5"/>' };
+const SK = [
+  { name: '내려치기', cd: 4, open: 0, icon: 'cut', use() { const m = nearest(260, true); if (!m) return false; knight.dir = Math.sign(m.x - knight.x) || knight.dir; knight.atk = 0.3; knight.skill = 0.3; hitMob(m, 2.6, 1); shake = 18; return true; } },
+  { name: '불씨 뿌리기', cd: 7, open: 3, icon: 'ember', use() { const list = mobs.filter(m => !m.dead && Math.abs(m.x - knight.x) < 460).sort((a, b) => Math.abs(a.x - knight.x) - Math.abs(b.x - knight.x)).slice(0, 3); if (!list.length) return false;
+      for (const m of list) { for (let i = 0; i < 6; i++) fx.push({ k: 'spark', x: knight.x, y: knight.y - 110, vx: (m.x - knight.x) * 2.4 + (Math.random() - 0.5) * 200, vy: -300 - Math.random() * 200, t: 0, life: 0.4, c: '#ffb347' }); hitMob(m, 0.8, 5); } return true; } },
+  { name: '등불 섬광', cd: 12, open: 5, icon: 'flash', use() { const list = mobs.filter(m => !m.dead && Math.abs(m.x - cam - VW / 2) < VW / 2 + 60); if (!list.length) return false; flash = 0.3; shake = 16; for (const m of list) hitMob(m, 1.6, 1); return true; } },
+  { name: '찌르기', cd: 9, open: 8, icon: 'dash', use() { const m = nearest(520, true); if (!m) return false; const d = Math.sign(m.x - knight.x) || knight.dir, x0 = knight.x; knight.dir = d; knight.x = Math.max(60, Math.min(WORLD - 60, x0 + d * 360)); knight.atk = 0.3; knight.skill = 0.3;
+      for (let i = 0; i < 8; i++) fx.push({ k: 'dust', x: x0 + d * i * 45, y: knight.y - 70, vx: -d * 60, vy: -10, t: 0, life: 0.35, r: 26 }); for (const q of mobs) if (!q.dead && q.floor === knight.floor && (q.x - x0) * d > -40 && (q.x - x0) * d < 440) hitMob(q, 2.0, 1); return true; } },
+  { name: '', cd: 0, open: 99, icon: 'lock' }, { name: '', cd: 0, open: 99, icon: 'lock' } ];
+const cdLeft = SK.map(() => 0);
+function nearest(range, sameFloor) { let best = null, bd = range; for (const m of mobs) { if (m.dead || (sameFloor && m.floor !== knight.floor)) continue; const d = Math.abs(m.x - knight.x); if (d < bd) { bd = d; best = m; } } return best; }
+function cast(i) { const k = SK[i]; if (!k.use || S.cleared < k.open || cdLeft[i] > 0 || phase !== 'play' || knight.jump) return; if (k.use()) { cdLeft[i] = k.cd; fx.push({ k: 'word', x: knight.x, y: knight.y - 300, t: 0, life: 0.9, text: k.name, c: '#ffe9a8' }); } }
+function skillTick(dt) { for (let i = 0; i < SK.length; i++) { if (cdLeft[i] > 0) cdLeft[i] -= dt; else if (S.skillAuto !== false && phase === 'play' && !CARD.on) cast(i); const b = $('skills').children[i]; if (!b) continue; b.style.setProperty('--p', (SK[i].cd ? Math.max(0, cdLeft[i] / SK[i].cd) * 100 : 0) + '%'); b.className = 'sk' + (S.cleared < SK[i].open ? ' lock' : cdLeft[i] <= 0 ? ' ready' : ''); } }
+$('skills').innerHTML = SK.map((k, i) => '<button class="sk" data-i="' + i + '"><svg viewBox="0 0 64 64">' + IC[k.icon] + '</svg><b>' + (k.name ? k.name.replace(' 뿌리기', '') : '') + '</b><i></i></button>').join('');
+$('skills').addEventListener('pointerdown', e => { const b = e.target.closest('.sk'); if (b) cast(+b.dataset.i); });
+$('auto').onclick = () => { S.skillAuto = S.skillAuto === false; $('auto').className = S.skillAuto === false ? 'off' : ''; $('auto').textContent = S.skillAuto === false ? '자동 끔' : '자동 켬'; save(); };
+$('menu').onclick = () => { $('ui').classList.toggle('on'); render(); };
+cv.addEventListener('pointerdown', () => $('ui').classList.remove('on'));
+
+// ───────── 강화·무기·도감 (☰ 안) ─────────
 let TAB = 'up', lastPull = '';
 function toast(html) { const d = document.createElement('div'); d.className = 't'; d.innerHTML = html; $('toast').appendChild(d); setTimeout(() => d.remove(), 6000); while ($('toast').children.length > 2) $('toast').firstChild.remove(); }
 function render() {
   $('stat').innerHTML = '<span class="g">● ' + fmt(S.gold) + '</span><span class="j">◆ ' + S.gems + '</span><span class="a">⚔ ' + fmt(atk()) + '</span>';
+  $('menu').className = S.gold >= upCost(S.atkLv, 10) && S.atkLv < lvCap() || S.gems >= 10 ? 'dot' : ''; const sk = phase === 'title' ? 'none' : ''; $('skills').style.display = sk; $('auto').style.display = sk; $('menu').style.display = sk; $('snd').style.display = sk;
   const g = $('go'), show = !S.auto && S.cleared < V.stages && phase === 'play'; g.style.display = show ? 'block' : 'none'; g.textContent = S.stage % 10 === 8 ? '우두머리 도전 ▶' : '다음 스테이지 ▶';
   const b = $('body'), sc = b.scrollTop; let h = '';
   if (TAB === 'up') { const cap = lvCap(), ca = upCost(S.atkLv, 10), ch = upCost(S.hpLv, 6);
@@ -385,7 +429,7 @@ $('body').addEventListener('pointerdown', e => { const a = e.target.closest('[da
   if (act === 'p1') pull(1); if (act === 'p10') pull(10); save(); render(); });
 $('tabs').addEventListener('pointerdown', e => { const t = e.target.dataset.tab; if (!t) return; TAB = t; for (const b of $('tabs').children) b.className = b.dataset.tab === t ? 'on' : ''; $('body').scrollTop = 0; render(); });
 $('go').onclick = () => { S.auto = true; if (phase === 'play') enter(Math.min(V.stages - 1, S.stage + 1)); };
-$('snd').onclick = () => { S.mute = !S.mute; $('snd').textContent = S.mute ? '×' : '♪'; save(); };
+$('snd').onclick = () => { S.mute = !S.mute; $('snd').firstChild.textContent = S.mute ? '×' : '♪'; save(); };
 setInterval(() => { if (dirty || phase === 'play') { dirty = false; if (document.activeElement !== $('body')) render(); } }, 500);
 
 // ───────── 이야기 카드: 글자가 한 자씩 찍힌다 ─────────
@@ -409,7 +453,7 @@ const SCENES = { '1-3': D.story.scene['밥상'], '1-10': D.story.scene['첫조�
 
 // ───────── 시작 ─────────
 const boot = ['body', 'legL', 'legR', 'hand', 'head', 'headR'].map(k => load(k, 'knight/' + k + '.png')).concat(D.weapons.map((w, i) => load('w' + i, 'weapon/' + String(i).padStart(2, '0') + '.png'))).concat([load('bg' + D.bg[stageKey(S.stage)], 'bg/' + D.bg[stageKey(S.stage)] + '.jpg')]);
-Promise.all(boot).then(() => { if (S.seen.opening) $('start').textContent = '이어하기'; $('snd').textContent = S.mute ? '×' : '♪'; render(); window.__ready = true; requestAnimationFrame(frame); });
+Promise.all(boot).then(() => { if (S.seen.opening) $('start').textContent = '이어하기'; $('snd').firstChild.textContent = S.mute ? '×' : '♪'; $('auto').textContent = S.skillAuto === false ? '자동 끔' : '자동 켬'; $('auto').className = S.skillAuto === false ? 'off' : ''; render(); window.__ready = true; requestAnimationFrame(frame); });
 $('start').onclick = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {} sfx('up'); $('title').style.display = 'none';
   const go = () => enter(Math.min(S.stage, V.stages - 1)); if (!S.seen.opening) cards(D.story.opening, () => { S.seen.opening = 1; save(); go(); }); else go(); };
 setInterval(save, 5000);
